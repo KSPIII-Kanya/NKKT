@@ -1,0 +1,1620 @@
+<!DOCTYPE html>
+<html lang="ta">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>கன்ய சம்பூர்ணா திட்டம் - கணித சிமுலேஷன்</title>
+    
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts for Tamil font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Madurai:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Tone.js for sound effects -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.js"></script>
+
+    <style>
+        /* Custom styles for the application */
+        body {
+            font-family: 'Hind Madurai', sans-serif;
+            background-color: #f0f9ff; /* Light blue background */
+        }
+        .tab-btn {
+            transition: all 0.3s ease;
+            border-bottom: 4px solid transparent;
+        }
+        .tab-btn.active {
+            border-bottom-color: #3b82f6; /* Blue-500 */
+            color: #1d4ed8; /* Blue-800 */
+            font-weight: 700;
+        }
+        .simulation-card {
+            background-color: white;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease;
+        }
+        .simulation-card-interactive {
+            cursor: pointer;
+        }
+        .simulation-card-interactive:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        .number-grid-cell {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 1px solid #e5e7eb;
+            font-size: 1.25rem;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        .number-grid-cell:hover {
+            background-color: #eff6ff;
+            transform: scale(1.1);
+        }
+        .number-grid-cell.highlight {
+            background-color: #3b82f6;
+            color: white;
+            border-radius: 50%;
+        }
+        .feedback {
+            font-size: 1.25rem;
+            font-weight: bold;
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+            margin-top: 1rem;
+            text-align: center;
+        }
+        .feedback.correct {
+            background-color: #dcfce7;
+            color: #166534;
+        }
+        .feedback.incorrect {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+        .sortable-number {
+            padding: 1rem 1.5rem;
+            background-color: #fef08a;
+            border: 2px dashed #ca8a04;
+            border-radius: 50%;
+            font-size: 1.5rem;
+            font-weight: bold;
+            cursor: grab;
+        }
+        .drop-zone {
+            border: 2px dashed #9ca3af;
+            border-radius: 1rem;
+            min-height: 100px;
+        }
+        .table-row {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+            flex-wrap: wrap;
+        }
+        .table-row.correct {
+            background-color: #dcfce7;
+        }
+        .table-visual {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            padding: 5px;
+            border-radius: 5px;
+            background-color: #f3f4f6;
+            min-height: 30px;
+            width: 100%;
+        }
+        .visual-dot-group {
+            display: flex;
+            gap: 2px;
+            padding: 2px;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+        }
+        .visual-dot {
+            width: 10px;
+            height: 10px;
+            background-color: #ef4444;
+            border-radius: 50%;
+        }
+        #flash-message {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 1rem;
+            font-size: 2rem;
+            font-weight: bold;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+            pointer-events: none; /* Allows clicks to go through */
+        }
+        #flash-message.show {
+            opacity: 1;
+        }
+        .pv-column {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+            width: 150px;
+        }
+        .pv-beads-container {
+            width: 100%;
+            height: 200px;
+            background-color: #f3f4f6;
+            border-radius: 0.5rem;
+            border: 2px solid #e5e7eb;
+            padding: 0.5rem;
+            display: flex;
+            flex-direction: column-reverse;
+            gap: 4px;
+            overflow: hidden;
+        }
+        .pv-bead {
+            width: 100%;
+            border-radius: 9999px;
+            transition: all 0.2s;
+        }
+        .pv-tens-bead {
+            height: 18px;
+            background-color: #f97316;
+        }
+        .pv-ones-bead {
+            height: 18px;
+            background-color: #3b82f6;
+        }
+        .pv-controls button {
+            width: 40px;
+            height: 40px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            border-radius: 50%;
+            user-select: none;
+        }
+        .pred-succ-answer-box {
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            width: 60px;
+            height: 60px;
+            border: 2px solid #ddd;
+            border-radius: 0.5rem;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #3b82f6;
+            transition: all 0.3s;
+        }
+        .number-line-button {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            border: 2px solid #9ca3af;
+            background-color: white;
+            font-weight: bold;
+            transition: all 0.2s;
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+        .number-line-button:hover {
+            background-color: #e0f2fe;
+            transform: scale(1.1);
+        }
+        .number-line-button.disabled {
+            opacity: 0.5;
+            pointer-events: none;
+            background-color: #e5e7eb;
+        }
+        .number-line-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem;
+            overflow-x: auto;
+        }
+        .odd-even-bead {
+            width: 24px;
+            height: 24px;
+            background-color: #f472b6;
+            border-radius: 50%;
+            margin: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 3px solid transparent;
+        }
+        .odd-even-bead.selected {
+             border-color: #facc15;
+        }
+        .odd-even-bead.paired {
+            background-color: #9ca3af;
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+        .balance-scale-container {
+            width: 100%;
+            height: 150px;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+        }
+        .balance-beam {
+            width: 80%;
+            height: 8px;
+            background-color: #4b5563;
+            border-radius: 4px;
+            position: absolute;
+            top: 50%;
+            left: 10%;
+            transform-origin: center;
+            transition: transform 0.5s ease-in-out;
+        }
+        .balance-stand {
+            width: 8px;
+            height: 75px;
+            background-color: #4b5563;
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        .balance-base {
+            width: 100px;
+            height: 8px;
+            background-color: #4b5563;
+            border-radius: 4px;
+        }
+        .weight-plate {
+            position: absolute;
+            bottom: calc(50% + 4px);
+            width: 60px;
+            height: 60px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: white;
+            border-radius: 0.5rem;
+        }
+        .weight-plate.left {
+            left: 15%;
+            background-color: #fb923c;
+        }
+        .weight-plate.right {
+            right: 15%;
+            background-color: #60a5fa;
+        }
+        @keyframes shake {
+          0%, 100% { transform: rotate(0deg); }
+          25% { transform: rotate(3deg); }
+          75% { transform: rotate(-3deg); }
+        }
+        .shake {
+            animation: shake 0.4s linear;
+        }
+        .hint-visuals {
+            margin-top: 1rem;
+            padding: 1rem;
+            background-color: #fefce8;
+            border: 1px solid #fde047;
+            border-radius: 0.5rem;
+        }
+        #drawing-canvas {
+            border: 2px solid #ccc;
+            border-radius: 0.5rem;
+            cursor: crosshair;
+        }
+        .toolbar-btn {
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            border: 2px solid transparent;
+            transition: all 0.2s;
+        }
+        .toolbar-btn.active {
+            border-color: #3b82f6;
+            background-color: #dbeafe;
+        }
+        .color-swatch {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 3px solid transparent;
+        }
+        .color-swatch.active {
+            border-color: #3b82f6;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <div id="flash-message"></div>
+
+    <div class="max-w-7xl mx-auto text-center">
+        <!-- Header Section -->
+        <header class="mb-8">
+            <h1 class="text-3xl md:text-4xl font-bold text-blue-800">கன்ய சம்பூர்ணா திட்டம் / கன்யா பெண்கள் கல்வி திட்டம்</h1>
+            <p class="text-lg md:text-xl text-gray-700 mt-2">இத்திட்டம் TITAN மற்றும் KALIKE நிறுவனங்களின் பங்களிப்புடன் செயல்படுத்தப்படுகிறது</p>
+            <h2 class="text-2xl md:text-3xl font-semibold text-orange-600 mt-4">நடுவுல கொஞ்சம் கற்றலைத் தேடி</h2>
+            <p class="text-xl md:text-2xl font-medium text-gray-800 mt-2">கணிதம்</p>
+            <p class="text-lg md:text-xl text-gray-600 mt-1">ஜூன் - 4வது வாரம்</p>
+        </header>
+
+        <!-- Tabs Navigation -->
+        <div class="flex justify-center border-b-2 border-gray-200 mb-6">
+            <button class="tab-btn active text-lg md:text-xl px-4 py-3" onclick="openTab('tab1')">வாய்மொழி பயிற்சி (15 நிமிடங்கள்)</button>
+            <button class="tab-btn text-lg md:text-xl px-4 py-3" onclick="openTab('tab2')">ஆசிரியர் செயல்பாடு மற்றும் வலுப்படுத்துதல் (45 நிமிடங்கள்)</button>
+            <button class="tab-btn text-lg md:text-xl px-4 py-3" onclick="openTab('tab3')">கல்விசார் செயல்பாடுகள் (15 நிமிடங்கள்)</button>
+        </div>
+
+        <!-- Tab Content -->
+        <main>
+            <!-- Tab 1: வாய்மொழி பயிற்சி -->
+            <div id="tab1" class="tab-content">
+                <div class="grid md:grid-cols-2 gap-8">
+                    <!-- Multiplication Tables Simulation -->
+                    <div class="simulation-card">
+                        <h3 class="text-2xl font-bold text-center mb-4 text-blue-700">பெருக்கல் வாய்ப்பாடு பயிற்சி</h3>
+                        <div class="flex justify-center space-x-2 mb-4">
+                            <select id="table-select" class="p-2 border rounded-lg text-lg" onchange="generateTable()">
+                                <option value="1">1 ஆம் வாய்ப்பாடு</option>
+                                <option value="2">2 ஆம் வாய்ப்பாடு</option>
+                                <option value="3">3 ஆம் வாய்ப்பாடு</option>
+                                <option value="4">4 ஆம் வாய்ப்பாடு</option>
+                                <option value="5">5 ஆம் வாய்ப்பாடு</option>
+                            </select>
+                        </div>
+                        <div id="table-display" class="space-y-2 text-left p-2 bg-blue-50 rounded-lg min-h-[300px]"></div>
+                    </div>
+                    <!-- Numbers 1-100 Simulation -->
+                    <div class="simulation-card">
+                        <h3 class="text-2xl font-bold text-center mb-4 text-blue-700">எண்கள் 1-100</h3>
+                        <div class="flex justify-center gap-2 mb-4">
+                            <button onclick="shuffleNumbers()" class="bg-orange-500 text-white px-4 py-2 rounded-lg">எண்களை கலைத்துப்போடு</button>
+                            <button onclick="resetNumbers()" class="bg-gray-500 text-white px-4 py-2 rounded-lg">மீட்டமை</button>
+                        </div>
+                        <p class="text-center text-gray-600 mb-2">ஒரு எண்ணை கிளிக் செய்தால், அதன் பெயர் ஒலிக்கும்.</p>
+                        <div id="number-grid" class="grid grid-cols-10 gap-1 mx-auto"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 2: ஆசிரியர் செயல்பாடு -->
+            <div id="tab2" class="tab-content hidden">
+                 <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Learning Outcome 1: Identify Numbers -->
+                    <div class="simulation-card simulation-card-interactive" onclick="startNumberIdGame()">
+                        <h3 class="text-xl font-bold text-blue-700">எண்களை அறிதல்</h3>
+                        <p class="mt-2 text-gray-600">எண் மற்றும் எண் பெயர்களை அடையாளம் கண்டு எழுதப் பழகுதல்.</p>
+                        <div id="number-id-game" class="mt-4 hidden" onclick="event.stopPropagation()">
+                            <div class="flex justify-between items-center mb-2">
+                                <p id="number-id-q-num" class="font-bold"></p>
+                                <button onclick="resetNumberIdGame(event)" class="text-sm bg-red-500 text-white px-2 py-1 rounded">மீண்டும் தொடங்கு</button>
+                            </div>
+                            <p class="text-2xl font-bold" id="number-id-question"></p>
+                            <input type="text" id="number-id-answer" class="mt-2 p-2 border rounded w-full" placeholder="விடையை தட்டச்சு செய்க">
+                            <button onclick="checkNumberIdAnswer(event)" class="mt-2 bg-green-500 text-white px-4 py-2 rounded-lg">சரிபார்</button>
+                            <div id="number-id-feedback" class="feedback"></div>
+                        </div>
+                    </div>
+                    <!-- Learning Outcome 2: Place Value -->
+                    <div class="simulation-card simulation-card-interactive" onclick="startPlaceValueGame()">
+                        <h3 class="text-xl font-bold text-blue-700">இடமதிப்பு</h3>
+                        <p class="mt-2 text-gray-600">மணிகளைச் சேர்த்து எண்ணை உருவாக்குக.</p>
+                        <div id="place-value-game" class="mt-4 hidden" onclick="event.stopPropagation()">
+                           <div class="flex justify-between items-center mb-2">
+                                <p id="place-value-q-num" class="font-bold"></p>
+                                <button onclick="resetPlaceValueGame(event)" class="text-sm bg-red-500 text-white px-2 py-1 rounded">மீண்டும் தொடங்கு</button>
+                            </div>
+                           <p class="text-2xl font-bold" id="place-value-question"></p>
+                           <div class="flex justify-center items-start gap-4 my-4">
+                                <!-- Tens Column -->
+                                <div class="pv-column">
+                                    <h4 class="font-bold text-lg">பத்துகள்</h4>
+                                    <div id="pv-tens-beads" class="pv-beads-container"></div>
+                                    <p id="pv-tens-count" class="font-semibold text-lg text-orange-600 h-8">0</p>
+                                    <div class="pv-controls flex gap-2">
+                                        <button onclick="updateBeads('tens', -1, event)" class="bg-red-200">-</button>
+                                        <button onclick="updateBeads('tens', 1, event)" class="bg-green-200">+</button>
+                                    </div>
+                                </div>
+                                <!-- Ones Column -->
+                                <div class="pv-column">
+                                    <h4 class="font-bold text-lg">ஒன்றுகள்</h4>
+                                    <div id="pv-ones-beads" class="pv-beads-container"></div>
+                                    <p id="pv-ones-count" class="font-semibold text-lg text-blue-600 h-8">0</p>
+                                    <div class="pv-controls flex gap-2">
+                                        <button onclick="updateBeads('ones', -1, event)" class="bg-red-200">-</button>
+                                        <button onclick="updateBeads('ones', 1, event)" class="bg-green-200">+</button>
+                                    </div>
+                                </div>
+                           </div>
+                           <div class="mt-4 p-3 bg-blue-100 border border-blue-200 rounded-lg">
+                                <p class="text-2xl font-bold">மொத்த மதிப்பு: <span id="pv-total">0</span></p>
+                           </div>
+                           <div class="mt-4 flex justify-center">
+                               <button onclick="checkPlaceValueAnswer(event)" class="bg-green-500 text-white px-4 py-2 rounded-lg">சரிபார்</button>
+                           </div>
+                           <div id="place-value-feedback" class="feedback"></div>
+                        </div>
+                    </div>
+                    <!-- Learning Outcome 3: Predecessor/Successor -->
+                    <div class="simulation-card simulation-card-interactive" onclick="startPredSuccGame()">
+                        <h3 class="text-xl font-bold text-blue-700">முன்னி, தொடரி</h3>
+                        <p class="mt-2 text-gray-600">விடுபட்ட எண்ணின் முன்னி, தொடரியை கண்டுபிடிக்கவும்.</p>
+                        <div id="pred-succ-game" class="mt-4 hidden" onclick="event.stopPropagation()">
+                            <div class="flex justify-between items-center mb-2">
+                                <p id="pred-succ-q-num" class="font-bold"></p>
+                                <button onclick="resetPredSuccGame(event)" class="text-sm bg-red-500 text-white px-2 py-1 rounded">மீண்டும் தொடங்கு</button>
+                            </div>
+                            <p class="text-2xl font-bold mb-4" id="pred-succ-question"></p>
+                            <div class="flex justify-center items-center gap-4 my-4">
+                               <div id="pred-answer-box" class="pred-succ-answer-box">?</div>
+                               <div id="succ-answer-box" class="pred-succ-answer-box">?</div>
+                            </div>
+                            <p class="text-center text-gray-600 mb-2">கீழே உள்ள எண் கோட்டிலிருந்து விடையை கிளிக் செய்க</p>
+                            <div id="pred-succ-number-line" class="number-line-container"></div>
+                            <div class="mt-4 flex justify-center gap-4">
+                                <button onclick="checkPredSuccAnswer(event)" class="bg-green-500 text-white px-4 py-2 rounded-lg">சரிபார்</button>
+                                <button onclick="clearPredSuccAnswers(event)" class="bg-gray-500 text-white px-4 py-2 rounded-lg">அழி</button>
+                            </div>
+                            <div id="pred-succ-feedback" class="feedback"></div>
+                        </div>
+                    </div>
+                     <!-- Learning Outcome 3: Comparison -->
+                    <div class="simulation-card simulation-card-interactive" onclick="startCompareGame()">
+                        <h3 class="text-xl font-bold text-blue-700">ஒப்பிடுதல்</h3>
+                        <p class="mt-2 text-gray-600">எந்தப் பக்கம் எடை அதிகம்?</p>
+                         <div id="compare-game" class="mt-4 hidden" onclick="event.stopPropagation()">
+                            <div class="balance-scale-container">
+                                <div class="balance-base"></div>
+                                <div class="balance-stand"></div>
+                                <div id="compare-beam" class="balance-beam">
+                                    <div id="compare-num1-plate" class="weight-plate left"></div>
+                                    <div id="compare-num2-plate" class="weight-plate right"></div>
+                                </div>
+                            </div>
+                            <div class="flex justify-center items-center space-x-4 mt-4">
+                                 <button class="p-3 border-2 rounded-lg text-3xl hover:bg-gray-200" onclick="checkCompareAnswer(event, '<')">&lt;</button>
+                                 <button class="p-3 border-2 rounded-lg text-3xl hover:bg-gray-200" onclick="checkCompareAnswer(event, '>')">&gt;</button>
+                                 <button class="p-3 border-2 rounded-lg text-3xl hover:bg-gray-200" onclick="checkCompareAnswer(event, '=')">=</button>
+                            </div>
+                            <div id="compare-feedback" class="feedback"></div>
+                        </div>
+                    </div>
+                    <!-- Learning Outcome 3: Sorting -->
+                    <div class="simulation-card simulation-card-interactive" onclick="startSortGame()">
+                        <h3 class="text-xl font-bold text-blue-700">ஏறுவரிசை / இறங்குவரிசை</h3>
+                        <p class="mt-2 text-gray-600">எண்களை வரிசைப்படுத்தி அடுக்கி வைத்தல்.</p>
+                        <div id="sort-game" class="mt-4 hidden" onclick="event.stopPropagation()">
+                            <p class="font-semibold" id="sort-instruction"></p>
+                            <div id="sort-numbers" class="flex justify-center items-center space-x-4 my-4"></div>
+                            <div id="sort-dropzone" class="drop-zone p-4 flex justify-center items-center space-x-4"></div>
+                            <div class="mt-4 flex justify-center">
+                                <button onclick="showSortHint(event)" class="bg-yellow-400 text-black px-4 py-2 rounded-lg">💡 உதவி</button>
+                            </div>
+                             <div id="sort-feedback" class="feedback"></div>
+                        </div>
+                    </div>
+                     <!-- Learning Outcome 3: Odd/Even -->
+                    <div class="simulation-card simulation-card-interactive" onclick="startOddEvenGame()">
+                        <h3 class="text-xl font-bold text-blue-700">ஒற்றை / இரட்டை எண்</h3>
+                        <p class="mt-2 text-gray-600">மணிகளை ஜோடி சேர்த்து கண்டுபிடிக்கவும்.</p>
+                        <div id="odd-even-game" class="mt-4 hidden" onclick="event.stopPropagation()">
+                            <p class="text-4xl font-bold" id="odd-even-number"></p>
+                            <p class="text-center text-gray-600 my-2">மணிகளை இரண்டிரண்டாக கிளிக் செய்து ஜோடி சேர்க்கவும்.</p>
+                            <div id="odd-even-visuals" class="my-4 flex flex-wrap justify-center items-center min-h-[100px] bg-gray-100 p-4 rounded-lg"></div>
+                            <p class="text-center text-gray-600 my-2">அனைத்து மணிகளையும் ஜோடி சேர்த்த பிறகு, இது ஒற்றை எண்ணா அல்லது இரட்டை எண்ணா?</p>
+                            <div class="flex justify-center space-x-4 mt-4">
+                                <button class="bg-pink-400 text-white px-6 py-3 rounded-lg text-xl" onclick="checkOddEvenAnswer(event, 'odd')">ஒற்றை</button>
+                                <button class="bg-indigo-400 text-white px-6 py-3 rounded-lg text-xl" onclick="checkOddEvenAnswer(event, 'even')">இரட்டை</button>
+                            </div>
+                            <div id="odd-even-feedback" class="feedback"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 3: கல்விசார் செயல்பாடுகள் -->
+            <div id="tab3" class="tab-content hidden">
+                 <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div class="simulation-card simulation-card-interactive" onclick="startShapesQuiz()">
+                        <h3 class="text-xl font-bold text-green-700">வாழ்க்கை கணக்குகள் (வடிவங்கள்)</h3>
+                        <p class="mt-2 text-gray-600">அன்றாடப் பொருட்களின் வடிவங்களைக் கண்டறியுங்கள்.</p>
+                    </div>
+                     <div class="simulation-card simulation-card-interactive" onclick="startDrawingGame()">
+                        <h3 class="text-xl font-bold text-cyan-700">வடிவங்களை வரைதல்</h3>
+                        <p class="mt-2 text-gray-600">வடிவங்களைத் தேர்ந்தெடுத்து வரையுங்கள்.</p>
+                    </div>
+                    <div class="simulation-card simulation-card-interactive" onclick="startBarGraphGame()">
+                         <h3 class="text-xl font-bold text-purple-700">பட்டை வரைபடம்</h3>
+                        <p class="mt-2 text-gray-600">பழங்களின் எண்ணிக்கைக்கு பட்டை வரைபடம் வரைக.</p>
+                    </div>
+                    <div class="simulation-card simulation-card-interactive lg:col-span-3" onclick="startMentalMath()">
+                         <h3 class="text-xl font-bold text-teal-700">மனக்கணக்கு</h3>
+                        <p class="mt-2 text-gray-600">உங்கள் மனக்கணிதத் திறனை சோதிக்கவும்.</p>
+                    </div>
+                </div>
+
+                <!-- Shapes Quiz Container -->
+                <div id="shapes-quiz-container" class="mt-8 hidden"></div>
+                <!-- Drawing Game Container -->
+                <div id="drawing-game-container" class="mt-8 hidden"></div>
+                <!-- Bar Graph Container -->
+                <div id="bar-graph-container" class="mt-8 hidden"></div>
+                <!-- Mental Math Container -->
+                <div id="mental-math-container" class="mt-8 hidden"></div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // --- Sound Synthesis ---
+        let synth; 
+        let audioStarted = false;
+
+        async function initAudio() {
+            if (!audioStarted && typeof Tone !== 'undefined' && Tone.context.state !== 'running') {
+                await Tone.start();
+                audioStarted = true;
+            }
+        }
+
+        const playSound = (note, duration) => {
+            if (!synth) return;
+            initAudio().then(() => {
+                synth.triggerRelease();
+                synth.triggerAttackRelease(note, duration);
+            });
+        };
+
+        const correctSound = () => playSound("C5", "8n");
+        const incorrectSound = () => playSound("C3", "8n");
+        const clickSound = () => playSound("C4", "16n");
+
+        // --- Tab Navigation ---
+        function openTab(tabId) {
+            clickSound();
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(tabId).classList.remove('hidden');
+            document.querySelector(`[onclick="openTab('${tabId}')"]`).classList.add('active');
+        }
+
+        // --- Tamil Number Names ---
+        const numberNames = {
+            1: 'ஒன்று', 2: 'இரண்டு', 3: 'மூன்று', 4: 'நான்கு', 5: 'ஐந்து', 6: 'ஆறு', 7: 'ஏழு', 8: 'எட்டு', 9: 'ஒன்பது', 10: 'பத்து',
+            11: 'பதினொன்று', 12: 'பன்னிரண்டு', 13: 'பதின்மூன்று', 14: 'பதினான்கு', 15: 'பதினைந்து', 16: 'பதினாறு', 17: 'பதினேழு', 18: 'பதினெட்டு', 19: 'பத்தொன்பது',
+            20: 'இருபது', 30: 'முப்பது', 40: 'நாற்பது', 50: 'ஐம்பது', 60: 'அறுபது', 70: 'எழுபது', 80: 'எண்பது', 90: 'தொண்ணூறு', 100: 'நூறு'
+        };
+        
+        const tensRoots = {
+            20: 'இருபத்து', 30: 'முப்பத்து', 40: 'நாற்பத்து', 50: 'ஐம்பத்து', 60: 'அறுபத்து', 70: 'எழுபத்து', 80: 'எண்பத்து', 90: 'தொண்ணூற்று'
+        };
+
+        function getNumberName(n) {
+            if (n > 100 || n < 1) return '';
+            if (numberNames[n]) return numberNames[n];
+            const tens = Math.floor(n / 10) * 10;
+            const ones = n % 10;
+            if (tensRoots[tens] && ones > 0) {
+                return tensRoots[tens] + ' ' + numberNames[ones];
+            }
+            return ''; 
+        }
+
+        // --- Tab 1: வாய்மொழி பயிற்சி ---
+
+        function generateTable() {
+            const tableNum = parseInt(document.getElementById('table-select').value);
+            const display = document.getElementById('table-display');
+            display.innerHTML = '';
+            for (let i = 1; i <= 10; i++) {
+                const row = document.createElement('div');
+                row.id = `row-${i}`;
+                row.className = 'table-row';
+                row.innerHTML = `
+                    <div class="flex items-center gap-2">
+                        <span class="text-xl font-semibold w-24">${i} x ${tableNum} = </span>
+                        <input type="number" id="input-${i}" class="p-2 border rounded w-20 text-center" oninput="checkTableAnswer(${i}, ${tableNum}, this)">
+                        <span id="feedback-icon-${i}" class="text-xl w-6"></span>
+                        <button class="bg-yellow-400 text-yellow-900 px-2 py-1 rounded-md text-sm" onclick="showTableHint(${i}, ${tableNum})">💡 உதவி</button>
+                    </div>
+                    <div id="visual-${i}" class="table-visual"></div>`;
+                display.appendChild(row);
+            }
+        }
+        
+        function showTableHint(i, tableNum) {
+            const visualDiv = document.getElementById(`visual-${i}`);
+            visualDiv.innerHTML = '';
+            for (let group = 0; group < i; group++) {
+                let groupHtml = '<div class="visual-dot-group">';
+                for (let dot = 0; dot < tableNum; dot++) {
+                    groupHtml += '<div class="visual-dot"></div>';
+                }
+                groupHtml += '</div>';
+                visualDiv.innerHTML += groupHtml;
+            }
+        }
+
+        function checkTableAnswer(i, tableNum, inputElement) {
+            const result = i * tableNum;
+            const userAnswer = parseInt(inputElement.value);
+            const row = document.getElementById(`row-${i}`);
+            const feedbackIcon = document.getElementById(`feedback-icon-${i}`);
+            if (userAnswer === result) {
+                feedbackIcon.textContent = '✅';
+                row.classList.add('correct');
+                showTableHint(i, tableNum);
+                inputElement.disabled = true;
+            } else {
+                feedbackIcon.textContent = '❌';
+                row.classList.remove('correct');
+            }
+        }
+
+        let speechTimeout = null;
+        function speak(text) {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                clearTimeout(speechTimeout);
+                speechTimeout = setTimeout(() => {
+                    const utterance = new SpeechSynthesisUtterance(text);
+                    utterance.lang = 'ta-IN';
+                    utterance.rate = 0.9;
+                    window.speechSynthesis.speak(utterance);
+                }, 50);
+            }
+        }
+        
+        let flashTimeout;
+        function showFlashMessage(text) {
+            const flash = document.getElementById('flash-message');
+            flash.textContent = text;
+            flash.classList.add('show');
+            clearTimeout(flashTimeout);
+            flashTimeout = setTimeout(() => {
+                flash.classList.remove('show');
+            }, 2500);
+        }
+
+        function setupNumberGrid(numbers) {
+            const grid = document.getElementById('number-grid');
+            grid.innerHTML = '';
+            if (!numbers) {
+                numbers = Array.from({ length: 100 }, (_, i) => i + 1);
+            }
+            numbers.forEach(i => {
+                const cell = document.createElement('div');
+                cell.textContent = i;
+                cell.className = 'number-grid-cell h-10 w-10 md:h-12 md:w-12';
+                cell.addEventListener('click', () => {
+                    clickSound();
+                    document.querySelectorAll('.number-grid-cell').forEach(c => c.classList.remove('highlight'));
+                    cell.classList.add('highlight');
+                    const textToDisplay = `${i} - ${getNumberName(i)}`;
+                    showFlashMessage(textToDisplay);
+                    speak(textToDisplay);
+                });
+                grid.appendChild(cell);
+            });
+        }
+        
+        function shuffleNumbers() {
+            clickSound();
+            let numbers = Array.from({ length: 100 }, (_, i) => i + 1);
+            for (let i = numbers.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [numbers[i], numbers[j]] = [numbers[j], numbers[i]];
+            }
+            setupNumberGrid(numbers);
+        }
+
+        function resetNumbers() {
+            clickSound();
+            setupNumberGrid();
+        }
+
+        // --- Tab 2: ஆசிரியர் செயல்பாடு ---
+        let currentNumberId, currentPlaceValue, currentPredSucc, currentCompare, currentSort, currentOddEven;
+        let numberIdCounter = 0;
+        let placeValueCounter = 0;
+        let predSuccCounter = 0;
+        let pvState = { tens: 0, ones: 0 };
+        let selectedBead = null;
+
+        function resetNumberIdGame(event) {
+            if(event) event.stopPropagation();
+            numberIdCounter = 0;
+            startNumberIdGame();
+        }
+        
+        function startNumberIdGame(isNext = false) {
+            if (!isNext) {
+                clickSound();
+                numberIdCounter = 0;
+            }
+            document.querySelectorAll('.simulation-card > div[id$="-game"]').forEach(el => el.classList.add('hidden'));
+            document.getElementById('number-id-game').classList.remove('hidden');
+            
+            numberIdCounter++;
+            document.getElementById('number-id-q-num').textContent = `கேள்வி ${numberIdCounter}`;
+            
+            currentNumberId = Math.floor(Math.random() * 99) + 1;
+            document.getElementById('number-id-question').textContent = `"${getNumberName(currentNumberId)}" - இந்த எண்ணை எழுதுக.`;
+            const answerInput = document.getElementById('number-id-answer');
+            answerInput.value = '';
+            answerInput.disabled = false;
+            document.getElementById('number-id-feedback').innerHTML = '';
+        }
+
+        function checkNumberIdAnswer(event) {
+            event.stopPropagation();
+            const answer = document.getElementById('number-id-answer').value;
+            const feedback = document.getElementById('number-id-feedback');
+            if (parseInt(answer) === currentNumberId) {
+                feedback.innerHTML = 'சரியான விடை!';
+                feedback.className = 'feedback correct';
+                correctSound();
+                document.getElementById('number-id-answer').disabled = true;
+                const nextButton = document.createElement('button');
+                nextButton.textContent = 'அடுத்த கேள்வி';
+                nextButton.className = 'ml-4 bg-blue-500 text-white px-3 py-1 rounded-lg text-base';
+                nextButton.onclick = () => startNumberIdGame(true);
+                feedback.appendChild(nextButton);
+            } else {
+                feedback.textContent = 'தவறு, மீண்டும் முயற்சிக்கவும்.';
+                feedback.className = 'feedback incorrect';
+                incorrectSound();
+            }
+        }
+        
+        function resetPlaceValueGame(event) {
+            if(event) event.stopPropagation();
+            placeValueCounter = 0;
+            startPlaceValueGame();
+        }
+
+        function startPlaceValueGame(isNext = false) {
+            if (!isNext) {
+                clickSound();
+                placeValueCounter = 0;
+            }
+            document.querySelectorAll('.simulation-card > div[id$="-game"]').forEach(el => el.classList.add('hidden'));
+            document.getElementById('place-value-game').classList.remove('hidden');
+
+            placeValueCounter++;
+            document.getElementById('place-value-q-num').textContent = `கேள்வி ${placeValueCounter}`;
+
+            currentPlaceValue = Math.floor(Math.random() * 90) + 10;
+            document.getElementById('place-value-question').textContent = `${currentPlaceValue} என்ற எண்ணை உருவாக்குக`;
+            
+            pvState = { tens: 0, ones: 0 };
+            updateBeadsDisplay();
+            document.getElementById('place-value-feedback').innerHTML = '';
+        }
+        
+        function updateBeads(type, amount, event) {
+            event.stopPropagation();
+            clickSound();
+            if (type === 'tens') {
+                pvState.tens = Math.max(0, Math.min(9, pvState.tens + amount));
+            } else if (type === 'ones') {
+                pvState.ones = Math.max(0, Math.min(9, pvState.ones + amount));
+            }
+            updateBeadsDisplay();
+        }
+
+        function updateBeadsDisplay() {
+            const tensContainer = document.getElementById('pv-tens-beads');
+            const onesContainer = document.getElementById('pv-ones-beads');
+            tensContainer.innerHTML = '';
+            onesContainer.innerHTML = '';
+
+            for(let i = 0; i < pvState.tens; i++) {
+                tensContainer.innerHTML += '<div class="pv-bead pv-tens-bead"></div>';
+            }
+            for(let i = 0; i < pvState.ones; i++) {
+                onesContainer.innerHTML += '<div class="pv-bead pv-ones-bead"></div>';
+            }
+            
+            const tensValue = pvState.tens * 10;
+            const onesValue = pvState.ones;
+
+            document.getElementById('pv-tens-count').innerHTML = `${pvState.tens} &times; 10 = <span class="text-2xl">${tensValue}</span>`;
+            document.getElementById('pv-ones-count').innerHTML = `${pvState.ones} &times; 1 = <span class="text-2xl">${onesValue}</span>`;
+            
+            const totalSpan = document.getElementById('pv-total');
+            if (tensValue > 0 || onesValue > 0) {
+                totalSpan.textContent = `${tensValue} + ${onesValue} = ${tensValue + onesValue}`;
+            } else {
+                totalSpan.textContent = '0';
+            }
+        }
+
+        function checkPlaceValueAnswer(event) {
+            event.stopPropagation();
+            const totalValue = (pvState.tens * 10) + pvState.ones;
+            const feedback = document.getElementById('place-value-feedback');
+            if (totalValue === currentPlaceValue) {
+                feedback.innerHTML = 'சரியான விடை!';
+                feedback.className = 'feedback correct';
+                correctSound();
+                const nextButton = document.createElement('button');
+                nextButton.textContent = 'அடுத்த கேள்வி';
+                nextButton.className = 'ml-4 bg-blue-500 text-white px-3 py-1 rounded-lg text-base';
+                nextButton.onclick = () => startPlaceValueGame(true);
+                feedback.appendChild(nextButton);
+            } else {
+                feedback.textContent = `தவறு. மீண்டும் முயற்சிக்கவும்.`;
+                feedback.className = 'feedback incorrect';
+                incorrectSound();
+            }
+        }
+        
+        function resetPredSuccGame(event) {
+            if(event) event.stopPropagation();
+            predSuccCounter = 0;
+            startPredSuccGame();
+        }
+
+        function startPredSuccGame(isNext = false) {
+             if (!isNext) {
+                clickSound();
+                predSuccCounter = 0;
+            }
+            document.querySelectorAll('.simulation-card > div[id$="-game"]').forEach(el => el.classList.add('hidden'));
+            document.getElementById('pred-succ-game').classList.remove('hidden');
+            
+            predSuccCounter++;
+            document.getElementById('pred-succ-q-num').textContent = `கேள்வி ${predSuccCounter}`;
+            
+            currentPredSucc = Math.floor(Math.random() * 95) + 3; // 3 to 97
+            document.getElementById('pred-succ-question').innerHTML = `<span class="text-red-600 font-bold">${currentPredSucc}</span>-ன் முன்னி மற்றும் தொடரியைக் கண்டுபிடிக்கவும்.`;
+            
+            clearPredSuccAnswers(null);
+        }
+
+        function fillPredSuccAnswer(number, buttonElement) {
+            clickSound();
+            const predBox = document.getElementById('pred-answer-box');
+            const succBox = document.getElementById('succ-answer-box');
+
+            if (predBox.textContent === '?') {
+                predBox.textContent = number;
+                buttonElement.classList.add('disabled');
+            } else if (succBox.textContent === '?') {
+                succBox.textContent = number;
+                buttonElement.classList.add('disabled');
+            }
+        }
+        
+        function clearPredSuccAnswers(event) {
+            if(event) {
+                event.stopPropagation();
+                clickSound();
+            }
+            document.getElementById('pred-answer-box').textContent = '?';
+            document.getElementById('succ-answer-box').textContent = '?';
+            document.getElementById('pred-succ-feedback').innerHTML = '';
+            
+            const numberLineDiv = document.getElementById('pred-succ-number-line');
+            numberLineDiv.innerHTML = '';
+            for (let i = currentPredSucc - 4; i <= currentPredSucc + 4; i++) {
+                const button = document.createElement('button');
+                button.textContent = i;
+                button.id = `nl-btn-${i}`;
+                button.className = 'number-line-button';
+                button.onclick = (e) => {
+                    e.stopPropagation();
+                    fillPredSuccAnswer(i, e.target);
+                };
+                numberLineDiv.appendChild(button);
+            }
+        }
+
+        function checkPredSuccAnswer(event) {
+            event.stopPropagation();
+            const pred = parseInt(document.getElementById('pred-answer-box').textContent);
+            const succ = parseInt(document.getElementById('succ-answer-box').textContent);
+            const feedback = document.getElementById('pred-succ-feedback');
+
+            if (pred === currentPredSucc - 1 && succ === currentPredSucc + 1) {
+                feedback.innerHTML = 'சரியான விடை!';
+                feedback.className = 'feedback correct';
+                correctSound();
+                
+                document.querySelectorAll('#pred-succ-number-line .number-line-button').forEach(btn => {
+                    const num = parseInt(btn.textContent);
+                    if (num === currentPredSucc - 1 || num === currentPredSucc + 1) {
+                        btn.classList.add('bg-green-500', 'text-white');
+                    }
+                });
+
+                const nextButton = document.createElement('button');
+                nextButton.textContent = 'அடுத்த கேள்வி';
+                nextButton.className = 'ml-4 bg-blue-500 text-white px-3 py-1 rounded-lg text-base';
+                nextButton.onclick = () => startPredSuccGame(true);
+                feedback.appendChild(nextButton);
+            } else {
+                feedback.textContent = 'தவறு, மீண்டும் முயற்சிக்கவும்.';
+                feedback.className = 'feedback incorrect';
+                incorrectSound();
+            }
+        }
+        
+        function startCompareGame() {
+            clickSound();
+            document.querySelectorAll('.simulation-card > div[id$="-game"]').forEach(el => el.classList.add('hidden'));
+            document.getElementById('compare-game').classList.remove('hidden');
+            const num1 = Math.floor(Math.random() * 99) + 1;
+            let num2 = Math.floor(Math.random() * 99) + 1;
+            if (num1 === num2) num2 = Math.floor(Math.random() * 99) + 1;
+            currentCompare = { num1, num2 };
+            document.getElementById('compare-num1-plate').textContent = num1;
+            document.getElementById('compare-num2-plate').textContent = num2;
+            document.getElementById('compare-feedback').textContent = '';
+            document.getElementById('compare-beam').style.transform = 'rotate(0deg)';
+            document.querySelectorAll('#compare-game button').forEach(b => b.disabled = false);
+        }
+        
+        function checkCompareAnswer(event, symbol) {
+            event.stopPropagation();
+            const { num1, num2 } = currentCompare;
+            let correctSymbol;
+            if (num1 < num2) correctSymbol = '<';
+            else if (num1 > num2) correctSymbol = '>';
+            else correctSymbol = '=';
+            const feedback = document.getElementById('compare-feedback');
+            const beam = document.getElementById('compare-beam');
+
+            if (symbol === correctSymbol) {
+                feedback.textContent = 'சரியான விடை!';
+                feedback.className = 'feedback correct';
+                correctSound();
+                if(symbol === '<') { // num1 is less, num2 is greater, right side goes down
+                    beam.style.transform = 'rotate(10deg)';
+                } else if (symbol === '>') { // num1 is greater, num2 is less, left side goes down
+                    beam.style.transform = 'rotate(-10deg)';
+                }
+                document.querySelectorAll('#compare-game button').forEach(b => b.disabled = true);
+                setTimeout(startCompareGame, 2500);
+            } else {
+                feedback.textContent = 'தவறு, மீண்டும் முயற்சிக்கவும்.';
+                feedback.className = 'feedback incorrect';
+                incorrectSound();
+                beam.classList.add('shake');
+                setTimeout(() => beam.classList.remove('shake'), 400);
+            }
+        }
+
+        function startSortGame() {
+            clickSound();
+            document.querySelectorAll('.simulation-card > div[id$="-game"]').forEach(el => el.classList.add('hidden'));
+            document.getElementById('sort-game').classList.remove('hidden');
+            const numbers = new Set();
+            while(numbers.size < 4) {
+                numbers.add(Math.floor(Math.random() * 99) + 1);
+            }
+            currentSort = {
+                numbers: Array.from(numbers),
+                isAscending: Math.random() > 0.5
+            };
+            document.getElementById('sort-instruction').textContent = currentSort.isAscending ? 'ஏறுவரிசையில் அடுக்கவும்:' : 'இறங்குவரிசையில் அடுக்கவும்:';
+            const numbersDiv = document.getElementById('sort-numbers');
+            numbersDiv.innerHTML = '';
+            currentSort.numbers.forEach(n => {
+                numbersDiv.innerHTML += `<div class="sortable-number" draggable="true" id="num-${n}">${n}</div>`;
+            });
+            document.getElementById('sort-dropzone').innerHTML = '';
+            document.getElementById('sort-feedback').textContent = '';
+            addDragDropListeners();
+        }
+        
+        function showSortHint(event) {
+            event.stopPropagation();
+            clickSound();
+            const dropzone = document.getElementById('sort-dropzone');
+            const source = document.getElementById('sort-numbers');
+            const placedNumbers = Array.from(dropzone.children).map(el => parseInt(el.textContent));
+            const sourceNumbers = Array.from(source.children).map(el => parseInt(el.textContent));
+            
+            let nextNumber;
+            if (currentSort.isAscending) {
+                nextNumber = Math.min(...sourceNumbers);
+            } else {
+                nextNumber = Math.max(...sourceNumbers);
+            }
+            
+            const hintElement = document.getElementById(`num-${nextNumber}`);
+            if (hintElement) {
+                hintElement.classList.add('ring-4', 'ring-yellow-400');
+                setTimeout(() => {
+                    hintElement.classList.remove('ring-4', 'ring-yellow-400');
+                }, 1500);
+            }
+        }
+
+        function addDragDropListeners() {
+            const draggables = document.querySelectorAll('.sortable-number');
+            const dropzone = document.getElementById('sort-dropzone');
+            draggables.forEach(draggable => {
+                draggable.addEventListener('dragstart', (e) => {
+                    draggable.classList.add('opacity-50');
+                    e.dataTransfer.setData('text/plain', e.target.id);
+                });
+                draggable.addEventListener('dragend', () => { draggable.classList.remove('opacity-50'); });
+            });
+            [dropzone, document.getElementById('sort-numbers')].forEach(zone => {
+                zone.addEventListener('dragover', e => { e.preventDefault(); });
+                zone.addEventListener('drop', e => {
+                    e.preventDefault();
+                    const id = e.dataTransfer.getData('text/plain');
+                    const draggableElement = document.getElementById(id);
+                    if (draggableElement) {
+                       zone.appendChild(draggableElement);
+                       if (zone.id === 'sort-dropzone') checkSortOrder();
+                    }
+                });
+            });
+        }
+
+        function checkSortOrder() {
+            const dropzone = document.getElementById('sort-dropzone');
+            if (dropzone.children.length === currentSort.numbers.length) {
+                const sortedNumbers = Array.from(dropzone.children).map(el => parseInt(el.textContent));
+                const expectedOrder = currentSort.isAscending ? [...currentSort.numbers].sort((a,b) => a-b) : [...currentSort.numbers].sort((a,b) => b-a);
+                const isCorrect = JSON.stringify(sortedNumbers) === JSON.stringify(expectedOrder);
+                const feedback = document.getElementById('sort-feedback');
+                if (isCorrect) {
+                    feedback.textContent = 'சரியான விடை!';
+                    feedback.className = 'feedback correct';
+                    correctSound();
+                    setTimeout(startSortGame, 2000);
+                } else {
+                    feedback.textContent = 'தவறு, மீண்டும் முயற்சிக்கவும்.';
+                    feedback.className = 'feedback incorrect';
+                    incorrectSound();
+                }
+            }
+        }
+        
+        function startOddEvenGame() {
+            clickSound();
+            document.querySelectorAll('.simulation-card > div[id$="-game"]').forEach(el => el.classList.add('hidden'));
+            document.getElementById('odd-even-game').classList.remove('hidden');
+            currentOddEven = Math.floor(Math.random() * 10) + 2; // Keep numbers small for visuals
+            document.getElementById('odd-even-number').textContent = currentOddEven;
+            const visualDiv = document.getElementById('odd-even-visuals');
+            visualDiv.innerHTML = '';
+            for(let i=0; i < currentOddEven; i++) {
+                const bead = document.createElement('div');
+                bead.className = 'odd-even-bead';
+                bead.onclick = handleBeadClick;
+                visualDiv.appendChild(bead);
+            }
+            selectedBead = null;
+            document.getElementById('odd-even-feedback').textContent = '';
+        }
+        
+        function handleBeadClick(event) {
+            const clickedBead = event.target;
+            if (clickedBead.classList.contains('paired')) return;
+            clickSound();
+
+            if (selectedBead) {
+                if (selectedBead === clickedBead) {
+                    selectedBead.classList.remove('selected');
+                    selectedBead = null;
+                } else {
+                    selectedBead.classList.remove('selected');
+                    selectedBead.classList.add('paired');
+                    clickedBead.classList.add('paired');
+                    selectedBead = null;
+                }
+            } else {
+                selectedBead = clickedBead;
+                selectedBead.classList.add('selected');
+            }
+        }
+
+        function checkOddEvenAnswer(event, choice) {
+            event.stopPropagation();
+            const isEven = currentOddEven % 2 === 0;
+            let isCorrect = (isEven && choice === 'even') || (!isEven && choice === 'odd');
+            const feedback = document.getElementById('odd-even-feedback');
+
+            if (isCorrect) {
+                feedback.textContent = 'சரியான விடை!';
+                feedback.className = 'feedback correct';
+                correctSound();
+                setTimeout(startOddEvenGame, 2500);
+            } else {
+                feedback.textContent = 'தவறு, மீண்டும் முயற்சிக்கவும்.';
+                feedback.className = 'feedback incorrect';
+                incorrectSound();
+            }
+        }
+
+        // --- Tab 3: கல்விசார் செயல்பாடுகள் ---
+        const shapesQuizData = [
+            { question: "உங்கள் கணிதப் புத்தகத்தின் வடிவம் என்ன?", options: ["வட்டம்", "சதுரம்", "செவ்வகம்"], answer: "செவ்வகம்", explanation: "புத்தகத்தின் எதிர் எதிர் பக்கங்கள் சமமாக இருப்பதால், அது செவ்வகம்." },
+            { question: "ஒரு கடிகாரத்தின் முகப்பு பொதுவாக என்ன வடிவில் இருக்கும்?", options: ["முக்கோணம்", "வட்டம்", "சதுரம்"], answer: "வட்டம்", explanation: "பெரும்பாலான கடிகாரங்கள் வட்ட வடிவில் இருக்கும்." },
+            { question: "ஒரு கேரம் போர்டின் வடிவம் என்ன?", options: ["செவ்வகம்", "சதுரம்", "வட்டம்"], answer: "சதுரம்", explanation: "கேரம் போர்டின் நான்கு பக்கங்களும் சமமாக இருப்பதால் அது ஒரு சதுரம்." },
+            { question: "ஒரு ஐஸ்கிரீம் கோன் என்ன வடிவம்?", options: ["கூம்பு", "உருளை", "கோளம்"], answer: "கூம்பு", explanation: "ஐஸ்கிரீம் கோன் ஒரு கூம்பு வடிவத்தில் உள்ளது." },
+            { question: "உங்கள் வீட்டு கதவின் வடிவம் என்ன?", options: ["சதுரம்", "செவ்வகம்", "முக்கோணம்"], answer: "செவ்வகம்", explanation: "கதவுகள் பொதுவாக செவ்வக வடிவில் இருக்கும்." }
+        ];
+        let currentShapeQuizQuestion = 0;
+
+        function startShapesQuiz() {
+            clickSound();
+            const container = document.getElementById('shapes-quiz-container');
+            container.innerHTML = `
+                <div class="simulation-card">
+                    <h3 class="text-2xl font-bold text-center mb-4 text-green-700">வாழ்க்கை கணக்குகள் (வடிவங்கள்)</h3>
+                    <div id="shape-quiz-content"></div>
+                </div>
+            `;
+            container.classList.remove('hidden');
+            document.getElementById('bar-graph-container').classList.add('hidden');
+            document.getElementById('mental-math-container').classList.add('hidden');
+            document.getElementById('drawing-game-container').classList.add('hidden');
+            displayShapeQuestion();
+        }
+
+        function displayShapeQuestion() {
+            const content = document.getElementById('shape-quiz-content');
+            const q = shapesQuizData[currentShapeQuizQuestion];
+            let optionsHtml = '';
+            q.options.forEach(opt => {
+                optionsHtml += `<button class="bg-gray-200 hover:bg-gray-300 text-lg p-3 rounded-lg w-full text-left" onclick="checkShapeAnswer('${opt}')">${opt}</button>`;
+            });
+            content.innerHTML = `
+                <p class="text-xl font-semibold mb-4">${currentShapeQuizQuestion + 1}. ${q.question}</p>
+                <div class="space-y-3">${optionsHtml}</div>
+                <div id="shape-quiz-feedback" class="feedback"></div>
+            `;
+        }
+        
+        function checkShapeAnswer(selected) {
+            const q = shapesQuizData[currentShapeQuizQuestion];
+            const feedback = document.getElementById('shape-quiz-feedback');
+            if (selected === q.answer) {
+                feedback.innerHTML = `சரியான விடை! <br> <span class="text-base font-normal">${q.explanation}</span>`;
+                feedback.className = 'feedback correct';
+                correctSound();
+                 setTimeout(() => {
+                    currentShapeQuizQuestion = (currentShapeQuizQuestion + 1) % shapesQuizData.length;
+                    displayShapeQuestion();
+                }, 3000);
+            } else {
+                feedback.textContent = 'தவறு, மீண்டும் முயற்சிக்கவும்.';
+                feedback.className = 'feedback incorrect';
+                incorrectSound();
+            }
+        }
+
+        function startBarGraphGame() {
+            clickSound();
+            const container = document.getElementById('bar-graph-container');
+            container.innerHTML = `
+                <div class="simulation-card">
+                    <h3 class="text-2xl font-bold text-center mb-4 text-purple-700">பட்டை வரைபடம்</h3>
+                     <div id="bar-graph-data" class="text-left mb-4 p-4 bg-gray-50 rounded-lg"></div>
+                     <div class="w-full h-96 bg-white p-4 rounded-lg border-2 border-gray-200">
+                        <div id="bar-graph-visual" class="relative w-full h-full flex items-end justify-around border-l border-b border-gray-300">
+                            <!-- Grid lines and bars will be generated by JS -->
+                        </div>
+                    </div>
+                     <div class="mt-4 flex justify-center">
+                        <button onclick="checkBarGraph()" class="bg-purple-500 text-white px-4 py-2 rounded-lg">சரிபார்</button>
+                     </div>
+                     <div id="bar-graph-feedback" class="feedback"></div>
+                </div>
+            `;
+            container.classList.remove('hidden');
+            document.getElementById('shapes-quiz-container').classList.add('hidden');
+            document.getElementById('mental-math-container').classList.add('hidden');
+            document.getElementById('drawing-game-container').classList.add('hidden');
+            generateBarGraph();
+        }
+
+        let barGraphData;
+        function generateBarGraph() {
+            const dataItems = ['ஆப்பிள்', 'ஆரஞ்சு', 'வாழை'];
+            const barColors = ['#ef4444', '#f97316', '#eab308']; // Red, Orange, Yellow
+            barGraphData = {};
+            const dataDiv = document.getElementById('bar-graph-data');
+            dataDiv.innerHTML = '<p class="font-bold">ஒரு பழக்கடையில் உள்ள பழங்கள்:</p>';
+            
+            const visualDiv = document.getElementById('bar-graph-visual');
+            visualDiv.innerHTML = ''; // Clear previous bars and gridlines
+
+            // Add grid lines
+            for (let i = 1; i <= 10; i++) {
+                visualDiv.innerHTML += `<div class="absolute w-full border-t border-dashed border-gray-200" style="bottom: ${i * 10}%;"></div>`;
+            }
+            
+            // Add bar containers
+            let barHtml = '';
+            dataItems.forEach((item, index) => {
+                const count = Math.floor(Math.random() * 8) + 1;
+                barGraphData[item] = { correct: count, current: 0 };
+                const p = document.createElement('p');
+                p.textContent = `${item}: ${count}`;
+                dataDiv.appendChild(p);
+                const color = barColors[index];
+
+                barHtml += `
+                    <div class="flex flex-col items-center h-full justify-end z-10">
+                        <div id="bar-${item}" class="w-16 rounded-t-lg" style="height: 0%; transition: height 0.3s ease; background-color: ${color};"></div>
+                        <div class="flex items-center gap-2 mt-2">
+                            <button class="w-8 h-8 rounded-full bg-red-200 text-lg" onclick="updateBar('${item}', -1)">-</button>
+                            <span id="count-${item}" class="font-bold text-lg w-8">0</span>
+                            <button class="w-8 h-8 rounded-full bg-green-200 text-lg" onclick="updateBar('${item}', 1)">+</button>
+                        </div>
+                    </div>
+                `;
+            });
+            visualDiv.innerHTML += barHtml;
+            document.getElementById('bar-graph-feedback').textContent = '';
+        }
+
+        function updateBar(item, amount) {
+            clickSound();
+            const data = barGraphData[item];
+            data.current = Math.max(0, Math.min(10, data.current + amount));
+            document.getElementById(`bar-${item}`).style.height = `${data.current * 10}%`;
+            document.getElementById(`count-${item}`).textContent = data.current;
+        }
+        
+        function checkBarGraph() {
+            let allCorrect = true;
+            for (const key in barGraphData) {
+                if (barGraphData[key].correct !== barGraphData[key].current) {
+                    allCorrect = false;
+                    break;
+                }
+            }
+            const feedback = document.getElementById('bar-graph-feedback');
+            if (allCorrect) {
+                 feedback.textContent = 'சரியான விடை! வரைபடம் சரியாக உள்ளது.';
+                 feedback.className = 'feedback correct';
+                 correctSound();
+                 setTimeout(generateBarGraph, 2000);
+            } else {
+                 feedback.textContent = 'தவறு, பட்டைகளின் உயரத்தை சரிபார்க்கவும்.';
+                 feedback.className = 'feedback incorrect';
+                 incorrectSound();
+            }
+        }
+        
+        // --- Mental Math ---
+        let mentalMathQuestions = [];
+        let currentMentalMathQ = 0;
+
+        function startMentalMath() {
+            clickSound();
+            const container = document.getElementById('mental-math-container');
+            container.innerHTML = `
+                 <div class="simulation-card">
+                    <h3 class="text-2xl font-bold text-center mb-4 text-teal-700">மனக்கணக்கு</h3>
+                    <div id="mental-math-content"></div>
+                </div>
+            `;
+            container.classList.remove('hidden');
+            document.getElementById('shapes-quiz-container').classList.add('hidden');
+            document.getElementById('bar-graph-container').classList.add('hidden');
+            document.getElementById('drawing-game-container').classList.add('hidden');
+            generateMentalMathQuestions();
+            displayMentalMathQuestion();
+        }
+        
+        function generateMentalMathQuestions() {
+            mentalMathQuestions = [];
+            for (let i = 0; i < 50; i++) {
+                const type = i % 6; // Cycle through 6 types of questions
+                let question = {};
+                if (type === 0) { // Addition
+                    const n1 = (Math.floor(Math.random() * 8) + 1) * 10;
+                    const n2 = Math.floor(Math.random() * 9) + 1;
+                    question = { type: 'add', text: `${n1} + ${n2} = ?`, answer: n1 + n2, n1, n2 };
+                } else if (type === 1) { // Subtraction
+                    const n1 = Math.floor(Math.random() * 50) + 20;
+                    const n2 = Math.floor(Math.random() * 10) + 1;
+                    question = { type: 'sub', text: `${n1} - ${n2} = ?`, answer: n1 - n2, n1, n2 };
+                } else if (type === 2) { // Predecessor
+                    const n = Math.floor(Math.random() * 98) + 2;
+                    question = { type: 'pred', text: `${n}-ன் முன்னி என்ன?`, answer: n - 1, n };
+                } else if (type === 3) { // Successor
+                    const n = Math.floor(Math.random() * 98) + 1;
+                    question = { type: 'succ', text: `${n}-ன் தொடரி என்ன?`, answer: n + 1, n };
+                } else if (type === 4) { // Middle Number
+                    const n = Math.floor(Math.random() * 96) + 2;
+                    question = { type: 'mid', text: `${n - 1}-க்கும் ${n + 1}-க்கும் இடையில் உள்ள எண் என்ன?`, answer: n, n };
+                } else { // Multiplication
+                    const n1 = Math.floor(Math.random() * 5) + 1;
+                    const n2 = Math.floor(Math.random() * 9) + 1;
+                    question = { type: 'mul', text: `${n1} x ${n2} = ?`, answer: n1 * n2, n1, n2 };
+                }
+                mentalMathQuestions.push(question);
+            }
+        }
+
+        function displayMentalMathQuestion() {
+            const q = mentalMathQuestions[currentMentalMathQ];
+            const content = document.getElementById('mental-math-content');
+            content.innerHTML = `
+                <div class="flex justify-between items-center mb-4">
+                    <p class="font-bold text-lg">கேள்வி ${currentMentalMathQ + 1} / 50</p>
+                    <button onclick="resetMentalMath()" class="text-sm bg-red-500 text-white px-2 py-1 rounded">மீண்டும் தொடங்கு</button>
+                </div>
+                <p class="text-2xl font-bold mb-4">${q.text}</p>
+                <input type="number" id="mental-math-answer" class="p-2 border rounded w-full text-center text-xl">
+                <div class="mt-4 flex justify-center gap-4">
+                    <button onclick="checkMentalMathAnswer()" class="bg-green-500 text-white px-4 py-2 rounded-lg">சரிபார்</button>
+                    <button onclick="showMentalMathHint()" class="bg-yellow-400 text-black px-4 py-2 rounded-lg">💡 உதவி</button>
+                </div>
+                <div id="mental-math-hint" class="hint-visuals hidden"></div>
+                <div id="mental-math-feedback" class="feedback"></div>
+                <div class="mt-4 flex justify-between">
+                    <button onclick="navigateMentalMath(-1)" class="bg-gray-300 px-4 py-2 rounded-lg">&lt;&lt; முன்பு</button>
+                    <button onclick="navigateMentalMath(1)" class="bg-gray-300 px-4 py-2 rounded-lg">அடுத்து &gt;&gt;</button>
+                </div>
+            `;
+        }
+        
+        function resetMentalMath() {
+            currentMentalMathQ = 0;
+            displayMentalMathQuestion();
+        }
+
+        function navigateMentalMath(dir) {
+            currentMentalMathQ += dir;
+            if (currentMentalMathQ < 0) currentMentalMathQ = 49;
+            if (currentMentalMathQ > 49) currentMentalMathQ = 0;
+            displayMentalMathQuestion();
+        }
+        
+        function showMentalMathHint() {
+            const q = mentalMathQuestions[currentMentalMathQ];
+            const hintDiv = document.getElementById('mental-math-hint');
+            hintDiv.classList.remove('hidden');
+            let html = '';
+            if (q.type === 'add') {
+                const tens = Math.floor(q.n1 / 10);
+                const ones = q.n2;
+                html = `<div class="flex items-center justify-center flex-wrap">`;
+                for(let i=0; i < tens; i++) html += '<div class="w-4 h-16 bg-orange-400 rounded m-1"></div>';
+                html += '<span class="text-2xl font-bold mx-2">+</span>';
+                for(let i=0; i < ones; i++) html += '<div class="w-4 h-4 bg-blue-400 rounded-full m-1"></div>';
+                html += '</div>';
+            } else if (q.type === 'sub') {
+                html = `<div class="flex items-center justify-center flex-wrap">`;
+                for(let i=0; i < q.n1; i++) {
+                    html += `<div class="w-4 h-4 bg-blue-400 rounded-full m-1 ${i >= (q.n1 - q.n2) ? 'opacity-30' : ''}"></div>`;
+                }
+                html += '</div>';
+            } else if (q.type === 'pred' || q.type === 'succ' || q.type === 'mid') {
+                 html = `<div class="number-line-container">`;
+                 for(let i = q.n - 2; i <= q.n + 2; i++) {
+                     let highlightClass = '';
+                     if ((q.type === 'pred' && i === q.answer) || (q.type === 'succ' && i === q.answer) || (q.type === 'mid' && i === q.answer)) {
+                         highlightClass = 'bg-yellow-300';
+                     }
+                     html += `<div class="w-12 h-12 flex justify-center items-center rounded-full border-2 ${highlightClass}">${i}</div>`;
+                 }
+                 html += `</div>`;
+            } else if (q.type === 'mul') {
+                 html = `<div class="flex flex-col items-center gap-2">`;
+                 for(let i=0; i < q.n1; i++) {
+                     html += '<div class="flex gap-1">';
+                     for(let j=0; j < q.n2; j++) {
+                         html += '<div class="w-4 h-4 bg-purple-400 rounded-full"></div>';
+                     }
+                     html += '</div>';
+                 }
+                 html += `</div>`;
+            }
+            hintDiv.innerHTML = html;
+        }
+        
+        function checkMentalMathAnswer() {
+            const q = mentalMathQuestions[currentMentalMathQ];
+            const answer = parseInt(document.getElementById('mental-math-answer').value);
+            const feedback = document.getElementById('mental-math-feedback');
+            if (answer === q.answer) {
+                feedback.textContent = 'சரியான விடை!';
+                feedback.className = 'feedback correct';
+                correctSound();
+            } else {
+                feedback.textContent = 'தவறு, மீண்டும் முயற்சிக்கவும்.';
+                feedback.className = 'feedback incorrect';
+                incorrectSound();
+            }
+        }
+        
+        // --- Drawing Game ---
+        let drawingCanvas, drawingCtx, isDrawing, startX, startY, currentShape, currentColor, shapesOnCanvas;
+        
+        function startDrawingGame() {
+            clickSound();
+            const container = document.getElementById('drawing-game-container');
+            container.innerHTML = `
+                <div class="simulation-card">
+                    <h3 class="text-2xl font-bold text-center mb-4 text-cyan-700">வடிவங்களை வரைதல்</h3>
+                    <div id="drawing-toolbar" class="flex flex-wrap justify-center items-center gap-4 mb-4 p-2 bg-gray-100 rounded-lg">
+                        <button id="shape-rect" class="toolbar-btn active" onclick="setDrawingTool('rect')">செவ்வகம்</button>
+                        <button id="shape-circle" class="toolbar-btn" onclick="setDrawingTool('circle')">வட்டம்</button>
+                        <button id="shape-triangle" class="toolbar-btn" onclick="setDrawingTool('triangle')">முக்கோணம்</button>
+                        <div class="h-8 border-l border-gray-300"></div>
+                        <div id="color-palette" class="flex gap-2">
+                            <div class="color-swatch active" style="background-color: #ef4444;" onclick="setDrawingColor('#ef4444', this)"></div>
+                            <div class="color-swatch" style="background-color: #3b82f6;" onclick="setDrawingColor('#3b82f6', this)"></div>
+                            <div class="color-swatch" style="background-color: #22c55e;" onclick="setDrawingColor('#22c55e', this)"></div>
+                            <div class="color-swatch" style="background-color: #f97316;" onclick="setDrawingColor('#f97316', this)"></div>
+                        </div>
+                         <div class="h-8 border-l border-gray-300"></div>
+                        <button class="toolbar-btn" onclick="undoDrawing()">செயல்தவிர்</button>
+                        <button class="toolbar-btn" onclick="clearDrawing()">அழி</button>
+                    </div>
+                    <canvas id="drawing-canvas" class="w-full h-96 bg-white"></canvas>
+                </div>
+            `;
+            container.classList.remove('hidden');
+            document.getElementById('shapes-quiz-container').classList.add('hidden');
+            document.getElementById('bar-graph-container').classList.add('hidden');
+            document.getElementById('mental-math-container').classList.add('hidden');
+            initDrawingCanvas();
+        }
+
+        function initDrawingCanvas() {
+            drawingCanvas = document.getElementById('drawing-canvas');
+            const container = drawingCanvas.parentElement;
+            drawingCanvas.width = container.offsetWidth;
+            drawingCanvas.height = 384; // h-96
+            drawingCtx = drawingCanvas.getContext('2d');
+            
+            isDrawing = false;
+            currentShape = 'rect';
+            currentColor = '#ef4444';
+            shapesOnCanvas = [];
+
+            drawingCanvas.addEventListener('mousedown', startDraw);
+            drawingCanvas.addEventListener('mousemove', draw);
+            drawingCanvas.addEventListener('mouseup', stopDraw);
+            drawingCanvas.addEventListener('mouseout', stopDraw);
+            
+            drawingCanvas.addEventListener('touchstart', startDraw, { passive: false });
+            drawingCanvas.addEventListener('touchmove', draw, { passive: false });
+            drawingCanvas.addEventListener('touchend', stopDraw);
+        }
+
+        function setDrawingTool(shape) {
+            clickSound();
+            currentShape = shape;
+            document.querySelectorAll('#drawing-toolbar .toolbar-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`shape-${shape}`).classList.add('active');
+        }
+
+        function setDrawingColor(color, element) {
+            clickSound();
+            currentColor = color;
+            document.querySelectorAll('#color-palette .color-swatch').forEach(swatch => swatch.classList.remove('active'));
+            element.classList.add('active');
+        }
+
+        function getMousePos(evt) {
+            const rect = drawingCanvas.getBoundingClientRect();
+            if (evt.touches) {
+                 return { x: evt.touches[0].clientX - rect.left, y: evt.touches[0].clientY - rect.top };
+            }
+            return { x: evt.clientX - rect.left, y: evt.clientY - rect.top };
+        }
+
+        function startDraw(e) {
+            e.preventDefault();
+            isDrawing = true;
+            const pos = getMousePos(e);
+            startX = pos.x;
+            startY = pos.y;
+        }
+
+        function stopDraw(e) {
+            if (!isDrawing) return;
+            isDrawing = false;
+            const pos = getMousePos(e.changedTouches ? e.changedTouches[0] : e);
+            shapesOnCanvas.push({
+                type: currentShape,
+                x1: startX,
+                y1: startY,
+                x2: pos.x,
+                y2: pos.y,
+                color: currentColor
+            });
+        }
+        
+        function draw(e) {
+            if (!isDrawing) return;
+            e.preventDefault();
+            const pos = getMousePos(e);
+            redrawCanvas();
+            drawingCtx.strokeStyle = currentColor;
+            drawingCtx.fillStyle = currentColor;
+            drawingCtx.lineWidth = 3;
+            drawShape(currentShape, startX, startY, pos.x, pos.y);
+        }
+
+        function redrawCanvas() {
+            drawingCtx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
+            shapesOnCanvas.forEach(shape => {
+                drawingCtx.strokeStyle = shape.color;
+                drawingCtx.fillStyle = shape.color;
+                drawShape(shape.type, shape.x1, shape.y1, shape.x2, shape.y2);
+            });
+        }
+
+        function drawShape(type, x1, y1, x2, y2) {
+            drawingCtx.beginPath();
+            if (type === 'rect') {
+                drawingCtx.strokeRect(x1, y1, x2 - x1, y2 - y1);
+            } else if (type === 'circle') {
+                const radius = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+                drawingCtx.arc(x1, y1, radius, 0, 2 * Math.PI);
+                drawingCtx.stroke();
+            } else if (type === 'triangle') {
+                drawingCtx.moveTo(x1, y1);
+                drawingCtx.lineTo(x2, y2);
+                drawingCtx.lineTo(x1 - (x2 - x1), y2);
+                drawingCtx.closePath();
+                drawingCtx.stroke();
+            }
+        }
+        
+        function undoDrawing() {
+            clickSound();
+            if (shapesOnCanvas.length > 0) {
+                shapesOnCanvas.pop();
+                redrawCanvas();
+            }
+        }
+
+        function clearDrawing() {
+            clickSound();
+            shapesOnCanvas = [];
+            redrawCanvas();
+        }
+
+
+        // --- Initial Setup on Window Load ---
+        window.onload = () => {
+            if (typeof Tone !== 'undefined') {
+                synth = new Tone.Synth().toDestination();
+            }
+            
+            document.body.addEventListener('click', initAudio, { once: true });
+            generateTable();
+            setupNumberGrid();
+        };
+
+    </script>
+</body>
+</html>

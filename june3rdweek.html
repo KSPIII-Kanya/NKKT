@@ -1,0 +1,1517 @@
+<!DOCTYPE html>
+<html lang="ta">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>கணித சிமுலேஷன்</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Baloo+Thambi+2:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.js"></script>
+
+    <style>
+        body {
+            font-family: 'Baloo Thambi 2', cursive;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .tab-btn.active {
+            background-color: #1d4ed8;
+            color: white;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .number-grid-item {
+            font-size: 1.25rem; /* Increased font size */
+            transition: transform 0.2s, background-color 0.2s;
+        }
+        .number-grid-item:hover {
+            transform: scale(1.1);
+            background-color: #fca5a5;
+        }
+        .shape-btn.active {
+            background-color: #16a34a;
+            color: white;
+        }
+        #shape-canvas-3d {
+            width: 100%;
+            height: 300px;
+            cursor: grab;
+        }
+        #drawing-canvas, #bargraph-canvas, #drawing-canvas-number {
+            border: 2px solid #e5e7eb;
+            border-radius: 0.5rem;
+            touch-action: none;
+        }
+        .feedback {
+            font-size: 1.5rem;
+            font-weight: bold;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            display: none;
+        }
+        .feedback.correct {
+            color: #16a34a;
+            background-color: #dcfce7;
+            display: block;
+        }
+        .feedback.incorrect {
+            color: #dc2626;
+            background-color: #fee2e2;
+            display: block;
+        }
+        /* Flash Message for Number Name */
+        #flash-message {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(0, 0, 0, 0.85);
+            color: white;
+            padding: 20px 40px;
+            border-radius: 15px;
+            font-size: 2.5rem;
+            font-weight: 600;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s, visibility 0.3s;
+            text-align: center;
+        }
+        #flash-message.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        #flash-message.correct-flash {
+            background-color: #16a34a;
+        }
+        #flash-message.incorrect-flash {
+            background-color: #dc2626;
+        }
+        /* Styles for visual multiplication table */
+        .table-row-visual {
+            opacity: 0;
+            transform: scale(0.95);
+            transition: opacity 0.5s, transform 0.5s;
+        }
+        .table-row-visual.visible {
+             opacity: 1;
+             transform: scale(1);
+        }
+        .table-content-wrapper {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 1rem;
+            align-items: center;
+            padding: 1rem;
+            border-radius: 0.75rem;
+            background-color: #eff6ff;
+            margin-bottom: 1rem;
+        }
+        .equation-box {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: white;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .equation-text {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #1e3a8a;
+        }
+        .result-span {
+            color: #ef4444;
+            display: inline-block;
+            width: 3rem;
+            text-align: center;
+        }
+        .visual-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+        }
+        .visual-groups {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            width: 100%;
+        }
+        .visual-group {
+            display: flex;
+            gap: 5px;
+            padding: 5px;
+            border: 2px dashed #93c5fd;
+            border-radius: 10px;
+        }
+        .star-wrapper {
+             cursor: pointer;
+        }
+        .visual-item {
+            width: 24px;
+            height: 24px;
+            color: #a8a29e; /* Greyed out star color */
+            transition: transform 0.3s, color 0.3s;
+        }
+        .star-wrapper.counted .visual-item {
+            color: #facc15; /* Gold star color */
+            transform: scale(1.2);
+        }
+        .star-wrapper.counted {
+            cursor: default;
+        }
+
+        /* 2D Shape Animation Styles */
+        #2d-shape-display svg {
+            max-width: 100%;
+            max-height: 100%;
+        }
+        .shape-bg {
+            fill: #e0e7ff;
+        }
+        .side, .diagonal {
+            stroke: #4338ca;
+            stroke-width: 4;
+            stroke-linecap: round;
+            transition: stroke-dashoffset 0.8s ease-in-out;
+        }
+        .side-label, .diag-label {
+            font-size: 16px;
+            font-family: 'Baloo Thambi 2', sans-serif;
+            fill: #c026d3;
+            font-weight: bold;
+            opacity: 0;
+            transition: opacity 0.5s;
+            dominant-baseline: middle;
+            text-anchor: middle;
+        }
+        .vertex {
+            fill: #4338ca;
+            r: 5;
+            transition: fill 0.3s, r 0.3s;
+        }
+        .vertex.highlight-vertex {
+            fill: #ef4444;
+            stroke: #991b1b;
+            stroke-width: 1px;
+            r: 8;
+        }
+        .result-placeholder {
+            color: #16a34a;
+            font-weight: bold;
+            margin-left: 8px;
+        }
+        #2d-shape-props button:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+        .draw-shape-btn {
+            border: 2px solid transparent;
+        }
+        .draw-shape-btn.active {
+            border-color: #2563eb;
+            background-color: #dbeafe;
+        }
+        .crossed-out {
+            position: relative;
+            opacity: 0.5;
+        }
+        .crossed-out::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: -10%;
+            width: 120%;
+            height: 3px;
+            background: #ef4444;
+            transform: rotate(-20deg);
+            transform-origin: center;
+        }
+        /* Mental Math Visuals */
+        .math-visual-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            padding: 8px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            align-items: center;
+            justify-content: center;
+        }
+        .math-visual-item {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background-color: #3b82f6;
+        }
+        .math-visual-operator {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #4b5563;
+            margin: 0 10px;
+        }
+    </style>
+</head>
+<body class="bg-blue-50">
+    <div id="flash-message"></div>
+    <div class="container mx-auto p-2 sm:p-4 md:p-6">
+        <!-- Header Section -->
+        <header class="text-center p-4 bg-white rounded-xl shadow-md mb-6">
+            <h1 class="text-2xl sm:text-3xl font-bold text-blue-800">கன்ய சம்பூர்ணா திட்டம் / கன்யா பெண்கள் கல்வி திட்டம்</h1>
+            <p class="text-sm sm:text-base text-gray-600 mt-1">இத்திட்டம் TITAN மற்றும் KALIKE நிறுவனங்களின் பங்களிப்புடன் செயல்படுத்தப்படுகிறது</p>
+            <h2 class="text-xl sm:text-2xl font-bold text-orange-600 mt-2">நடுவுல கொஞ்சம் கற்றலைத் தேடி</h2>
+            <h3 class="text-lg sm:text-xl font-semibold text-green-700 mt-1">கணிதம்</h3>
+            <p class="text-base sm:text-lg text-gray-500">ஜூன் - 3வது வாரம்</p>
+        </header>
+
+        <!-- Tab Navigation -->
+        <div class="flex flex-wrap justify-center gap-2 mb-6">
+            <button class="tab-btn flex-grow sm:flex-grow-0 text-sm sm:text-base font-semibold py-2 px-4 bg-white rounded-lg shadow-sm transition-all duration-300 active" onclick="openTab(event, 'tab1')">வாய்மொழி பயிற்சி (15 நிமிடங்கள்)</button>
+            <button class="tab-btn flex-grow sm:flex-grow-0 text-sm sm:text-base font-semibold py-2 px-4 bg-white rounded-lg shadow-sm transition-all duration-300" onclick="openTab(event, 'tab2')">ஆசிரியர் செயல்பாடு (45 நிமிடங்கள்)</button>
+            <button class="tab-btn flex-grow sm:flex-grow-0 text-sm sm:text-base font-semibold py-2 px-4 bg-white rounded-lg shadow-sm transition-all duration-300" onclick="openTab(event, 'tab3')">கல்விசார் செயல்பாடுகள் (15 நிமிடங்கள்)</button>
+        </div>
+
+        <!-- Tab Content -->
+        <main>
+            <!-- Tab 1: Oral Practice -->
+            <div id="tab1" class="tab-content active p-4 bg-white rounded-xl shadow-md">
+                <h2 class="text-xl font-bold text-blue-700 mb-4">வாய்மொழி பயிற்சி</h2>
+                
+                <!-- Multiplication Tables -->
+                <div class="mb-8">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-3">பெருக்கல் வாய்ப்பாடுகள் (1 முதல் 5 வரை)</h3>
+                    <div id="tables-controls" class="flex flex-wrap justify-center gap-3 mb-4">
+                        <!-- Buttons will be generated by JS -->
+                    </div>
+                    <div id="tables-display" class="p-4 bg-blue-50 rounded-lg min-h-[200px] flex flex-col items-center justify-center space-y-4">
+                        <p class="text-gray-500">ஒரு வாய்ப்பாட்டைத் தேர்ந்தெடுக்கவும்.</p>
+                    </div>
+                </div>
+
+                <!-- Numbers 1-100 -->
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-800 mb-3">எண்கள் (1 முதல் 100 வரை)</h3>
+                    <div class="flex justify-center gap-4 mb-4">
+                        <button id="shuffle-btn" class="py-2 px-4 bg-orange-500 text-white font-semibold rounded-lg shadow-md hover:bg-orange-600 transition">எண்களை கலைத்துப்போடு</button>
+                        <button id="reset-btn" class="py-2 px-4 bg-gray-500 text-white font-semibold rounded-lg shadow-md hover:bg-gray-600 transition">மீட்டமை</button>
+                    </div>
+                    <div id="number-grid" class="grid grid-cols-5 sm:grid-cols-10 gap-2 p-4 bg-green-50 rounded-lg">
+                        <!-- Grid items will be generated by JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 2: Teacher Activity -->
+            <div id="tab2" class="tab-content p-4 bg-white rounded-xl shadow-md">
+                <h2 class="text-xl font-bold text-blue-700 mb-4">ஆசிரியர் செயல்பாடு மற்றும் வலுப்படுத்துதல்</h2>
+                
+                <!-- 2D Shapes -->
+                <div class="mb-8 p-4 border border-gray-200 rounded-lg">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-3">1. 2D வடிவங்களை அடையாளம் காணல்</h3>
+                    <div id="2d-shape-controls" class="flex flex-wrap justify-center gap-2 mb-4">
+                        <button class="shape-btn py-2 px-4 bg-gray-200 rounded-md transition" onclick="show2DShape('square')">சதுரம்</button>
+                        <button class="shape-btn py-2 px-4 bg-gray-200 rounded-md transition" onclick="show2DShape('rectangle')">செவ்வகம்</button>
+                        <button class="shape-btn py-2 px-4 bg-gray-200 rounded-md transition" onclick="show2DShape('triangle')">முக்கோணம்</button>
+                        <button class="shape-btn py-2 px-4 bg-gray-200 rounded-md transition" onclick="show2DShape('circle')">வட்டம்</button>
+                    </div>
+                    <div class="flex flex-col md:flex-row items-center gap-4">
+                        <div id="2d-shape-display" class="w-full md:w-1/2 h-64 flex items-center justify-center bg-gray-100 rounded-lg p-4">
+                            <p class="text-gray-500">ஒரு வடிவத்தைத் தேர்ந்தெடுக்கவும்.</p>
+                        </div>
+                        <div id="2d-shape-props" class="w-full md:w-1/2 text-left"></div>
+                    </div>
+                </div>
+                
+                <!-- 3D Shapes -->
+                <div class="mb-8 p-4 border border-gray-200 rounded-lg">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-3">2. 3D கனஉருவங்களை அடையாளம் காணல்</h3>
+                     <div id="3d-shape-controls" class="flex flex-wrap justify-center gap-2 mb-4">
+                        <button class="shape-btn py-2 px-4 bg-gray-200 rounded-md transition" onclick="show3DShape('cube')">கனசதுரம்</button>
+                        <button class="shape-btn py-2 px-4 bg-gray-200 rounded-md transition" onclick="show3DShape('cuboid')">கனசெவ்வகம்</button>
+                        <button class="shape-btn py-2 px-4 bg-gray-200 rounded-md transition" onclick="show3DShape('sphere')">கோளம்</button>
+                    </div>
+                    <div class="flex flex-col md:flex-row items-center gap-4">
+                        <div id="3d-shape-display" class="w-full md:w-1/2 h-80 bg-gray-800 rounded-lg relative">
+                             <div id="shape-canvas-3d"></div>
+                             <p id="3d-placeholder" class="absolute inset-0 flex items-center justify-center text-gray-400">ஒரு வடிவத்தைத் தேர்ந்தெடுக்கவும்.</p>
+                        </div>
+                        <div id="3d-shape-props" class="w-full md:w-1/2 text-left"></div>
+                    </div>
+                </div>
+
+                <!-- Numbers 1-10 -->
+                <div class="p-4 border border-gray-200 rounded-lg">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-3">3. எண்கள் மற்றும் எண் பெயர்கள் (1-10)</h3>
+                    <div id="number-writing-game" class="text-center">
+                        <p class="mb-2">கீழே உள்ள எண்ணை வரைந்து அதன் சரியான பெயருடன் பொருத்தவும்.</p>
+                        <div id="number-to-draw" class="text-8xl font-bold text-blue-500 mb-2"></div>
+                        <div class="flex flex-col md:flex-row gap-4 items-start justify-center">
+                            <div class="w-full md:w-1/2">
+                                <h4 class="font-semibold">எண்ணை வரைக:</h4>
+                                <canvas id="drawing-canvas-number" width="300" height="300" class="mx-auto bg-white border-2 border-dashed"></canvas>
+                                <button onclick="clearNumberCanvas()" class="mt-2 py-1 px-3 bg-red-500 text-white rounded-md">அழிக்க</button>
+                            </div>
+                            <div class="w-full md:w-1/2">
+                                <h4 class="font-semibold">சரியான பெயரைத் தேர்ந்தெடுக்கவும்:</h4>
+                                <div id="number-name-options" class="grid grid-cols-2 gap-2 mt-2"></div>
+                            </div>
+                        </div>
+                         <div id="number-game-feedback" class="feedback mt-4"></div>
+                         <button onclick="nextNumberGame()" class="mt-4 py-2 px-5 bg-blue-600 text-white font-bold rounded-lg shadow-md hover:bg-blue-700 transition">அடுத்த எண்</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 3: Co-scholastic Activities -->
+            <div id="tab3" class="tab-content p-4 bg-white rounded-xl shadow-md">
+                 <h2 class="text-xl font-bold text-blue-700 mb-4">கல்விசார் செயல்பாடுகள்</h2>
+                
+                 <div class="space-y-6">
+                    <!-- Activity 1: Real-world shapes -->
+                    <div class="p-4 border border-gray-200 rounded-lg">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-3">1. வாழ்க்கை கணக்குகள்: சுற்றியுள்ள பொருட்களின் வடிவங்கள்</h3>
+                        <div id="real-world-shapes" class="text-center">
+                            <div id="real-world-question" class="mb-4 text-xl font-bold"></div>
+                            <div id="real-world-options" class="grid grid-cols-2 gap-3"></div>
+                            <button onclick="nextRealWorldShape()" class="mt-4 py-2 px-5 bg-blue-600 text-white font-bold rounded-lg shadow-md hover:bg-blue-700 transition">அடுத்த கேள்வி</button>
+                        </div>
+                    </div>
+
+                    <!-- Activity 2: Drawing shapes -->
+                    <div class="p-4 border border-gray-200 rounded-lg">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-3">2. விதவிதமான வடிவங்களை வரைதல்</h3>
+                        <div class="text-center">
+                             <div id="draw-tool-controls" class="flex justify-center gap-2 mb-4">
+                                 <button class="draw-shape-btn p-2 rounded-md" data-shape="rectangle">
+                                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect></svg>
+                                 </button>
+                                 <button class="draw-shape-btn p-2 rounded-md" data-shape="circle">
+                                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle></svg>
+                                 </button>
+                                  <button class="draw-shape-btn p-2 rounded-md" data-shape="triangle">
+                                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L22 20H2z"></path></svg>
+                                 </button>
+                             </div>
+                            <canvas id="drawing-canvas" width="400" height="300" class="bg-white mx-auto"></canvas>
+                            <div class="mt-3">
+                                <button onclick="clearDrawingCanvas()" class="py-2 px-4 bg-red-500 text-white rounded-md">அழிக்க</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Activity 3: Bar Graph -->
+                    <div class="p-4 border border-gray-200 rounded-lg">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-3">3. பட்டை வரைபடம் பயிற்சி</h3>
+                        <div id="bar-graph-activity" class="flex flex-col items-center gap-4">
+                           <canvas id="bargraph-canvas" width="400" height="300" class="bg-gray-50"></canvas>
+                           <div id="bargraph-inputs" class="flex flex-wrap justify-center gap-4"></div>
+                        </div>
+                    </div>
+
+                    <!-- Activity 4: Mental Math -->
+                    <div class="p-4 border border-gray-200 rounded-lg">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-3">4. மனக் கணக்கு</h3>
+                        <div id="mental-math-quiz" class="text-center">
+                            <div id="quiz-counter" class="text-lg font-semibold mb-2"></div>
+                            <div id="math-problem" class="text-3xl font-bold text-gray-800 mb-4 p-4 bg-yellow-100 rounded-lg"></div>
+                            <div id="math-visuals" class="flex flex-wrap justify-center items-center gap-4 mb-4 min-h-[50px]"></div>
+                            <div class="flex justify-center items-center gap-3">
+                                <input type="number" id="math-answer" class="text-center text-xl p-2 border-2 border-gray-300 rounded-md w-32 focus:border-blue-500 focus:ring-blue-500" placeholder="விடை">
+                                <button onclick="checkMathAnswer()" class="py-2 px-6 bg-green-600 text-white font-bold rounded-lg shadow-md hover:bg-green-700 transition">சரிபார்</button>
+                            </div>
+                            <div id="math-feedback" class="feedback mt-4"></div>
+                            <div class="flex justify-center gap-4 mt-4">
+                                <button id="prev-question-btn" class="py-2 px-4 bg-gray-500 text-white rounded-md">முந்தையது</button>
+                                <button id="next-question-btn" class="py-2 px-4 bg-gray-500 text-white rounded-md">அடுத்தது</button>
+                                <button id="reset-quiz-btn" class="py-2 px-4 bg-red-500 text-white rounded-md">மீட்டமை</button>
+                            </div>
+                        </div>
+                    </div>
+                 </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // --- Sound Synthesis ---
+        const synth = new Tone.Synth().toDestination();
+        function playSound(note, duration) {
+            if (typeof Tone !== 'undefined' && Tone.context.state !== 'running') {
+                Tone.start();
+            }
+            // Stop any previous sound before starting a new one immediately.
+            // This helps prevent the "start time" error on rapid clicks.
+            synth.triggerRelease();
+            synth.triggerAttackRelease(note, duration);
+        }
+
+        // --- Tab Navigation ---
+        function openTab(evt, tabName) {
+            let i, tabcontent, tablinks;
+            tabcontent = document.getElementsByClassName("tab-content");
+            for (i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].style.display = "none";
+                tabcontent[i].classList.remove("active");
+            }
+            tablinks = document.getElementsByClassName("tab-btn");
+            for (i = 0; i < tablinks.length; i++) {
+                tablinks[i].classList.remove("active");
+            }
+            document.getElementById(tabName).style.display = "block";
+            document.getElementById(tabName).classList.add("active");
+            evt.currentTarget.classList.add("active");
+            
+            if (tabName === 'tab2') {
+                init3D();
+            }
+             if (tabName === 'tab3') {
+                initRealWorldShapes();
+                initDrawingCanvas();
+                initBarGraph();
+                initMentalMathQuiz();
+            }
+        }
+
+        // --- Tab 1: Oral Practice ---
+        const tablesControls = document.getElementById('tables-controls');
+        const tablesDisplay = document.getElementById('tables-display');
+        const numberGrid = document.getElementById('number-grid');
+        const flashMessage = document.getElementById('flash-message');
+        const shuffleBtn = document.getElementById('shuffle-btn');
+        const resetBtn = document.getElementById('reset-btn');
+
+        // --- Text-to-Speech (TTS) for Tamil ---
+        let tamilVoice = null;
+        function loadTamilVoice() {
+            if (tamilVoice) return;
+            const voices = speechSynthesis.getVoices();
+            tamilVoice = voices.find(voice => voice.lang === 'ta-IN');
+        }
+        speechSynthesis.onvoiceschanged = loadTamilVoice;
+
+        function speakTamil(text) {
+            loadTamilVoice();
+            if (!speechSynthesis || !text) {
+                console.error("Speech synthesis not supported or text is empty.");
+                return;
+            }
+            const utterance = new SpeechSynthesisUtterance(text);
+            if (tamilVoice) {
+                utterance.voice = tamilVoice;
+            } else {
+                console.warn("Tamil (India) voice not found. Using default.");
+            }
+            utterance.lang = 'ta-IN';
+            utterance.rate = 0.9;
+            speechSynthesis.cancel();
+            speechSynthesis.speak(utterance);
+        }
+
+        // --- Tamil Number Names (1-100) ---
+        function getTamilNumberName(num) {
+            if (num < 1 || num > 100) return "";
+            const units = ["", "ஒன்று", "இரண்டு", "மூன்று", "நான்கு", "ஐந்து", "ஆறு", "ஏழு", "எட்டு", "ஒன்பது"];
+            const teens = ["பத்து", "பதினொன்று", "பன்னிரண்டு", "பதிமூன்று", "பதினான்கு", "பதினைந்து", "பதினாறு", "பதினேழு", "பதினெட்டு", "பத்தொன்பது"];
+            const tens = ["", "பத்து", "இருபது", "முப்பது", "நாற்பது", "ஐம்பது", "அறுபது", "எழுபது", "எண்பது", "தொண்ணூறு"];
+            const tensPrefix = { 2: "இருபத்து", 3: "முப்பத்து", 4: "நாற்பத்து", 5: "ஐம்பத்து", 6: "அறுபத்து", 7: "எழுபத்து", 8: "எண்பத்து" };
+            const ninetyPrefix = "தொண்ணூற்று";
+            if (num <= 10) return units[num] || teens[0];
+            if (num < 20) return teens[num - 10];
+            if (num % 10 === 0 && num !== 100) return tens[num / 10];
+            if (num === 100) return "நூறு";
+            const tenDigit = Math.floor(num / 10);
+            const unitDigit = num % 10;
+            if (tenDigit === 9) return `${ninetyPrefix} ${units[unitDigit]}`;
+            if (tensPrefix[tenDigit]) return `${tensPrefix[tenDigit]} ${units[unitDigit]}`;
+            return "";
+        }
+        
+        // --- Visual Multiplication Table ---
+        const starSVG = `<svg class="visual-item" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21 12 17.27z"/></svg>`;
+
+        function countStar(starWrapper, rowId, totalStars, result) {
+            if (starWrapper.classList.contains('counted')) return;
+
+            starWrapper.classList.add('counted');
+            // playSound('C5', '16n'); // Removed sound on star click as requested
+            
+            const row = document.getElementById(`row-${rowId}`);
+            const countedStars = row.querySelectorAll('.star-wrapper.counted').length;
+
+            if (countedStars === totalStars) {
+                const resultSpan = row.querySelector(`#result-${rowId}`);
+                resultSpan.textContent = result;
+                resultSpan.style.color = '#16a34a';
+                playSound('E5', '8n');
+            }
+        }
+
+        function generateTable(num) {
+            playSound('C4', '8n');
+            tablesDisplay.innerHTML = ''; 
+            
+            for (let i = 1; i <= 10; i++) {
+                const result = num * i;
+                const totalStars = num * i;
+                const row = document.createElement('div');
+                row.className = 'table-row-visual w-full';
+                row.id = `row-${i}`;
+
+                const wrapper = document.createElement('div');
+                wrapper.className = 'table-content-wrapper';
+
+                // Equation Box (Left)
+                const equationBox = document.createElement('div');
+                equationBox.className = 'equation-box';
+                equationBox.innerHTML = `<div class="equation-text">${num} &times; ${i} = <span id="result-${i}" class="result-span">?</span></div>`;
+
+                // Visual Box (Right)
+                const visualBox = document.createElement('div');
+                visualBox.className = 'visual-box';
+                
+                let visualHTML = '<div class="visual-groups">';
+                for (let groupCount = 0; groupCount < num; groupCount++) {
+                    visualHTML += '<div class="visual-group">';
+                    for (let itemCount = 0; itemCount < i; itemCount++) {
+                        visualHTML += `<div class="star-wrapper" onclick="countStar(this, ${i}, ${totalStars}, ${result})">${starSVG}</div>`;
+                    }
+                    visualHTML += '</div>';
+                }
+                visualHTML += '</div>';
+                
+                visualBox.innerHTML = visualHTML;
+
+                wrapper.appendChild(equationBox);
+                wrapper.appendChild(visualBox);
+                row.appendChild(wrapper);
+                tablesDisplay.appendChild(row);
+
+                setTimeout(() => {
+                    row.classList.add('visible');
+                }, i * 100);
+            }
+        }
+
+        // Generate multiplication table buttons
+        for (let i = 1; i <= 5; i++) {
+            const button = document.createElement('button');
+            button.className = 'w-16 h-16 text-2xl font-bold bg-yellow-200 rounded-full shadow-md hover:bg-yellow-300 transition transform hover:scale-110';
+            button.textContent = i;
+            button.onclick = () => generateTable(i);
+            tablesControls.appendChild(button);
+        }
+
+        // --- Number Grid Logic ---
+        function populateNumberGrid(numbers) {
+            numberGrid.innerHTML = ''; // Clear existing grid
+            numbers.forEach(num => {
+                const item = document.createElement('div');
+                item.className = 'number-grid-item flex items-center justify-center h-12 bg-green-200 rounded-md cursor-pointer font-bold text-gray-800';
+                item.textContent = num;
+                item.onclick = () => showNumberName(num);
+                numberGrid.appendChild(item);
+            });
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        let originalNumbers = Array.from({ length: 100 }, (_, i) => i + 1);
+
+        shuffleBtn.addEventListener('click', () => {
+            let shuffledNumbers = shuffleArray([...originalNumbers]);
+            populateNumberGrid(shuffledNumbers);
+        });
+
+        resetBtn.addEventListener('click', () => {
+            populateNumberGrid(originalNumbers);
+        });
+
+        function showNumberName(num) {
+            const name = getTamilNumberName(num);
+            if (!name) return;
+
+            flashMessage.textContent = `${num} - ${name}`;
+            flashMessage.classList.remove('correct-flash', 'incorrect-flash');
+            flashMessage.classList.add('show');
+            speakTamil(name);
+            
+            setTimeout(() => {
+                flashMessage.classList.remove('show');
+            }, 2000);
+        }
+        
+        // Initial population of number grid
+        populateNumberGrid(originalNumbers);
+
+        // --- Tab 2: Teacher Activity ---
+        const shapeDisplay2D = document.getElementById('2d-shape-display');
+        const shapeProps2D = document.getElementById('2d-shape-props');
+        
+        let current2DShape = '';
+
+        const shapeData2D = {
+            square: {
+                name: 'சதுரம்',
+                svg: `<svg viewBox="0 0 120 120" width="100%" height="100%">
+                            <path class="shape-bg" d="M10,10 H 110 V 110 H 10 Z" />
+                            <!-- Sides -->
+                            <line class="side" x1="10" y1="10" x2="110" y2="10" />
+                            <line class="side" x1="110" y1="10" x2="110" y2="110" />
+                            <line class="side" x1="110" y1="110" x2="10" y2="110" />
+                            <line class="side" x1="10" y1="110" x2="10" y2="10" />
+                            <!-- Diagonals -->
+                            <line class="diagonal" x1="10" y1="10" x2="110" y2="110" />
+                            <line class="diagonal" x1="110" y1="10" x2="10" y2="110" />
+                            <!-- Vertices -->
+                            <circle class="vertex" cx="10" cy="10" r="5" /><circle class="vertex" cx="110" cy="10" r="5" /><circle class="vertex" cx="110" cy="110" r="5" /><circle class="vertex" cx="10" cy="110" r="5" />
+                            <!-- Labels -->
+                            <text class="side-label" x="60" y="20">1</text><text class="side-label" x="100" y="60">2</text><text class="side-label" x="60" y="100">3</text><text class="side-label" x="20" y="60">4</text>
+                            <text class="diag-label" x="65" y="55">1</text><text class="diag-label" x="65" y="65">2</text>
+                          </svg>`,
+                props: { பக்கங்கள்: 4, முனைகள்: 4, மூலைவிட்டங்கள்: 2 }
+            },
+            rectangle: {
+                name: 'செவ்வகம்',
+                svg: `<svg viewBox="0 0 140 120" width="100%" height="100%">
+                            <path class="shape-bg" d="M10,10 H 130 V 110 H 10 Z" />
+                            <!-- Sides -->
+                            <line class="side" x1="10" y1="10" x2="130" y2="10" /><line class="side" x1="130" y1="10" x2="130" y2="110" /><line class="side" x1="130" y1="110" x2="10" y2="110" /><line class="side" x1="10" y1="110" x2="10" y2="10" />
+                            <!-- Diagonals -->
+                            <line class="diagonal" x1="10" y1="10" x2="130" y2="110" /><line class="diagonal" x1="130" y1="10" x2="10" y2="110" />
+                            <!-- Vertices -->
+                            <circle class="vertex" cx="10" cy="10" r="5" /><circle class="vertex" cx="130" cy="10" r="5" /><circle class="vertex" cx="130" cy="110" r="5" /><circle class="vertex" cx="10" cy="110" r="5" />
+                            <!-- Labels -->
+                            <text class="side-label" x="70" y="20">1</text><text class="side-label" x="120" y="60">2</text><text class="side-label" x="70" y="100">3</text><text class="side-label" x="20" y="60">4</text>
+                            <text class="diag-label" x="75" y="55">1</text><text class="diag-label" x="75" y="65">2</text>
+                          </svg>`,
+                props: { பக்கங்கள்: 4, முனைகள்: 4, மூலைவிட்டங்கள்: 2 }
+            },
+            triangle: {
+                name: 'முக்கோணம்',
+                svg: `<svg viewBox="0 0 120 120" width="100%" height="100%">
+                            <path class="shape-bg" d="M60,10 L110,95 H 10 Z" />
+                            <!-- Sides -->
+                            <line class="side" x1="60" y1="10" x2="110" y2="95" /><line class="side" x1="110" y1="95" x2="10" y2="95" /><line class="side" x1="10" y1="95" x2="60" y2="10" />
+                            <!-- Vertices -->
+                            <circle class="vertex" cx="60" cy="10" r="5" /><circle class="vertex" cx="110" cy="95" r="5" /><circle class="vertex" cx="10" cy="95" r="5" />
+                            <!-- Labels -->
+                            <text class="side-label" x="95" y="48">1</text><text class="side-label" x="60" y="105">2</text><text class="side-label" x="25" y="48">3</text>
+                          </svg>`,
+                props: { பக்கங்கள்: 3, முனைகள்: 3, மூலைவிட்டங்கள்: 0 }
+            },
+            circle: {
+                name: 'வட்டம்',
+                svg: `<svg viewBox="0 0 120 120" width="100%" height="100%"><circle cx="60" cy="60" r="50" class="shape-bg" /><circle cx="60" cy="60" r="50" stroke="#4338ca" stroke-width="4" fill="none" /></svg>`,
+                props: { பக்கங்கள்: 0, முனைகள்: 0, மூலைவிட்டங்கள்: 'முடிவற்றது' }
+            }
+        };
+        
+        function animateProperty(prop) {
+            if (!current2DShape) return;
+            const svg = shapeDisplay2D.querySelector('svg');
+            if (!svg) return;
+
+            shapeProps2D.querySelectorAll('button').forEach(btn => btn.disabled = true);
+            
+            svg.querySelectorAll('.side, .diagonal').forEach(el => {
+                const length = el.getTotalLength ? el.getTotalLength() : 100;
+                el.style.strokeDasharray = length;
+                el.style.strokeDashoffset = length;
+            });
+            svg.querySelectorAll('.side-label, .diag-label').forEach(el => el.style.opacity = 0);
+            svg.querySelectorAll('.vertex').forEach(el => el.classList.remove('highlight-vertex'));
+
+            const data = shapeData2D[current2DShape];
+            let totalAnimationTime = 0;
+            const animationSpeed = 800;
+            const labelDelay = 100;
+
+            if (prop === 'sides') {
+                const sides = svg.querySelectorAll('.side');
+                const labels = svg.querySelectorAll('.side-label');
+                let delay = 100;
+                sides.forEach((side, index) => {
+                    setTimeout(() => {
+                        playSound('D5', '16n');
+                        const length = side.getTotalLength();
+                        side.style.strokeDasharray = length;
+                        side.style.strokeDashoffset = 0;
+                        if (labels[index]) setTimeout(() => { labels[index].style.opacity = 1; }, labelDelay);
+                    }, delay);
+                    delay += animationSpeed + 100;
+                });
+                totalAnimationTime = delay;
+                setTimeout(() => {
+                    document.querySelector('#prop-btn-sides .result-placeholder').textContent = `: ${data.props.பக்கங்கள்}`;
+                }, totalAnimationTime);
+            } else if (prop === 'vertices') {
+                const vertices = svg.querySelectorAll('.vertex');
+                let delay = 100;
+                vertices.forEach(vertex => {
+                     setTimeout(() => {
+                        playSound('G4', '16n');
+                        vertex.classList.add('highlight-vertex');
+                     }, delay);
+                     delay += 400;
+                });
+                totalAnimationTime = delay;
+                 setTimeout(() => {
+                    document.querySelector('#prop-btn-vertices .result-placeholder').textContent = `: ${data.props.முனைகள்}`;
+                }, totalAnimationTime);
+            } else if (prop === 'diagonals') {
+                const diagonals = svg.querySelectorAll('.diagonal');
+                const labels = svg.querySelectorAll('.diag-label');
+                let delay = 100;
+                if (diagonals.length > 0) {
+                    diagonals.forEach((diag, index) => {
+                        setTimeout(() => {
+                            playSound('F5', '16n');
+                            const length = diag.getTotalLength();
+                            diag.style.strokeDasharray = length;
+                            diag.style.strokeDashoffset = 0;
+                            if (labels[index]) setTimeout(() => { labels[index].style.opacity = 1; }, labelDelay);
+                        }, delay);
+                        delay += animationSpeed + 100;
+                    });
+                }
+                totalAnimationTime = delay;
+                setTimeout(() => {
+                    document.querySelector('#prop-btn-diagonals .result-placeholder').textContent = `: ${data.props.மூலைவிட்டங்கள்}`;
+                }, totalAnimationTime);
+            }
+            
+            setTimeout(() => {
+                 shapeProps2D.querySelectorAll('button').forEach(btn => btn.disabled = false);
+            }, totalAnimationTime + 200);
+        }
+
+
+        function show2DShape(shape) {
+            playSound('C4', '8n');
+            current2DShape = shape;
+            const data = shapeData2D[shape];
+            shapeDisplay2D.innerHTML = data.svg;
+            
+            setTimeout(() => {
+                const svg = shapeDisplay2D.querySelector('svg');
+                if (svg) {
+                    svg.querySelectorAll('.side, .diagonal').forEach(el => {
+                        const length = el.getTotalLength ? el.getTotalLength() : 100;
+                        el.style.strokeDasharray = length;
+                        el.style.strokeDashoffset = length;
+                    });
+                }
+            }, 0);
+
+            let propsHTML = `<h4 class="text-xl font-bold text-gray-700 mb-3">${data.name}</h4><div id="prop-buttons" class="space-y-2">`;
+            propsHTML += `<button id="prop-btn-sides" class="w-full text-left p-2 bg-gray-100 rounded hover:bg-indigo-100 transition" onclick="animateProperty('sides')">பக்கங்கள்<span class="result-placeholder"></span></button>`;
+            propsHTML += `<button id="prop-btn-vertices" class="w-full text-left p-2 bg-gray-100 rounded hover:bg-indigo-100 transition" onclick="animateProperty('vertices')">முனைகள்<span class="result-placeholder"></span></button>`;
+            propsHTML += `<button id="prop-btn-diagonals" class="w-full text-left p-2 bg-gray-100 rounded hover:bg-indigo-100 transition" onclick="animateProperty('diagonals')">மூலைவிட்டங்கள்<span class="result-placeholder"></span></button>`;
+            propsHTML += `</div>`;
+            shapeProps2D.innerHTML = propsHTML;
+            
+            document.getElementById('2d-shape-controls').querySelectorAll('.shape-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.getAttribute('onclick') === `show2DShape('${shape}')`) {
+                    btn.classList.add('active');
+                }
+            });
+        }
+        
+        // --- 3D Shapes Logic ---
+        let scene, camera, renderer, current3D, animationState3D = { mode: null, isAnimating: false, targetQuaternion: null, lerpAlpha: 0, faceIndex: 0, highlight: null };
+        
+        const shapeData3D = {
+            cube: { name: 'கனசதுரம்', props: { முகங்கள்: 6, விளிம்புகள்: 12, முனைகள்: 8 }, color: 0xffffff },
+            cuboid: { name: 'கனசெவ்வகம்', props: { முகங்கள்: 6, விளிம்புகள்: 12, முனைகள்: 8 }, color: 0xffffff },
+            sphere: { name: 'கோளம்', props: { முகங்கள்: 1, விளிம்புகள்: 0, முனைகள்: 0 }, color: 0x67c23a }
+        };
+
+        function init3D() {
+            if (scene) return;
+            const canvas3D = document.getElementById('shape-canvas-3d');
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, canvas3D.clientWidth / canvas3D.clientHeight, 0.1, 1000);
+            camera.position.z = 4;
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(canvas3D.clientWidth, canvas3D.clientHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            canvas3D.appendChild(renderer.domElement);
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+            scene.add(ambientLight);
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            directionalLight.position.set(5, 10, 7.5);
+            scene.add(directionalLight);
+            
+            let isDragging = false, previousMousePosition = { x: 0, y: 0 };
+            const onMouseDown = (e) => { 
+                isDragging = true; 
+                canvas3D.style.cursor = 'grabbing';
+                previousMousePosition = { x: e.clientX, y: e.clientY };
+            };
+            const onMouseUp = () => { isDragging = false; canvas3D.style.cursor = 'grab'; };
+            const onMouseMove = (e) => {
+                if (!isDragging || animationState3D.isAnimating || !current3D) return;
+                const deltaMove = { x: e.clientX - previousMousePosition.x, y: e.clientY - previousMousePosition.y };
+                current3D.shape.rotation.y += deltaMove.x * 0.01;
+                current3D.shape.rotation.x += deltaMove.y * 0.01;
+                previousMousePosition = { x: e.clientX, y: e.clientY };
+            };
+            canvas3D.addEventListener('mousedown', onMouseDown);
+            canvas3D.addEventListener('mouseup', onMouseUp);
+            canvas3D.addEventListener('mouseleave', onMouseUp);
+            canvas3D.addEventListener('mousemove', onMouseMove);
+
+            function animate() {
+                requestAnimationFrame(animate);
+                if (animationState3D.isAnimating && animationState3D.mode === 'faces' && current3D) {
+                    animationState3D.lerpAlpha += 0.04;
+                    current3D.shape.quaternion.slerp(animationState3D.targetQuaternion, animationState3D.lerpAlpha);
+
+                    if (animationState3D.lerpAlpha >= 1) {
+                        animationState3D.isAnimating = false;
+                        current3D.shape.quaternion.copy(animationState3D.targetQuaternion);
+                        
+                        const faceIndex = animationState3D.faceIndex;
+                        const faceColors = [0xff0000, 0x00ff00, 0x0000ff, 0xffff00, 0x00ffff, 0xff00ff];
+                        
+                        current3D.shape.material[animationState3D.materialMap[faceIndex]].color.setHex(faceColors[faceIndex]);
+                        document.querySelector('#prop-btn-faces-3d .result-placeholder').textContent = `: ${faceIndex + 1}`;
+
+                        animationState3D.faceIndex++;
+
+                        if (animationState3D.faceIndex < 6) {
+                            setTimeout(() => startFaceAnimation(animationState3D.faceIndex), 1200);
+                        } else {
+                            animationState3D.mode = 'finished'; // Stop all animations
+                            document.getElementById('3d-shape-props').querySelectorAll('button').forEach(b => b.disabled = false);
+                        }
+                    }
+                } else if (!isDragging && animationState3D.mode === null && current3D) { // Default rotation
+                    current3D.shape.rotation.y += 0.005;
+                }
+                renderer.render(scene, camera);
+            }
+            animate();
+        }
+
+        function reset3DAnimation(fullReset = false) {
+            animationState3D.isAnimating = false;
+            animationState3D.mode = null;
+            if (animationState3D.highlight) {
+                current3D.shape.remove(animationState3D.highlight);
+                animationState3D.highlight = null;
+            }
+            if (current3D) {
+                current3D.shape.quaternion.set(0, 0, 0, 1); // Reset rotation
+                if(fullReset && current3D.baseMaterials) {
+                    current3D.shape.material = current3D.baseMaterials.map(m => m.clone());
+                }
+            }
+            const propsContainer = document.getElementById('3d-shape-props');
+            if(propsContainer){
+                propsContainer.querySelectorAll('button').forEach(b => b.disabled = false);
+                if(fullReset) {
+                    propsContainer.querySelectorAll('.result-placeholder').forEach(s => s.textContent = '');
+                }
+            }
+        }
+        
+        function startFaceAnimation(index) {
+            const targets = [
+                new THREE.Quaternion().setFromEuler(new THREE.Euler(0, 0, 0)), // front
+                new THREE.Quaternion().setFromEuler(new THREE.Euler(0, Math.PI, 0)), // back
+                new THREE.Quaternion().setFromEuler(new THREE.Euler(-Math.PI / 2, 0, 0)), // top
+                new THREE.Quaternion().setFromEuler(new THREE.Euler(Math.PI / 2, 0, 0)),  // bottom
+                new THREE.Quaternion().setFromEuler(new THREE.Euler(0, Math.PI / 2, 0)), // right
+                new THREE.Quaternion().setFromEuler(new THREE.Euler(0, -Math.PI / 2, 0)) // left
+            ];
+            
+            animationState3D.isAnimating = true;
+            animationState3D.targetQuaternion = targets[index];
+            animationState3D.lerpAlpha = 0;
+        }
+
+        function animate3DProperty(prop) {
+            if (!current3D) return;
+            reset3DAnimation();
+            const propsContainer = document.getElementById('3d-shape-props');
+            if(propsContainer) {
+                propsContainer.querySelectorAll('button').forEach(b => b.disabled = true);
+            }
+            const data = shapeData3D[current3D.type];
+
+            if (prop === 'முகங்கள்') {
+                if (current3D.type === 'sphere') {
+                    document.querySelector('#prop-btn-faces-3d .result-placeholder').textContent = `: 1`;
+                    if(propsContainer) propsContainer.querySelectorAll('button').forEach(b => b.disabled = false);
+                    return;
+                }
+                current3D.shape.material = current3D.baseMaterials.map(m => m.clone());
+                animationState3D.mode = 'faces';
+                animationState3D.faceIndex = 0;
+                animationState3D.materialMap = [4, 5, 2, 3, 0, 1]; // Maps animation order to material index
+                startFaceAnimation(0);
+            } else {
+                animationState3D.mode = prop;
+                if (prop === 'விளிம்புகள்') {
+                    const edges = new THREE.EdgesGeometry(current3D.shape.geometry);
+                    const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0xff0000, linewidth: 4 }));
+                    animationState3D.highlight = line;
+                    current3D.shape.add(line);
+                    document.querySelector('#prop-btn-edges-3d .result-placeholder').textContent = `: ${data.props.விளிம்புகள்}`;
+                } else if (prop === 'முனைகள்') {
+                    const verticesGroup = new THREE.Group();
+                    const vertices = current3D.shape.geometry.attributes.position;
+                    const uniqueVertices = [];
+                    for (let i = 0; i < vertices.count; i++) {
+                        const vert = new THREE.Vector3().fromBufferAttribute(vertices, i);
+                        if (!uniqueVertices.some(v => v.equals(vert))) {
+                            uniqueVertices.push(vert);
+                            const sphereGeo = new THREE.SphereGeometry(0.1, 16, 16);
+                            const sphereMat = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+                            const sphere = new THREE.Mesh(sphereGeo, sphereMat);
+                            sphere.position.copy(vert);
+                            verticesGroup.add(sphere);
+                        }
+                    }
+                    animationState3D.highlight = verticesGroup;
+                    current3D.shape.add(verticesGroup);
+                    document.querySelector('#prop-btn-vertices-3d .result-placeholder').textContent = `: ${data.props.முனைகள்}`;
+                }
+                 setTimeout(() => {
+                    if(propsContainer) propsContainer.querySelectorAll('button').forEach(b => b.disabled = false);
+                }, 100);
+            }
+        }
+
+        function show3DShape(shape) {
+            playSound('C4', '8n');
+            if (!scene) init3D();
+            
+            if (current3D) {
+                scene.remove(current3D.shape);
+            }
+            reset3DAnimation(true);
+            document.getElementById('3d-placeholder').style.display = 'none';
+            
+            const data = shapeData3D[shape];
+            let geometry, mesh;
+
+            const baseMaterials = [
+                new THREE.MeshStandardMaterial({ color: data.color, transparent: true, opacity: 0.8 }),
+                new THREE.MeshStandardMaterial({ color: data.color, transparent: true, opacity: 0.8 }),
+                new THREE.MeshStandardMaterial({ color: data.color, transparent: true, opacity: 0.8 }),
+                new THREE.MeshStandardMaterial({ color: data.color, transparent: true, opacity: 0.8 }),
+                new THREE.MeshStandardMaterial({ color: data.color, transparent: true, opacity: 0.8 }),
+                new THREE.MeshStandardMaterial({ color: data.color, transparent: true, opacity: 0.8 }),
+            ];
+
+            switch(shape) {
+                case 'cube': geometry = new THREE.BoxGeometry(2, 2, 2); break;
+                case 'cuboid': geometry = new THREE.BoxGeometry(3, 2, 1.5); break;
+                case 'sphere': geometry = new THREE.SphereGeometry(1.5, 32, 32); break;
+            }
+            
+            mesh = new THREE.Mesh(geometry, shape === 'sphere' ? new THREE.MeshStandardMaterial({ color: data.color }) : baseMaterials);
+            current3D = { shape: mesh, type: shape, baseMaterials: baseMaterials };
+            scene.add(mesh);
+
+            const propsContainer = document.getElementById('3d-shape-props');
+            let propsHTML = `<h4 class="text-xl font-bold text-gray-700 mb-3">${data.name}</h4><div class="space-y-2">`;
+            if (shape !== 'sphere') {
+                propsHTML += `<button id="prop-btn-faces-3d" class="w-full text-left p-2 bg-gray-100 rounded hover:bg-indigo-100 transition" onclick="animate3DProperty('முகங்கள்')">முகங்கள்<span class="result-placeholder"></span></button>`;
+                propsHTML += `<button id="prop-btn-edges-3d" class="w-full text-left p-2 bg-gray-100 rounded hover:bg-indigo-100 transition" onclick="animate3DProperty('விளிம்புகள்')">விளிம்புகள்<span class="result-placeholder"></span></button>`;
+                propsHTML += `<button id="prop-btn-vertices-3d" class="w-full text-left p-2 bg-gray-100 rounded hover:bg-indigo-100 transition" onclick="animate3DProperty('முனைகள்')">முனைகள்<span class="result-placeholder"></span></button>`;
+            } else {
+                 propsHTML += `<div class="p-2 bg-gray-100 rounded">முகங்கள்: 1</div>`;
+                 propsHTML += `<div class="p-2 bg-gray-100 rounded">விளிம்புகள்: 0</div>`;
+                 propsHTML += `<div class="p-2 bg-gray-100 rounded">முனைகள்: 0</div>`;
+            }
+            propsHTML += `</div>`;
+            propsContainer.innerHTML = propsHTML;
+            
+            document.getElementById('3d-shape-controls').querySelectorAll('.shape-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.getAttribute('onclick') === `show3DShape('${shape}')`) {
+                    btn.classList.add('active');
+                }
+            });
+        }
+        
+        // --- Number Writing Game ---
+        const numberToDrawEl = document.getElementById('number-to-draw');
+        const numberNameOptionsEl = document.getElementById('number-name-options');
+        const numberGameFeedbackEl = document.getElementById('number-game-feedback');
+        const numberCanvas = document.getElementById('drawing-canvas-number');
+        const numberCtx = numberCanvas.getContext('2d');
+        const gameNumberNames = ["ஒன்று", "இரண்டு", "மூன்று", "நான்கு", "ஐந்து", "ஆறு", "ஏழு", "எட்டு", "ஒன்பது", "பத்து"];
+        let currentNumberGame = { number: 0, name: '' };
+        let hasDrawnOnCanvas = false;
+
+        function setupNumberCanvas() {
+            let drawing = false;
+            numberCtx.lineWidth = 15;
+            numberCtx.lineCap = 'round';
+            numberCtx.strokeStyle = '#1e40af';
+            function startPos(e) { 
+                drawing = true; 
+                hasDrawnOnCanvas = true;
+                draw(e); 
+            }
+            function endPos() { drawing = false; numberCtx.beginPath(); }
+            function draw(e) {
+                if (!drawing) return;
+                e.preventDefault();
+                const rect = numberCanvas.getBoundingClientRect();
+                const x = (e.clientX || e.touches[0].clientX) - rect.left;
+                const y = (e.clientY || e.touches[0].clientY) - rect.top;
+                numberCtx.lineTo(x, y);
+                numberCtx.stroke();
+                numberCtx.beginPath();
+                numberCtx.moveTo(x, y);
+            }
+            numberCanvas.addEventListener('mousedown', startPos);
+            numberCanvas.addEventListener('mouseup', endPos);
+            numberCanvas.addEventListener('mousemove', draw);
+            numberCanvas.addEventListener('touchstart', startPos);
+            numberCanvas.addEventListener('touchend', endPos);
+            numberCanvas.addEventListener('touchmove', draw);
+        }
+
+        function clearNumberCanvas() {
+            numberCtx.clearRect(0, 0, numberCanvas.width, numberCanvas.height);
+            hasDrawnOnCanvas = false;
+        }
+        
+        function nextNumberGame() {
+            const numIndex = Math.floor(Math.random() * 10);
+            currentNumberGame.number = numIndex + 1;
+            currentNumberGame.name = gameNumberNames[numIndex];
+            numberToDrawEl.textContent = currentNumberGame.number;
+            clearNumberCanvas();
+            numberGameFeedbackEl.style.display = 'none';
+            const options = [currentNumberGame.name];
+            while (options.length < 4) {
+                const randomName = gameNumberNames[Math.floor(Math.random() * 10)];
+                if (!options.includes(randomName)) {
+                    options.push(randomName);
+                }
+            }
+            options.sort(() => Math.random() - 0.5);
+            numberNameOptionsEl.innerHTML = '';
+            options.forEach(opt => {
+                const button = document.createElement('button');
+                button.textContent = opt;
+                button.className = 'p-3 bg-blue-100 rounded-lg text-lg font-semibold hover:bg-blue-200 transition';
+                button.onclick = () => checkNumberAnswer(opt);
+                numberNameOptionsEl.appendChild(button);
+            });
+        }
+        
+        function checkNumberAnswer(selectedName) {
+            if (!hasDrawnOnCanvas) {
+                numberGameFeedbackEl.textContent = 'முதலில் எண்ணை வரையவும்!';
+                numberGameFeedbackEl.className = 'feedback incorrect';
+                numberGameFeedbackEl.style.display = 'block';
+                playSound('C3', '8n');
+                return;
+            }
+
+            if (selectedName === currentNumberGame.name) {
+                numberGameFeedbackEl.textContent = 'சரியான விடை!';
+                numberGameFeedbackEl.className = 'feedback correct';
+                numberGameFeedbackEl.style.display = 'block';
+                playSound('C5', '8n');
+            } else {
+                numberGameFeedbackEl.textContent = 'தவறான விடை, மீண்டும் முயல்க.';
+                numberGameFeedbackEl.className = 'feedback incorrect';
+                numberGameFeedbackEl.style.display = 'block';
+                playSound('C3', '8n');
+            }
+        }
+
+        // --- Tab 3: Co-scholastic Activities ---
+        const realWorldQuestion = document.getElementById('real-world-question');
+        const realWorldOptions = document.getElementById('real-world-options');
+        
+        const realWorldItems = [
+            { question: "வட்ட வடிவில் இருக்கும் பொருள் எது?", answer: "நாணயம்", options: ["நாணயம்", "கதவு", "புத்தகம்", "அழிப்பான்"] },
+            { question: "சதுர வடிவில் இருக்கும் பொருள் எது?", answer: "கேரம் பலகை", options: ["பந்து", "தர்பூசணி", "கேரம் பலகை", "முட்டை"] },
+            { question: "செவ்வக வடிவில் இருக்கும் பொருள் எது?", answer: "கரும்பலகை", options: ["கடிகாரம்", "கரும்பலகை", "சக்கரம்", "வளையல்"] },
+            { question: "முக்கோண வடிவில் இருக்கும் பொருள் எது?", answer: "சமோசா", options: ["சமோசா", "ஆரஞ்சு", "லட்டு", "பூசணிக்காய்"] },
+        ];
+        let currentRealWorldItem;
+
+        function initRealWorldShapes() { nextRealWorldShape(); }
+
+        function nextRealWorldShape() {
+            currentRealWorldItem = realWorldItems[Math.floor(Math.random() * realWorldItems.length)];
+            realWorldQuestion.textContent = currentRealWorldItem.question;
+            
+            const options = [...currentRealWorldItem.options];
+            options.sort(() => Math.random() - 0.5);
+
+            realWorldOptions.innerHTML = '';
+            realWorldOptions.className = 'grid grid-cols-2 gap-3';
+            options.forEach(opt => {
+                const button = document.createElement('button');
+                button.textContent = opt;
+                button.className = 'py-2 px-4 bg-purple-200 rounded-md hover:bg-purple-300 transition';
+                button.onclick = () => checkRealWorldAnswer(opt);
+                realWorldOptions.appendChild(button);
+            });
+        }
+
+        function checkRealWorldAnswer(selectedName) {
+            const flash = document.getElementById('flash-message');
+            flash.classList.remove('correct-flash', 'incorrect-flash');
+            
+            if (selectedName === currentRealWorldItem.answer) {
+                flash.textContent = 'அருமை! சரியான பதில்!';
+                flash.className = 'show correct-flash';
+                playSound('C5', '8n');
+            } else {
+                flash.textContent = 'தவறான விடை!';
+                flash.className = 'show incorrect-flash';
+                playSound('C3', '8n');
+            }
+            setTimeout(() => {
+                flash.className = '';
+            }, 1500);
+        }
+
+        const drawingCanvas = document.getElementById('drawing-canvas');
+        const drawingCtx = drawingCanvas.getContext('2d');
+        let selectedDrawShape = null;
+        let isDrawing = false;
+        let startX, startY;
+        let shapesOnCanvas = [];
+
+        // --- UPDATED DRAWING CANVAS LOGIC ---
+        function initDrawingCanvas() {
+            const drawToolControls = document.getElementById('draw-tool-controls');
+            drawToolControls.querySelectorAll('button').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    drawToolControls.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    selectedDrawShape = btn.dataset.shape;
+                });
+            });
+
+            // Helper to get coordinates for both mouse and touch events
+            function getCanvasPos(e) {
+                const rect = drawingCanvas.getBoundingClientRect();
+                const clientX = e.type.startsWith('touch') ? (e.changedTouches[0] || e.touches[0]).clientX : e.clientX;
+                const clientY = e.type.startsWith('touch') ? (e.changedTouches[0] || e.touches[0]).clientY : e.clientY;
+                return { x: clientX - rect.left, y: clientY - rect.top };
+            }
+
+            function startDraw(e) {
+                if (!selectedDrawShape) return;
+                e.preventDefault();
+                isDrawing = true;
+                const pos = getCanvasPos(e);
+                startX = pos.x;
+                startY = pos.y;
+            }
+
+            function moveDraw(e) {
+                if (!isDrawing) return;
+                e.preventDefault();
+                redrawShapes();
+                const pos = getCanvasPos(e);
+                drawingCtx.strokeStyle = '#3b82f6';
+                drawingCtx.lineWidth = 3;
+                drawShape(selectedDrawShape, startX, startY, pos.x, pos.y);
+            }
+
+            function endDraw(e) {
+                if (!isDrawing) return;
+                isDrawing = false;
+                const pos = getCanvasPos(e);
+                shapesOnCanvas.push({ type: selectedDrawShape, x1: startX, y1: startY, x2: pos.x, y2: pos.y });
+                redrawShapes();
+            }
+
+            // Add unified listeners for mouse and touch
+            drawingCanvas.addEventListener('mousedown', startDraw);
+            drawingCanvas.addEventListener('mousemove', moveDraw);
+            drawingCanvas.addEventListener('mouseup', endDraw);
+            drawingCanvas.addEventListener('mouseleave', () => { 
+                if (isDrawing) {
+                    isDrawing = false;
+                    redrawShapes(); // Redraw to clear the preview line
+                }
+            });
+
+            drawingCanvas.addEventListener('touchstart', startDraw, { passive: false });
+            drawingCanvas.addEventListener('touchmove', moveDraw, { passive: false });
+            drawingCanvas.addEventListener('touchend', endDraw);
+        }
+
+        function redrawShapes() {
+            drawingCtx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
+            drawingCtx.strokeStyle = '#000';
+            drawingCtx.lineWidth = 2;
+            shapesOnCanvas.forEach(shape => {
+                drawShape(shape.type, shape.x1, shape.y1, shape.x2, shape.y2);
+            });
+        }
+
+        function drawShape(type, x1, y1, x2, y2) {
+            drawingCtx.beginPath();
+            if (type === 'rectangle') {
+                drawingCtx.rect(x1, y1, x2 - x1, y2 - y1);
+            } else if (type === 'circle') {
+                const radius = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+                drawingCtx.arc(x1, y1, radius, 0, 2 * Math.PI);
+            } else if (type === 'triangle') {
+                drawingCtx.moveTo(x1, y1);
+                drawingCtx.lineTo(x2, y2);
+                drawingCtx.lineTo(x1 - (x2 - x1), y2);
+                drawingCtx.closePath();
+            }
+            drawingCtx.stroke();
+        }
+
+        function clearDrawingCanvas() {
+            shapesOnCanvas = [];
+            redrawShapes();
+        }
+        
+        const barGraphCanvas = document.getElementById('bargraph-canvas');
+        const barGraphCtx = barGraphCanvas.getContext('2d');
+        const bargraphInputs = document.getElementById('bargraph-inputs');
+        let barGraphData = { 'ஆப்பிள்': 5, 'ஆரஞ்சு': 8, 'மாம்பழம்': 3 };
+
+        function initBarGraph() {
+            bargraphInputs.innerHTML = '';
+            Object.keys(barGraphData).forEach(fruit => {
+                const div = document.createElement('div');
+                div.className = 'flex items-center gap-2';
+                div.innerHTML = `<label for="${fruit}-input" class="w-20 font-medium text-gray-700">${fruit}:</label>
+                                 <input type="number" id="${fruit}-input" value="${barGraphData[fruit]}" min="0" max="20" class="w-24 p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">`;
+                bargraphInputs.appendChild(div);
+                document.getElementById(`${fruit}-input`).addEventListener('input', (e) => {
+                    barGraphData[fruit] = parseInt(e.target.value) || 0;
+                    drawBarGraph();
+                });
+            });
+            drawBarGraph();
+        }
+
+        function drawBarGraph() {
+            barGraphCtx.clearRect(0, 0, barGraphCanvas.width, barGraphCanvas.height);
+            const labels = Object.keys(barGraphData);
+            const values = Object.values(barGraphData);
+            const maxValue = Math.max(...values, 10);
+            const yAxisMargin = 50;
+            const xAxisMargin = 40;
+            const chartHeight = barGraphCanvas.height - xAxisMargin;
+            const chartWidth = barGraphCanvas.width - yAxisMargin;
+            const barWidth = chartWidth / labels.length / 2;
+            const barGap = barWidth;
+            
+            // Draw Y-axis and grid lines
+            barGraphCtx.strokeStyle = '#d1d5db'; // light grey for grid lines
+            barGraphCtx.lineWidth = 1;
+            barGraphCtx.font = "12px 'Inter', sans-serif";
+            barGraphCtx.fillStyle = '#6b7280'; // grey for text
+            barGraphCtx.textAlign = 'right';
+            const step = Math.ceil(maxValue / 5) || 1;
+            for (let i = 0; i <= maxValue; i += step) {
+                const y = chartHeight - (i / maxValue) * (chartHeight - 20);
+                barGraphCtx.fillText(i, yAxisMargin - 8, y + 4);
+                
+                // Draw grid line
+                barGraphCtx.beginPath();
+                barGraphCtx.moveTo(yAxisMargin, y);
+                barGraphCtx.lineTo(yAxisMargin + chartWidth, y);
+                barGraphCtx.stroke();
+            }
+
+            // Draw X-axis
+            barGraphCtx.strokeStyle = '#9ca3af'; // darker grey for axis line
+            barGraphCtx.beginPath();
+            barGraphCtx.moveTo(yAxisMargin, chartHeight);
+            barGraphCtx.lineTo(yAxisMargin + chartWidth, chartHeight);
+            barGraphCtx.stroke();
+
+            // Draw bars and labels
+            values.forEach((value, i) => {
+                const x = yAxisMargin + barGap / 2 + i * (barWidth + barGap);
+                const barHeight = (value / maxValue) * (chartHeight - 20);
+                
+                // Bar color
+                barGraphCtx.fillStyle = ['#f87171', '#fb923c', '#facc15', '#a3e635'][i % 4];
+                
+                // Draw bar with subtle animation effect
+                barGraphCtx.fillRect(x, chartHeight, barWidth, -barHeight);
+
+                // X-axis labels
+                barGraphCtx.fillStyle = '#374151';
+                barGraphCtx.textAlign = 'center';
+                barGraphCtx.font = "14px 'Baloo Thambi 2', cursive";
+                barGraphCtx.fillText(labels[i], x + barWidth / 2, chartHeight + 25);
+            });
+        }
+        
+        const mathProblemEl = document.getElementById('math-problem');
+        const mathAnswerEl = document.getElementById('math-answer');
+        const mathFeedbackEl = document.getElementById('math-feedback');
+        const quizCounterEl = document.getElementById('quiz-counter');
+        const mathVisualsEl = document.getElementById('math-visuals');
+        const prevQuestionBtn = document.getElementById('prev-question-btn');
+        const nextQuestionBtn = document.getElementById('next-question-btn');
+        const resetQuizBtn = document.getElementById('reset-quiz-btn');
+        let quizQuestions = [];
+        let userAnswers = [];
+        let currentQuestionIndex = 0;
+
+        function generateQuizQuestions(count) {
+            const questions = [];
+            const operators = ['+', '-', 'x'];
+            for (let i = 0; i < count; i++) {
+                const operator = operators[Math.floor(Math.random() * operators.length)];
+                let num1, num2, answer;
+                switch(operator) {
+                    case '+': num1 = Math.floor(Math.random() * 10) + 1; num2 = Math.floor(Math.random() * 10) + 1; answer = num1 + num2; break;
+                    case '-': num1 = Math.floor(Math.random() * 10) + 5; num2 = Math.floor(Math.random() * (num1 -1)) + 1; answer = num1 - num2; break;
+                    case 'x': num1 = Math.floor(Math.random() * 5) + 2; num2 = Math.floor(Math.random() * 4) + 2; answer = num1 * num2; break;
+                }
+                questions.push({ num1, num2, operator, answer });
+            }
+            return questions;
+        }
+
+        function displayMathVisuals(q) {
+            mathVisualsEl.innerHTML = '';
+            const opSymbol = q.operator.replace('x', '×');
+
+            if (q.operator === '+') {
+                const group1 = document.createElement('div');
+                group1.className = 'math-visual-group';
+                for(let i=0; i<q.num1; i++) group1.innerHTML += '<div class="math-visual-item"></div>';
+                
+                const operatorEl = document.createElement('div');
+                operatorEl.className = 'math-visual-operator';
+                operatorEl.textContent = '+';
+
+                const group2 = document.createElement('div');
+                group2.className = 'math-visual-group';
+                for(let i=0; i<q.num2; i++) group2.innerHTML += '<div class="math-visual-item" style="background-color: #f97316;"></div>';
+
+                mathVisualsEl.append(group1, operatorEl, group2);
+            } else if (q.operator === '-') {
+                 const group = document.createElement('div');
+                 group.className = 'math-visual-group';
+                 for(let i=0; i<q.num1; i++) {
+                     const item = document.createElement('div');
+                     item.className = 'math-visual-item';
+                     if (i >= (q.num1 - q.num2)) {
+                         item.classList.add('crossed-out');
+                     }
+                     group.appendChild(item);
+                 }
+                 mathVisualsEl.appendChild(group);
+            } else if (q.operator === 'x') {
+                for(let i=0; i < q.num1; i++) {
+                    const group = document.createElement('div');
+                    group.className = 'math-visual-group';
+                    for(let j=0; j < q.num2; j++) {
+                        group.innerHTML += '<div class="math-visual-item"></div>';
+                    }
+                    mathVisualsEl.appendChild(group);
+                    if (i < q.num1 - 1) {
+                         const operatorEl = document.createElement('div');
+                         operatorEl.className = 'math-visual-operator';
+                         operatorEl.textContent = '+';
+                         mathVisualsEl.appendChild(operatorEl);
+                    }
+                }
+            }
+        }
+
+        function displayQuestion(index) {
+            const q = quizQuestions[index];
+            mathProblemEl.textContent = `${q.num1} ${q.operator.replace('x', '×')} ${q.num2} = ?`;
+            quizCounterEl.textContent = `கேள்வி ${index + 1} / ${quizQuestions.length}`;
+            mathAnswerEl.value = userAnswers[index] || '';
+            mathFeedbackEl.style.display = 'none';
+            displayMathVisuals(q);
+            prevQuestionBtn.disabled = index === 0;
+            nextQuestionBtn.disabled = index === quizQuestions.length - 1;
+        }
+
+        function initMentalMathQuiz() {
+            quizQuestions = generateQuizQuestions(50);
+            userAnswers = new Array(50).fill(null);
+            currentQuestionIndex = 0;
+            displayQuestion(currentQuestionIndex);
+        }
+
+        function checkMathAnswer() {
+            if (mathAnswerEl.value.trim() === '') {
+                mathFeedbackEl.textContent = 'தயவுசெய்து ஒரு விடையை உள்ளிடவும்.';
+                mathFeedbackEl.className = 'feedback incorrect';
+                mathFeedbackEl.style.display = 'block';
+                return;
+            }
+            const userAnswer = parseInt(mathAnswerEl.value);
+            userAnswers[currentQuestionIndex] = userAnswer;
+            const correctAnswer = quizQuestions[currentQuestionIndex].answer;
+            if (userAnswer === correctAnswer) {
+                mathFeedbackEl.textContent = 'மிகச் சரி!';
+                mathFeedbackEl.className = 'feedback correct';
+            } else {
+                mathFeedbackEl.textContent = `தவறு. சரியான விடை: ${correctAnswer}`;
+                mathFeedbackEl.className = 'feedback incorrect';
+            }
+            mathFeedbackEl.style.display = 'block';
+        }
+
+        prevQuestionBtn.addEventListener('click', () => {
+            if (currentQuestionIndex > 0) {
+                currentQuestionIndex--;
+                displayQuestion(currentQuestionIndex);
+            }
+        });
+
+        nextQuestionBtn.addEventListener('click', () => {
+            if (currentQuestionIndex < quizQuestions.length - 1) {
+                currentQuestionIndex++;
+                displayQuestion(currentQuestionIndex);
+            }
+        });
+
+        resetQuizBtn.addEventListener('click', initMentalMathQuiz);
+        
+        // --- Initial Load ---
+        window.onload = () => {
+            document.querySelector('.tab-btn').click();
+            setupNumberCanvas();
+            nextNumberGame();
+            loadTamilVoice();
+        };
+    </script>
+</body>
+</html>

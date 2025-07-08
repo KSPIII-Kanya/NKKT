@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="ta">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>கணித சிமுலேஷன்</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+Thambi+2:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <style>
+        body { font-family: 'Baloo Thambi 2', cursive; background-color: #f0f9ff; }
+        .tab-btn.active { border-bottom-color: #3b82f6; color: #1d4ed8; font-weight: bold; }
+        .content { display: none; }
+        .content.active { display: block; }
+        .card { background-color: white; border-radius: 1.5rem; padding: 1.5rem; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05); display: flex; flex-direction: column; }
+        .interactive-element { border: 2px dashed #93c5fd; border-radius: 1rem; padding: 1rem; margin-top: 1rem; min-height: 350px; flex-grow: 1; overflow: hidden; }
+        .btn-primary { background-color: #3b82f6; color: white; padding: 0.75rem 1.5rem; border-radius: 0.75rem; font-weight: bold; border: none; cursor: pointer; transition: background-color 0.3s; }
+        .btn-primary:hover { background-color: #2563eb; }
+        .btn-primary:disabled { background-color: #9ca3af; cursor: not-allowed; }
+        
+        /* Day Train */
+        .day-train-container { display: flex; align-items: center; justify-content: center; gap: 5px; flex-wrap: wrap; }
+        .day-carriage { padding: 0.5rem 1rem; border: 2px solid #3b82f6; border-radius: 0.5rem; font-weight: bold; cursor: pointer; transition: all 0.3s; }
+        .day-carriage.today { background-color: #ef4444; color: white; border-color: #b91c1c; transform: scale(1.1); }
+        .day-carriage.yesterday, .day-carriage.tomorrow { background-color: #60a5fa; color: white; border-color: #2563eb; }
+        
+        /* Season Tree */
+        #season-tree-container { text-align: center; }
+        #season-tree { width: 120px; height: 120px; margin: 0 auto; transition: all 0.5s; }
+        .season-btn { background-color: #e0f2fe; border: 1px solid #7dd3fc; padding: 0.25rem 0.5rem; border-radius: 0.5rem; margin: 0 2px; }
+        .season-btn.active { background-color: #3b82f6; color: white; }
+        .month-chip { background-color: #dbeafe; color: #1e40af; padding: 0.5rem 1rem; border-radius: 1rem; cursor: pointer; transition: all 0.3s; }
+        .month-chip:hover { background-color: #60a5fa; color: white; }
+        
+        /* Clock */
+        .clock { width: 200px; height: 200px; border: 10px solid #3b82f6; border-radius: 50%; position: relative; margin: auto; background: white; }
+        .clock-face { position: absolute; width: 100%; height: 100%; top: 0; left: 0; }
+        .clock-face .number { position: absolute; width: 30px; height: 30px; line-height: 30px; text-align: center; font-weight: bold; font-size: 1.1rem; color: #374151; }
+        .hand { position: absolute; height: 4px; background: #374151; top: 50%; left: 50%; transform-origin: left; z-index: 10; transition: transform 0.2s linear; margin-top: -2px; }
+        .hour-hand { width: 35%; height: 6px; margin-top: -3px; }
+        .minute-hand { width: 45%; }
+        .clock-center { position: absolute; top: 50%; left: 50%; width: 15px; height: 15px; background: #ef4444; border-radius: 50%; transform: translate(-50%, -50%); z-index: 11; }
+        input[type="range"] { -webkit-appearance: none; appearance: none; width: 100%; height: 10px; background: #d1d5db; border-radius: 5px; outline: none; opacity: 0.7; transition: opacity .2s; }
+        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 25px; height: 25px; background: #3b82f6; cursor: pointer; border-radius: 50%; }
+        input[type="range"]::-moz-range-thumb { width: 25px; height: 25px; background: #3b82f6; cursor: pointer; border-radius: 50%; }
+        
+        /* Drawing Canvas */
+        #drawing-canvas { border: 2px solid #3b82f6; border-radius: 0.5rem; cursor: crosshair; }
+        .color-btn { width: 30px; height: 30px; border-radius: 50%; border: 2px solid transparent; cursor: pointer; }
+        .color-btn.active { border-color: #1d4ed8; transform: scale(1.2); }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <div class="text-center max-w-4xl mx-auto">
+        <h1 class="text-2xl md:text-4xl font-bold text-blue-800">கன்ய சம்பூர்ணா திட்டம் / கன்யா பெண்கள் கல்வி திட்டம்</h1>
+        <p class="text-sm md:text-lg text-gray-600 mt-2">இத்திட்டம் TITAN மற்றும் KALIKE நிறுவனங்களின் பங்களிப்புடன் செயல்படுத்தப்படுகிறது</p>
+        <h2 class="text-xl md:text-3xl font-bold text-orange-500 mt-4">நடுவுல கொஞ்சம் கற்றலைத் தேடி</h2>
+        <h3 class="text-lg md:text-2xl font-bold text-green-600 mt-2">கணிதம்</h3>
+        <p class="text-md md:text-xl text-gray-700 mt-1">ஜூலை - 3 வது வாரம்</p>
+    </div>
+
+    <div class="max-w-6xl mx-auto mt-8">
+        <!-- Tabs -->
+        <div class="flex justify-center border-b-2 border-gray-200 space-x-2 md:space-x-8">
+            <button class="tab-btn active text-base md:text-xl p-2 md:p-4" onclick="openTab('tab1')">வாய்மொழி பயிற்சி(15 நிமிடங்கள்)</button>
+            <button class="tab-btn text-base md:text-xl p-2 md:p-4" onclick="openTab('tab2')">ஆசிரியர் மற்றும் வலுப்படுத்துதல் செயல்பாடு (45 நிமிடங்கள்)</button>
+            <button class="tab-btn text-base md:text-xl p-2 md:p-4" onclick="openTab('tab3')">கல்விசார் செயல்பாடுகள் (15 நிமிடங்கள்)</button>
+        </div>
+
+        <!-- Tab 1 -->
+        <div id="tab1" class="content active p-4 md:p-8">
+             <div class="grid md:grid-cols-2 gap-8">
+                <div class="card">
+                    <h3 class="text-2xl font-bold text-center text-blue-700 mb-4">பெருக்கல் வாய்ப்பாடு</h3>
+                    <div class="text-center mb-4">
+                        <p class="mb-2">ஒரு எண்ணைத் தேர்ந்தெடுக்கவும் (6-10):</p>
+                        <div id="table-selector" class="flex justify-center space-x-2"></div>
+                    </div>
+                    <div class="interactive-element flex flex-col justify-between">
+                        <div id="multiplication-display" class="text-center">
+                             <p class="text-gray-500">தொடங்க ஒரு எண்ணை அழுத்தவும்.</p>
+                        </div>
+                        <div id="multiplication-controls" class="flex justify-between items-center mt-4"></div>
+                    </div>
+                </div>
+                <div class="card">
+                    <h3 class="text-2xl font-bold text-center text-blue-700 mb-4">எண்களின் பெயர்கள் (1-20)</h3>
+                     <div class="text-center mb-4">
+                        <div class="inline-flex rounded-md shadow-sm">
+                            <button id="learn-mode-btn" class="btn-primary btn-secondary active rounded-l-lg" onclick="setNumberMode('learn')">கற்க</button>
+                            <button id="practice-mode-btn" class="btn-primary btn-secondary rounded-r-lg" onclick="setNumberMode('practice')">பயிற்சி</button>
+                        </div>
+                    </div>
+                    <div class="interactive-element flex flex-col items-center justify-center">
+                        <div id="number-learn-mode" class="text-center">
+                            <div class="flex items-center justify-center gap-4">
+                                <button id="prev-number-btn" class="btn-primary text-2xl">&lt;</button>
+                                <div id="learn-number-display" class="text-6xl font-bold text-blue-500 w-24 text-center"></div>
+                                <button id="next-number-btn" class="btn-primary text-2xl">&gt;</button>
+                            </div>
+                            <div id="learn-name-display" class="text-3xl font-bold text-green-600 mt-4"></div>
+                            <i id="speak-btn" class="fas fa-volume-up speaker-btn mt-4 text-3xl"></i>
+                        </div>
+                        <div id="number-practice-mode" class="hidden w-full text-center">
+                            <p class="mb-4">சரியான பெயரைத் தேர்ந்தெடுக்கவும்:</p>
+                            <div id="number-name-question" class="text-6xl font-bold text-blue-500 mb-4"></div>
+                            <div id="number-name-options" class="grid grid-cols-2 gap-4 w-full"></div>
+                            <div id="number-name-feedback" class="mt-4 font-bold text-lg"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 2 -->
+        <div id="tab2" class="content p-4 md:p-8">
+             <div class="grid lg:grid-cols-2 gap-8">
+                <div class="card">
+                    <h3 class="text-2xl font-bold text-center text-blue-700 mb-4">நாட்கள் மற்றும் மாதங்கள்</h3>
+                    <div class="interactive-element flex flex-col justify-around">
+                        <div class="text-center">
+                            <p class="font-bold text-lg text-orange-600">வாரத்தின் ரயில்</p>
+                            <p class="text-sm text-gray-500">ஒரு நாளைக் கிளிக் செய்யவும்</p>
+                            <div id="day-train-container" class="day-train-container my-4"></div>
+                            <div id="day-info-display" class="mt-2 font-bold text-xl h-20"></div>
+                        </div>
+                        <hr class="my-4 border-t-2 border-dashed border-gray-300">
+                        <div id="season-tree-container">
+                            <p class="font-bold text-lg text-center text-orange-600">பருவ கால மரம்</p>
+                            <div id="season-buttons" class="flex justify-center flex-wrap gap-2 my-2"></div>
+                            <div id="season-tree" class="my-2"></div>
+                            <div id="season-months-display" class="flex justify-center gap-2 flex-wrap my-2"></div>
+                            <div id="month-info-display" class="mt-2 font-bold text-xl h-8"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card">
+                    <h3 class="text-2xl font-bold text-center text-blue-700 mb-4">கடிகாரம் அறிதல்</h3>
+                    <div class="interactive-element flex flex-col items-center justify-around">
+                        <p id="time-challenge-text" class="text-center font-bold text-xl text-orange-600 h-10"></p>
+                        <div class="clock" id="clock-face-container">
+                            <div class="hand hour-hand" id="hour-hand-2"></div>
+                            <div class="hand minute-hand" id="minute-hand-2"></div>
+                            <div class="clock-center"></div>
+                        </div>
+                        <p id="user-set-time" class="text-center font-bold text-2xl text-blue-700 my-2 h-8"></p>
+                        <div class="w-full mt-2 px-4">
+                            <label class="font-bold">மணி</label>
+                            <input type="range" id="hour-slider" min="1" max="12" value="12" step="1" oninput="updateClockFromSliders()">
+                             <label class="font-bold mt-2">நிமிடம்</label>
+                            <input type="range" id="minute-slider" min="0" max="59" value="0" step="1" oninput="updateClockFromSliders()">
+                        </div>
+                        <div id="clock-feedback" class="font-bold text-lg h-6 text-center mt-2"></div>
+                        <button id="check-time-btn" class="btn-primary mt-2">சரிபார்</button>
+                    </div>
+                </div>
+                <div class="card lg:col-span-2">
+                    <h3 class="text-2xl font-bold text-center text-blue-700 mb-4">ஈரிலக்க எண்ணால் பெருக்குதல்</h3>
+                    <div class="interactive-element text-center">
+                        <div class="flex justify-between items-center mb-4">
+                            <h4 id="question-counter" class="font-bold text-lg">வினா: 1 / 50</h4>
+                            <button id="reset-quiz-btn" class="btn-primary bg-red-500 hover:bg-red-600 text-sm py-2 px-4">மீண்டும் தொடங்கு</button>
+                        </div>
+                        <div id="mul-problem" class="text-4xl font-bold my-2"></div>
+                        <div id="partial-product-display" class="my-4 min-h-[80px] text-left p-2 bg-gray-100 rounded-lg"></div>
+                        <input type="number" id="mul-input" class="text-center text-2xl p-2 border-2 border-blue-300 rounded-lg w-40" placeholder="விடை">
+                        <button id="mul-check" class="btn-primary ml-4">சரிபார்</button>
+                        <div id="mul-feedback" class="mt-2 font-bold text-2xl h-8"></div>
+                        <div class="flex justify-center items-center mt-4 gap-4">
+                            <button id="prev-question-btn" class="btn-primary">&lt; முந்தையது</button>
+                            <button id="next-question-btn" class="btn-primary">அடுத்தது &gt;</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 3 -->
+        <div id="tab3" class="content p-4 md:p-8">
+             <div class="grid md:grid-cols-2 gap-8">
+                <div class="card">
+                    <h3 class="text-2xl font-bold text-center text-blue-700 mb-4">சுற்றியுள்ள பொருட்களின் வடிவங்கள்</h3>
+                    <div class="flex flex-col h-full">
+                        <div class="interactive-element relative overflow-hidden bg-cyan-100 p-4 flex-grow">
+                            <p id="shape-finder-prompt" class="text-center font-bold mb-2"></p>
+                            <div id="scene-container" class="relative w-full h-5/6">
+                                <!-- Sun -->
+                                <div id="shape-sun" data-shape="வட்டம்" class="absolute w-16 h-16 bg-yellow-400 rounded-full cursor-pointer" style="top: 5%; right: 5%;" onclick="checkShapeFinder(this)"></div>
+                                <!-- House -->
+                                <div class="absolute" style="bottom: 0; left: 50%; transform: translateX(-50%); width: 160px; height: 160px;">
+                                    <!-- Roof -->
+                                    <div id="shape-roof" data-shape="முக்கோணம்" class="absolute w-0 h-0 border-l-[80px] border-l-transparent border-r-[80px] border-r-transparent border-b-[60px] border-b-red-500 cursor-pointer" style="top: 0; left: 0;" onclick="checkShapeFinder(this)"></div>
+                                    <!-- House Body -->
+                                    <div id="shape-house" data-shape="சதுரம்" class="absolute w-full h-[100px] bg-orange-400 cursor-pointer" style="top: 60px; left: 0;" onclick="checkShapeFinder(this)"></div>
+                                    <!-- Door -->
+                                    <div id="shape-door" data-shape="செவ்வகம்" class="absolute w-8 h-16 bg-amber-800 cursor-pointer" style="bottom: 0; left: 50%; transform: translateX(-50%);" onclick="checkShapeFinder(this)"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="shape-finder-feedback" class="text-center font-bold text-xl h-8 mt-2"></div>
+                    </div>
+                </div>
+                 <div class="card">
+                    <h3 class="text-2xl font-bold text-center text-blue-700 mb-4">விதவிதமான வடிவங்களை வரைதல்</h3>
+                    <div class="interactive-element flex flex-col items-center">
+                        <canvas id="drawing-canvas" width="300" height="250"></canvas>
+                        <div class="flex flex-col items-center gap-4 mt-4">
+                             <div id="color-palette" class="flex justify-center gap-2"></div>
+                             <div class="flex justify-center gap-2">
+                                <button id="undo-btn" class="btn-primary bg-yellow-500 hover:bg-yellow-600 text-sm py-2 px-3">செயல்தவிர்</button>
+                                <button id="clear-canvas-btn" class="btn-primary bg-gray-500 hover:bg-gray-600 text-sm py-2 px-3">அழி</button>
+                             </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card">
+                    <h3 class="text-2xl font-bold text-center text-blue-700 mb-4">பட்டை வரைபடம் பயிற்சி</h3>
+                     <div class="interactive-element text-center">
+                        <p class="mb-2">வகுப்பில் உள்ள மாணவர்களின் எண்ணிக்கை (அதிகபட்சம் 50):</p>
+                        <div class="grid grid-cols-3 gap-2 mb-4">
+                            <div>
+                                <label for="bar-input-1" class="font-bold text-red-500">சிவப்பு</label>
+                                <input type="number" id="bar-input-1" class="w-full text-center border-2 rounded p-1" value="10" min="0" max="50">
+                            </div>
+                             <div>
+                                <label for="bar-input-2" class="font-bold text-green-500">பச்சை</label>
+                                <input type="number" id="bar-input-2" class="w-full text-center border-2 rounded p-1" value="25" min="0" max="50">
+                            </div>
+                             <div>
+                                <label for="bar-input-3" class="font-bold text-blue-500">நீலம்</label>
+                                <input type="number" id="bar-input-3" class="w-full text-center border-2 rounded p-1" value="15" min="0" max="50">
+                            </div>
+                        </div>
+                        <div class="flex justify-around items-end h-48 border-b-2 border-l-2 border-gray-400 p-2">
+                            <div class="w-12 h-full bg-red-500 transition-all duration-500" id="bar-red"></div>
+                            <div class="w-12 h-full bg-green-500 transition-all duration-500" id="bar-green"></div>
+                            <div class="w-12 h-full bg-blue-500 transition-all duration-500" id="bar-blue"></div>
+                        </div>
+                        <button id="draw-chart-btn" class="btn-primary mt-4">வரை</button>
+                    </div>
+                </div>
+                 <div class="card">
+                    <h3 class="text-2xl font-bold text-center text-blue-700 mb-4">மனக் கணக்கு</h3>
+                    <div class="interactive-element flex flex-col items-center justify-center">
+                         <div class="w-full flex justify-between items-center mb-4">
+                            <h4 id="mental-math-counter" class="font-bold text-lg">வினா: 1 / 30</h4>
+                            <button id="mental-math-reset" class="btn-primary bg-red-500 hover:bg-red-600 text-sm py-2 px-3">மீண்டும் தொடங்கு</button>
+                        </div>
+                        <div id="mental-math-problem" class="text-4xl font-bold my-2"></div>
+                        <input type="number" id="mental-math-input" class="text-center text-2xl p-2 border-2 border-blue-300 rounded-lg w-40" placeholder="விடை">
+                        <button id="mental-math-check" class="btn-primary mt-2">சரிபார்</button>
+                        <div id="mental-math-feedback" class="mt-2 font-bold text-2xl h-8"></div>
+                        <div class="w-full flex justify-between items-center mt-2">
+                            <button id="mental-math-prev" class="btn-primary">&lt; முன்</button>
+                            <span class="font-bold">சரியானவை: <span id="mental-math-score">0</span></span>
+                            <button id="mental-math-next" class="btn-primary">அடுத்து &gt;</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- Tab Logic ---
+        function openTab(tabId) {
+            document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            event.currentTarget.classList.add('active');
+        }
+
+        // --- Tab 1 Scripts (Unchanged) ---
+        const tableSelector = document.getElementById('table-selector');
+        const multiplicationDisplay = document.getElementById('multiplication-display');
+        const multiplicationControls = document.getElementById('multiplication-controls');
+        let currentMultiplier = 1;
+        let selectedTableNum = 0;
+        for (let i = 6; i <= 10; i++) {
+            const button = document.createElement('button');
+            button.className = 'btn-primary w-12 h-12';
+            button.textContent = i;
+            button.onclick = () => { selectedTableNum = i; currentMultiplier = 1; renderMultiplicationStep(); };
+            tableSelector.appendChild(button);
+        }
+        function renderMultiplicationStep() {
+            if (selectedTableNum === 0) return;
+            multiplicationDisplay.innerHTML = '';
+            const equation = document.createElement('p');
+            equation.className = 'text-2xl md:text-3xl font-bold mb-4';
+            equation.textContent = `${selectedTableNum} x ${currentMultiplier} = ${selectedTableNum * currentMultiplier}`;
+            multiplicationDisplay.appendChild(equation);
+            const separator = document.createElement('hr');
+            separator.className = 'my-2 md:my-4';
+            multiplicationDisplay.appendChild(separator);
+            const visualContainer = document.createElement('div');
+            visualContainer.className = 'flex flex-col items-center gap-2 mt-2';
+            for (let i = 0; i < currentMultiplier; i++) {
+                const group = document.createElement('div');
+                group.className = 'flex flex-wrap justify-center gap-1 p-1 rounded bg-sky-100 mb-1';
+                for (let j = 0; j < selectedTableNum; j++) {
+                    const object = document.createElement('div');
+                    object.className = 'w-4 h-4 bg-orange-400 rounded-full';
+                    group.appendChild(object);
+                }
+                visualContainer.appendChild(group);
+            }
+            multiplicationDisplay.appendChild(visualContainer);
+            renderMultiplicationControls();
+        }
+        function renderMultiplicationControls() {
+            multiplicationControls.innerHTML = '';
+            const prevBtn = document.createElement('button');
+            prevBtn.textContent = 'முன்';
+            prevBtn.className = 'btn-primary';
+            prevBtn.disabled = currentMultiplier <= 1;
+            if(prevBtn.disabled) prevBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            prevBtn.onclick = () => { currentMultiplier--; renderMultiplicationStep(); };
+            const stepText = document.createElement('span');
+            stepText.textContent = `${currentMultiplier} / 10`;
+            stepText.className = 'font-bold';
+            const nextBtn = document.createElement('button');
+            nextBtn.textContent = 'அடுத்து';
+            nextBtn.className = 'btn-primary';
+            nextBtn.disabled = currentMultiplier >= 10;
+            if(nextBtn.disabled) nextBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            nextBtn.onclick = () => { currentMultiplier++; renderMultiplicationStep(); };
+            multiplicationControls.appendChild(prevBtn);
+            multiplicationControls.appendChild(stepText);
+            multiplicationControls.appendChild(nextBtn);
+        }
+        const numberNames = { 1: "ஒன்று", 2: "இரண்டு", 3: "மூன்று", 4: "நான்கு", 5: "ஐந்து", 6: "ஆறு", 7: "ஏழு", 8: "எட்டு", 9: "ஒன்பது", 10: "பத்து", 11: "பதினொன்று", 12: "பன்னிரண்டு", 13: "பதிமூன்று", 14: "பதினான்கு", 15: "பதினைந்து", 16: "பதினாறு", 17: "பதினேழு", 18: "பதினெட்டு", 19: "பத்தொன்பது", 20: "இருபது" };
+        let currentLearnNumber = 1;
+        const synth = window.speechSynthesis;
+        function setNumberMode(mode) {
+            document.getElementById('number-learn-mode').classList.toggle('hidden', mode !== 'learn');
+            document.getElementById('number-practice-mode').classList.toggle('hidden', mode !== 'practice');
+            document.getElementById('learn-mode-btn').classList.toggle('active', mode === 'learn');
+            document.getElementById('practice-mode-btn').classList.toggle('active', mode !== 'learn');
+            if (mode === 'learn') displayLearnNumber(); else generateNumberNameQuestion();
+        }
+        function displayLearnNumber() {
+            document.getElementById('learn-number-display').textContent = currentLearnNumber;
+            document.getElementById('learn-name-display').textContent = numberNames[currentLearnNumber];
+        }
+        document.getElementById('next-number-btn').onclick = () => { currentLearnNumber = currentLearnNumber < 20 ? currentLearnNumber + 1 : 1; displayLearnNumber(); };
+        document.getElementById('prev-number-btn').onclick = () => { currentLearnNumber = currentLearnNumber > 1 ? currentLearnNumber - 1 : 20; displayLearnNumber(); };
+        document.getElementById('speak-btn').onclick = () => {
+            if (synth.speaking) { synth.cancel(); }
+            const utterance = new SpeechSynthesisUtterance(numberNames[currentLearnNumber]);
+            utterance.lang = 'ta-IN';
+            synth.speak(utterance);
+        };
+        let currentQuizNumber;
+        function generateNumberNameQuestion() {
+            const feedbackEl = document.getElementById('number-name-feedback');
+            feedbackEl.textContent = '';
+            currentQuizNumber = Math.floor(Math.random() * 20) + 1;
+            document.getElementById('number-name-question').textContent = currentQuizNumber;
+            const options = new Set([numberNames[currentQuizNumber]]);
+            while (options.size < 4) { options.add(numberNames[Math.floor(Math.random() * 20) + 1]); }
+            const shuffledOptions = Array.from(options).sort(() => Math.random() - 0.5);
+            const optionsContainer = document.getElementById('number-name-options');
+            optionsContainer.innerHTML = '';
+            shuffledOptions.forEach(option => {
+                const button = document.createElement('button');
+                button.textContent = option;
+                button.className = 'p-4 border-2 rounded-lg text-lg hover:bg-blue-100';
+                button.onclick = () => checkNumberName(option, button);
+                optionsContainer.appendChild(button);
+            });
+        }
+        function checkNumberName(selectedOption, btn) {
+            document.querySelectorAll('#number-name-options button').forEach(b => b.disabled = true);
+            const feedbackEl = document.getElementById('number-name-feedback');
+            if (selectedOption === numberNames[currentQuizNumber]) {
+                feedbackEl.textContent = 'சரியான விடை! 🎉';
+                feedbackEl.className = 'mt-4 font-bold text-lg text-green-600';
+                btn.classList.add('bg-green-500', 'text-white');
+                setTimeout(generateNumberNameQuestion, 1500);
+            } else {
+                feedbackEl.textContent = 'தவறான விடை, மீண்டும் முயற்சிக்கவும்.';
+                feedbackEl.className = 'mt-4 font-bold text-lg text-red-600';
+                btn.classList.add('bg-red-500', 'text-white');
+                setTimeout(generateNumberNameQuestion, 2000);
+            }
+        }
+
+        // --- Tab 2 Scripts (Unchanged from previous turn) ---
+        const dayTrainContainer = document.getElementById('day-train-container');
+        const dayInfoDisplay = document.getElementById('day-info-display');
+        const days = [ 'ஞாயிறு', 'திங்கள்', 'செவ்வாய்', 'புதன்', 'வியாழன்', 'வெள்ளி', 'சனி' ];
+        const dayAbbr = [ 'ஞா', 'தி', 'செ', 'பு', 'வி', 'வெ', 'சனி' ];
+        dayAbbr.forEach((day, index) => {
+            const dayCarriage = document.createElement('div');
+            dayCarriage.textContent = day;
+            dayCarriage.className = 'day-carriage';
+            dayCarriage.dataset.index = index;
+            dayCarriage.onclick = () => {
+                const todayIndex = parseInt(dayCarriage.dataset.index);
+                const yesterdayIndex = (todayIndex - 1 + days.length) % days.length;
+                const tomorrowIndex = (todayIndex + 1) % days.length;
+                document.querySelectorAll('.day-carriage').forEach(c => {
+                    c.classList.remove('today', 'yesterday', 'tomorrow');
+                    const cIndex = parseInt(c.dataset.index);
+                    if (cIndex === todayIndex) c.classList.add('today');
+                    if (cIndex === yesterdayIndex) c.classList.add('yesterday');
+                    if (cIndex === tomorrowIndex) c.classList.add('tomorrow');
+                });
+                dayInfoDisplay.innerHTML = `நேற்று: ${days[yesterdayIndex]} <br> <span class="text-red-600">இன்று: ${days[todayIndex]}</span> <br> நாளை: ${days[tomorrowIndex]}`;
+            };
+            dayTrainContainer.appendChild(dayCarriage);
+        });
+        const seasonButtons = document.getElementById('season-buttons');
+        const seasonTree = document.getElementById('season-tree');
+        const seasonMonthsDisplay = document.getElementById('season-months-display');
+        const monthInfoDisplay = document.getElementById('month-info-display');
+        const seasons = { 'இளவேனில்': { months: ['சித்திரை', 'வைகாசி'], color: '#90EE90' }, 'முதுவேனில்': { months: ['ஆனி', 'ஆடி'], color: '#FFD700' }, 'கார்': { months: ['ஆவணி', 'புரட்டாசி'], color: '#87CEEB' }, 'கூதிர்': { months: ['ஐப்பசி', 'கார்த்திகை'], color: '#FFA07A' }, 'முன்பனி': { months: ['மார்கழி', 'தை'], color: '#ADD8E6' }, 'பின்பனி': { months: ['மாசி', 'பங்குனி'], color: '#E6E6FA' } };
+        const monthDetails = { 'சித்திரை': { e: 'April', d: 30 }, 'வைகாசி': { e: 'May', d: 31 }, 'ஆனி': { e: 'June', d: 30 }, 'ஆடி': { e: 'July', d: 31 }, 'ஆவணி': { e: 'August', d: 31 }, 'புரட்டாசி': { e: 'September', d: 30 }, 'ஐப்பசி': { e: 'October', d: 31 }, 'கார்த்திகை': { e: 'November', d: 30 }, 'மார்கழி': { e: 'December', d: 31 }, 'தை': { e: 'January', d: 31 }, 'மாசி': { e: 'February', d: 28 }, 'பங்குனி': { e: 'March', d: 31 } };
+        seasonTree.innerHTML = `<svg viewBox="0 0 100 100"><path d="M 50,90 C 40,80 40,70 40,60 L 45,60 L 45,20 C 45,10 55,10 55,20 L 55,60 L 60,60 C 60,70 60,80 50,90 Z" fill="#A0522D"></path><circle id="tree-leaves" cx="50" cy="25" r="20" fill="#228B22" transition="fill 0.5s"></circle></svg>`;
+        const treeLeaves = document.getElementById('tree-leaves');
+        Object.keys(seasons).forEach(seasonName => {
+            const btn = document.createElement('button');
+            btn.textContent = seasonName;
+            btn.className = 'season-btn';
+            btn.onclick = () => {
+                document.querySelectorAll('.season-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                treeLeaves.style.fill = seasons[seasonName].color;
+                seasonMonthsDisplay.innerHTML = '';
+                seasons[seasonName].months.forEach(monthName => {
+                    const monthChip = document.createElement('div');
+                    monthChip.textContent = monthName;
+                    monthChip.className = 'month-chip';
+                    monthChip.onclick = () => {
+                        const details = monthDetails[monthName];
+                        monthInfoDisplay.textContent = `${monthName} - ${details.e} (${details.d} நாட்கள்)`;
+                    };
+                    seasonMonthsDisplay.appendChild(monthChip);
+                });
+                monthInfoDisplay.textContent = '';
+            };
+            seasonButtons.appendChild(btn);
+        });
+        const clockFaceContainer = document.getElementById('clock-face-container');
+        const hourHand2 = document.getElementById('hour-hand-2');
+        const minuteHand2 = document.getElementById('minute-hand-2');
+        const hourSlider = document.getElementById('hour-slider');
+        const minuteSlider = document.getElementById('minute-slider');
+        const timeChallengeText = document.getElementById('time-challenge-text');
+        const userSetTimeDisplay = document.getElementById('user-set-time');
+        const clockFeedback = document.getElementById('clock-feedback');
+        const checkTimeBtn = document.getElementById('check-time-btn');
+        const timeChallenges = [ { text: "காலை 3 மணி", h: 3, m: 0 }, { text: "பிற்பகல் 4:30", h: 16, m: 30 }, { text: "காலை 9:15", h: 9, m: 15 }, { text: "மாலை 6:00", h: 18, m: 0 }, { text: "நண்பகல் 12:45", h: 12, m: 45 }, { text: "காலை 7:20", h: 7, m: 20 }, ];
+        let currentChallenge = {};
+        function updateClockFromSliders() {
+            const hour = parseInt(hourSlider.value);
+            const minute = parseInt(minuteSlider.value);
+            setClockTime(hour, minute);
+            userSetTimeDisplay.textContent = `நீங்கள் அமைத்த நேரம்: ${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
+        }
+        function setClockTime(h, m) {
+            const minuteAngle = m * 6;
+            const hourAngle = (h % 12) * 30 + m * 0.5;
+            minuteHand2.style.transform = `rotate(${minuteAngle - 90}deg)`;
+            hourHand2.style.transform = `rotate(${hourAngle - 90}deg)`;
+        }
+        function newTimeChallenge() {
+            clockFeedback.textContent = '';
+            currentChallenge = timeChallenges[Math.floor(Math.random() * timeChallenges.length)];
+            timeChallengeText.textContent = `நேரத்தை அமைக்கவும்: ${currentChallenge.text}`;
+            hourSlider.value = 12;
+            minuteSlider.value = 0;
+            updateClockFromSliders();
+        }
+        checkTimeBtn.onclick = () => {
+            const setHour = parseInt(hourSlider.value);
+            const setMinute = parseInt(minuteSlider.value);
+            const challengeHour = currentChallenge.h % 12 === 0 ? 12 : currentChallenge.h % 12;
+            const challengeMinute = currentChallenge.m;
+            if (setHour === challengeHour && setMinute === challengeMinute) {
+                clockFeedback.textContent = 'மிகச் சரி! 👍';
+                clockFeedback.className = 'font-bold text-lg text-green-600';
+                setTimeout(newTimeChallenge, 2000);
+            } else {
+                clockFeedback.textContent = 'தவறு, மீண்டும் முயலவும்.';
+                clockFeedback.className = 'font-bold text-lg text-red-600';
+            }
+        };
+        const clockFace = document.createElement('div');
+        clockFace.className = 'clock-face';
+        clockFaceContainer.insertBefore(clockFace, clockFaceContainer.firstChild);
+        for (let i = 1; i <= 12; i++) {
+            const angle = (i * 30 - 90) * (Math.PI / 180);
+            const x = 85 * Math.cos(angle);
+            const y = 85 * Math.sin(angle);
+            const numberDiv = document.createElement('div');
+            numberDiv.className = 'number';
+            numberDiv.textContent = i;
+            numberDiv.style.left = `calc(50% + ${x}px - 15px)`;
+            numberDiv.style.top = `calc(50% + ${y}px - 15px)`;
+            clockFace.appendChild(numberDiv);
+        }
+        const mulProblemEl = document.getElementById('mul-problem');
+        const partialProductDisplay = document.getElementById('partial-product-display');
+        const mulInputEl = document.getElementById('mul-input');
+        const mulCheckBtn = document.getElementById('mul-check');
+        const mulFeedbackEl = document.getElementById('mul-feedback');
+        const questionCounterEl = document.getElementById('question-counter');
+        const prevQuestionBtn = document.getElementById('prev-question-btn');
+        const nextQuestionBtn = document.getElementById('next-question-btn');
+        const resetQuizBtn = document.getElementById('reset-quiz-btn');
+        let mul_questions = [];
+        let currentQuestionIndex = 0;
+        function generateQuizQuestions() {
+            mul_questions = [];
+            for(let i = 0; i < 50; i++) {
+                const num1 = Math.floor(Math.random() * 40) + 10;
+                const num2 = Math.floor(Math.random() * 8) + 2;
+                mul_questions.push({ num1, num2, answer: num1 * num2 });
+            }
+        }
+        function displayQuestion(index) {
+            const q = mul_questions[index];
+            mulProblemEl.textContent = `${q.num1} x ${q.num2} = ?`;
+            const tens = Math.floor(q.num1 / 10) * 10;
+            const ones = q.num1 % 10;
+            partialProductDisplay.innerHTML = `<p>1. எண்ணைப் பிரிக்கவும்: ${q.num1} = ${tens} + ${ones}</p><p>2. பகுதிகளைப் பெருக்கவும்: (${tens} x ${q.num2}) + (${ones} x ${q.num2})</p><p>3. கூட்டவும்: ${tens * q.num2} + ${ones * q.num2} = ?</p>`;
+            mulInputEl.value = '';
+            mulFeedbackEl.textContent = '';
+            questionCounterEl.textContent = `வினா: ${index + 1} / 50`;
+            prevQuestionBtn.disabled = index === 0;
+            nextQuestionBtn.disabled = index === mul_questions.length - 1;
+        }
+        mulCheckBtn.onclick = () => {
+            if (mulInputEl.value === '') {
+                mulFeedbackEl.textContent = 'தயவுசெய்து விடையை உள்ளிடவும்.';
+                mulFeedbackEl.className = 'mt-2 font-bold text-xl text-yellow-500';
+                return;
+            }
+            const userAnswer = parseInt(mulInputEl.value);
+            if (userAnswer === mul_questions[currentQuestionIndex].answer) {
+                mulFeedbackEl.textContent = 'மிகச் சரி! 👍';
+                mulFeedbackEl.className = 'mt-2 font-bold text-2xl text-green-600';
+            } else {
+                mulFeedbackEl.textContent = `தவறு. சரியான விடை: ${mul_questions[currentQuestionIndex].answer}`;
+                mulFeedbackEl.className = 'mt-2 font-bold text-2xl text-red-600';
+            }
+        };
+        nextQuestionBtn.onclick = () => { if (currentQuestionIndex < mul_questions.length - 1) { currentQuestionIndex++; displayQuestion(currentQuestionIndex); } };
+        prevQuestionBtn.onclick = () => { if (currentQuestionIndex > 0) { currentQuestionIndex--; displayQuestion(currentQuestionIndex); } };
+        resetQuizBtn.onclick = () => { currentQuestionIndex = 0; generateQuizQuestions(); displayQuestion(0); };
+
+        // --- Tab 3 Scripts (REWORKED) ---
+        // Shape Finder
+        const shapeFinderPrompt = document.getElementById('shape-finder-prompt');
+        const shapeFinderFeedback = document.getElementById('shape-finder-feedback');
+        const shapesToFind = ["வட்டம்", "சதுரம்", "செவ்வகம்", "முக்கோணம்"];
+        let currentShapeToFind;
+        function newShapeFinderQuestion() {
+            shapeFinderFeedback.textContent = '';
+            currentShapeToFind = shapesToFind[Math.floor(Math.random() * shapesToFind.length)];
+            shapeFinderPrompt.textContent = `${currentShapeToFind} வடிவத்தைக் கிளிக் செய்யவும்.`;
+        }
+        function checkShapeFinder(el) {
+            const selectedShape = el.dataset.shape;
+            if (selectedShape === currentShapeToFind) {
+                shapeFinderFeedback.textContent = 'சரியான விடை! 🎉';
+                shapeFinderFeedback.className = 'text-center font-bold text-xl h-8 mt-2 text-green-600';
+                setTimeout(newShapeFinderQuestion, 2000);
+            } else {
+                shapeFinderFeedback.textContent = 'தவறு, மீண்டும் முயற்சிக்கவும்.';
+                shapeFinderFeedback.className = 'text-center font-bold text-xl h-8 mt-2 text-red-600';
+            }
+        }
+        
+        // Drawing Canvas
+        const canvas = document.getElementById('drawing-canvas');
+        const ctx = canvas.getContext('2d');
+        const colorPalette = document.getElementById('color-palette');
+        const clearBtn = document.getElementById('clear-canvas-btn');
+        const undoBtn = document.getElementById('undo-btn');
+        let isDrawing = false;
+        let lastX = 0;
+        let lastY = 0;
+        let history = [];
+
+        function saveCanvasState() {
+            history.push(ctx.getImageData(0, 0, canvas.width, canvas.height));
+        }
+
+        function undoLast() {
+            if (history.length > 0) {
+                history.pop(); // Pop the current state
+                if (history.length > 0) {
+                    ctx.putImageData(history[history.length - 1], 0, 0);
+                } else {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                }
+            }
+        }
+        undoBtn.onclick = undoLast;
+
+        ctx.strokeStyle = '#000000';
+        ctx.lineWidth = 3;
+        ctx.lineCap = 'round';
+        const colors = ['#000000', '#ef4444', '#3b82f6', '#10b981', '#f97316'];
+        colors.forEach(color => {
+            const colorBtn = document.createElement('button');
+            colorBtn.className = 'color-btn';
+            colorBtn.style.backgroundColor = color;
+            if (color === '#000000') colorBtn.classList.add('active');
+            colorBtn.onclick = () => {
+                ctx.strokeStyle = color;
+                document.querySelectorAll('.color-btn').forEach(b => b.classList.remove('active'));
+                colorBtn.classList.add('active');
+            };
+            colorPalette.appendChild(colorBtn);
+        });
+        function draw(e) {
+            if (!isDrawing) return;
+            ctx.beginPath();
+            ctx.moveTo(lastX, lastY);
+            const [x, y] = getMousePos(canvas, e);
+            ctx.lineTo(x, y);
+            ctx.stroke();
+            [lastX, lastY] = [x, y];
+        }
+        function getMousePos(canvas, evt) {
+            const rect = canvas.getBoundingClientRect();
+            const event = evt.touches ? evt.touches[0] : evt;
+            return [event.clientX - rect.left, event.clientY - rect.top];
+        }
+        function startDrawing(e) {
+            isDrawing = true;
+            [lastX, lastY] = getMousePos(canvas, e);
+        }
+        function stopDrawing() {
+            if (isDrawing) {
+                isDrawing = false;
+                saveCanvasState();
+            }
+        }
+        canvas.addEventListener('mousedown', startDrawing);
+        canvas.addEventListener('mousemove', draw);
+        canvas.addEventListener('mouseup', stopDrawing);
+        canvas.addEventListener('mouseout', stopDrawing);
+        canvas.addEventListener('touchstart', startDrawing);
+        canvas.addEventListener('touchmove', draw);
+        canvas.addEventListener('touchend', stopDrawing);
+        clearBtn.onclick = () => {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            history = [];
+        };
+
+        // Bar Chart
+        const drawChartBtn = document.getElementById('draw-chart-btn');
+        const barInputs = [document.getElementById('bar-input-1'), document.getElementById('bar-input-2'), document.getElementById('bar-input-3')];
+        const bars = [document.getElementById('bar-red'), document.getElementById('bar-green'), document.getElementById('bar-blue')];
+        function drawChart() {
+            const maxVal = 50;
+            barInputs.forEach((input, index) => {
+                let val = parseInt(input.value) || 0;
+                if (val < 0) val = 0;
+                if (val > maxVal) val = maxVal;
+                input.value = val;
+                const heightPercent = (val / maxVal) * 100;
+                bars[index].style.height = `${heightPercent}%`;
+            });
+        }
+        drawChartBtn.onclick = drawChart;
+
+        // Mental Math
+        const mentalMathProblem = document.getElementById('mental-math-problem');
+        const mentalMathInput = document.getElementById('mental-math-input');
+        const mentalMathCheck = document.getElementById('mental-math-check');
+        const mentalMathFeedback = document.getElementById('mental-math-feedback');
+        const mentalMathScore = document.getElementById('mental-math-score');
+        const mentalMathCounter = document.getElementById('mental-math-counter');
+        const mentalMathPrev = document.getElementById('mental-math-prev');
+        const mentalMathNext = document.getElementById('mental-math-next');
+        const mentalMathReset = document.getElementById('mental-math-reset');
+        let mental_questions = [];
+        let currentMentalMathIndex = 0;
+        let score = 0;
+
+        function generateMentalMathQuiz() {
+            mental_questions = [];
+            for(let i=0; i<30; i++) {
+                const operators = ['+', '-'];
+                const operator = operators[Math.floor(Math.random() * operators.length)];
+                let num1 = Math.floor(Math.random() * 50) + 1;
+                let num2 = Math.floor(Math.random() * 50) + 1;
+                if (operator === '-' && num1 < num2) [num1, num2] = [num2, num1];
+                const answer = operator === '+' ? num1 + num2 : num1 - num2;
+                mental_questions.push({ num1, num2, operator, answer });
+            }
+        }
+
+        function displayMentalMathQuestion(index) {
+            const q = mental_questions[index];
+            mentalMathProblem.textContent = `${q.num1} ${q.operator} ${q.num2} = ?`;
+            mentalMathInput.value = '';
+            mentalMathFeedback.textContent = '';
+            mentalMathCounter.textContent = `வினா: ${index + 1} / 30`;
+            mentalMathPrev.disabled = index === 0;
+            mentalMathNext.disabled = index === mental_questions.length - 1;
+        }
+
+        mentalMathCheck.onclick = () => {
+            if (mentalMathInput.value === '') {
+                mentalMathFeedback.textContent = 'விடையை உள்ளிடவும்.';
+                mentalMathFeedback.className = 'mt-2 font-bold text-xl text-yellow-500';
+                return;
+            }
+            const userAnswer = parseInt(mentalMathInput.value);
+            if (userAnswer === mental_questions[currentMentalMathIndex].answer) {
+                mentalMathFeedback.textContent = 'சபாஷ்! 🥳';
+                mentalMathFeedback.className = 'mt-2 font-bold text-2xl text-green-600';
+                score++;
+                mentalMathScore.textContent = score;
+            } else {
+                mentalMathFeedback.textContent = `தவறு. சரியான விடை: ${mental_questions[currentMentalMathIndex].answer}`;
+                mentalMathFeedback.className = 'mt-2 font-bold text-2xl text-red-600';
+            }
+        };
+        
+        mentalMathNext.onclick = () => { if(currentMentalMathIndex < mental_questions.length - 1) { currentMentalMathIndex++; displayMentalMathQuestion(currentMentalMathIndex); } };
+        mentalMathPrev.onclick = () => { if(currentMentalMathIndex > 0) { currentMentalMathIndex--; displayMentalMathQuestion(currentMentalMathIndex); } };
+        mentalMathReset.onclick = () => {
+            score = 0;
+            mentalMathScore.textContent = score;
+            currentMentalMathIndex = 0;
+            generateMentalMathQuiz();
+            displayMentalMathQuestion(0);
+        };
+
+        // --- Initial Load ---
+        window.onload = () => {
+            // Tab 1
+            setNumberMode('learn');
+            renderMultiplicationStep();
+            // Tab 2
+            generateQuizQuestions();
+            displayQuestion(0);
+            newTimeChallenge();
+            document.querySelector('.season-btn').click(); // Activate first season
+            // Tab 3
+            newShapeFinderQuestion();
+            drawChart();
+            generateMentalMathQuiz();
+            displayMentalMathQuestion(0);
+            saveCanvasState();
+        };
+    </script>
+</body>
+</html>

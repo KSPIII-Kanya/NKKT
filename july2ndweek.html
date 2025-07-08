@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="ta">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>கணித ஊடாடும் சிமுலேஷன்</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Noto+Sans+Tamil:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* Custom styles for the simulation */
+        body {
+            font-family: 'Inter', 'Noto Sans Tamil', sans-serif;
+            background-color: #f1f5f9; /* Slate 100 */
+        }
+        .tab-btn {
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border-bottom: 4px solid transparent;
+        }
+        .tab-btn.active {
+            border-color: #4f46e5; /* Indigo 600 */
+            color: #4f46e5;
+            font-weight: 700;
+        }
+        .tab-pane {
+            display: none;
+        }
+        .tab-pane.active {
+            display: block;
+        }
+        .activity-card {
+            background-color: white;
+            border-radius: 1.5rem; /* 24px */
+            padding: 2rem; /* 32px */
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.05), 0 4px 6px -4px rgb(0 0 0 / 0.05);
+            display: flex;
+            flex-direction: column;
+            min-height: 500px;
+        }
+        .btn-primary {
+            background-color: #4f46e5; /* Indigo 600 */
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.75rem; /* 12px */
+            font-weight: 700;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+        .btn-primary:hover {
+            background-color: #4338ca; /* Indigo 700 */
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+        .btn-secondary {
+            background-color: #e2e8f0; /* Slate 200 */
+            color: #475569; /* Slate 600 */
+        }
+        .btn-secondary:hover {
+            background-color: #cbd5e1; /* Slate 300 */
+        }
+        .btn-primary:disabled, .btn-secondary:disabled {
+            background-color: #e2e8f0; /* Slate 200 */
+            color: #94a3b8; /* Slate 400 */
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        .feedback {
+            font-size: 1.125rem; /* 18px */
+            font-weight: 700;
+            padding: 1rem;
+            border-radius: 0.75rem;
+            margin-top: 1rem;
+            text-align: center;
+        }
+        .feedback.correct {
+            background-color: #dcfce7; /* Green 100 */
+            color: #166534; /* Green 800 */
+        }
+        .feedback.incorrect {
+            background-color: #fee2e2; /* Red 100 */
+            color: #991b1b; /* Red 800 */
+        }
+        .feedback.warning {
+            background-color: #fef9c3; /* Yellow 100 */
+            color: #854d0e; /* Yellow 800 */
+        }
+        
+        /* Interactive Array/Grid Multiplication */
+        .interactive-grid-container { flex-grow: 1; display: flex; align-items: center; justify-content: center; padding: 1rem; }
+        #interactive-grid { display: grid; gap: 4px; }
+        .grid-cell-placeholder { width: 24px; height: 24px; background-color: #e2e8f0; border-radius: 4px; transition: all 0.3s ease; }
+        .grid-cell-filled { border: 2px solid rgba(0,0,0,0.1); transform: scale(1.1); }
+
+        /* Number Name Matching Game */
+        .matching-game { display: flex; justify-content: space-around; margin-top: 1rem; }
+        .matching-column { display: flex; flex-direction: column; gap: 0.5rem; }
+        .match-item { padding: 0.75rem; border: 2px solid #cbd5e1; border-radius: 0.5rem; cursor: pointer; transition: all 0.2s; text-align: center; font-weight: bold; }
+        .match-item.selected { background-color: #60a5fa; color: white; border-color: #2563eb; }
+        .match-item.matched { background-color: #4ade80; color: #15803d; border-color: #22c55e; cursor: not-allowed; opacity: 0.7; }
+        .match-item.incorrect { animation: shake 0.5s; }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+
+        /* Subtraction Mat */
+        .subtraction-mat { display: grid; grid-template-columns: 1fr 2fr; gap: 1rem; align-items: center; }
+        .sub-calculation { display: flex; flex-direction: column; align-items: flex-end; justify-content: center; font-size: 3.5rem; font-weight: 700; line-height: 1.2; }
+        .sub-line { width: 100%; height: 3px; background-color: #1e293b; margin: 0.5rem 0; }
+        .sub-workspace { display: flex; flex-direction: column; gap: 0.5rem; }
+        .sub-workspace-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        .sub-workspace-col { padding: 0.5rem; border-radius: 1rem; background-color: #f8fafc; border: 1px solid #e2e8f0; }
+        .sub-workspace-header { text-align: center; font-weight: 700; color: #4f46e5; margin-bottom: 0.75rem; font-size: 1.125rem; }
+        .sub-blocks { display: flex; flex-wrap: wrap; gap: 4px; min-height: 100px; justify-content: center; align-items: center; width: 100%; padding: 0.5rem; border: 2px dashed #d1d5db; border-radius: 0.75rem; position: relative; }
+        .sub-result-area { border-top: 3px solid #1e293b; margin-top: 0.75rem; padding-top: 0.75rem; }
+        .ten-rod { width: 12px; height: 50px; background-color: #60a5fa; border: 1px solid #2563eb; border-radius: 3px; transition: all 0.5s ease; }
+        .one-cube { width: 12px; height: 12px; background-color: #fde047; border: 1px solid #ca8a04; border-radius: 3px; transition: all 0.5s ease; }
+        .subtracted { opacity: 0.2; transform: scale(0.8); }
+        .borrowed-rod { background-color: #fb923c !important; }
+        .borrowed-cubes { background-color: #fcd34d !important; }
+
+        /* Drawing Pad */
+        .drawing-toolbar { background-color: #e2e8f0; padding: 0.75rem; border-radius: 1rem; margin-bottom: 1rem; }
+        #drawing-canvas { border: 2px solid #cbd5e1; border-radius: 1rem; cursor: crosshair; }
+        .tool-btn, .color-swatch, .brush-size { width: 40px; height: 40px; border-radius: 0.5rem; cursor: pointer; border: 3px solid transparent; transition: all 0.2s; display:flex; align-items:center; justify-content:center; background-color: white; }
+        .tool-btn.active, .color-swatch.active, .brush-size.active { border-color: #4f46e5; }
+        .color-swatch { border-radius: 50%; }
+
+        /* Mental Math */
+        #mental-math-problem { font-size: 3rem; font-weight: 700; }
+        
+        /* Bar Graph */
+        .bar-container { display: flex; align-items: flex-end; justify-content: space-around; height: 100%; min-height: 200px; border-left: 2px solid #6b7280; border-bottom: 2px solid #6b7280; padding: 0 1rem; background-color: #f8fafc; border-radius: 0.5rem; }
+        .bar { width: 40px; background-color: #34d399; transition: height 0.5s ease-in-out; position: relative; }
+        .bar-label { position: absolute; bottom: -25px; width: 100%; text-align: center; font-size: 0.8rem; }
+        
+        /* Tables Practice Visual */
+        .tables-visual-grid { display: grid; gap: 5px; margin: 1rem auto; padding: 1rem; background-color: #f8fafc; border-radius: 1rem;}
+        .grid-dot { width: 12px; height: 12px; background-color: #4f46e5; border-radius: 50%;}
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-800">
+
+    <div class="container mx-auto p-4 sm:p-6 md:p-8">
+        <!-- Header Section -->
+        <header class="text-center mb-8">
+            <h1 class="text-3xl sm:text-4xl md:text-5xl font-bold text-indigo-700">கன்ய சம்பூர்ணா திட்டம் / கன்யா பெண்கள் கல்வி திட்டம்</h1>
+            <p class="text-base sm:text-lg md:text-xl mt-2 text-slate-600">இத்திட்டம் TITAN மற்றும் KALIKE நிறுவனங்களின் பங்களிப்புடன் செயல்படுத்தப்படுகிறது</p>
+            <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold text-orange-600 mt-6">நடுவுல கொஞ்சம் கற்றலைத் தேடி</h2>
+            <h3 class="text-xl sm:text-2xl md:text-3xl font-bold text-teal-600 mt-3">கணிதம்</h3>
+            <p class="text-lg sm:text-xl md:text-2xl text-slate-500 mt-2">ஜூலை - 2 வது வாரம்</p>
+        </header>
+
+        <!-- Tabs Navigation -->
+        <div id="tabs" class="flex justify-center border-b-2 border-slate-200 mb-8 gap-4 sm:gap-8">
+            <button class="tab-btn active text-lg py-3 px-4" onclick="changeTab(event, 'tab1')">வாய்மொழி பயிற்சி</button>
+            <button class="tab-btn text-lg py-3 px-4" onclick="changeTab(event, 'tab2')">கணித செயல்பாடுகள்</button>
+            <button class="tab-btn text-lg py-3 px-4" onclick="changeTab(event, 'tab3')">கல்விசார் செயல்பாடுகள்</button>
+        </div>
+
+        <!-- Tab Content -->
+        <div id="tab-content">
+            <!-- Tab 1: வாய்மொழி பயிற்சி -->
+            <div id="tab1" class="tab-pane active p-4">
+                <div class="grid md:grid-cols-2 gap-8">
+                    <!-- Multiplication Grid -->
+                    <div class="activity-card">
+                        <h3 class="text-xl font-bold text-center mb-2 text-indigo-700">பெருக்கல் கட்டம்</h3>
+                        <p class="text-center text-sm mb-4 text-slate-500">குழுக்களை நிரப்பி பெருக்கலைக் கற்கலாம்.</p>
+                        <div class="flex justify-center items-center gap-4 my-4">
+                            <select id="table-num-select" class="p-2 border rounded-lg" onchange="setupInteractiveGrid()">
+                                <option value="6">6</option> <option value="7">7</option> <option value="8">8</option> <option value="9">9</option> <option value="10">10</option>
+                            </select>
+                            <span class="font-bold text-xl">x</span>
+                            <select id="multiplier-select" class="p-2 border rounded-lg" onchange="setupInteractiveGrid()">
+                                <option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option>
+                                <option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option>
+                            </select>
+                        </div>
+                        <div class="interactive-grid-container">
+                            <div id="interactive-grid"></div>
+                        </div>
+                        <div id="grid-controls" class="text-center mt-auto">
+                            <div id="grid-counter" class="h-8 text-lg font-bold text-blue-600"></div>
+                            <button id="fill-btn" class="btn-primary bg-green-500 hover:bg-green-600" onclick="animateGridFill()">நிரப்பு</button>
+                            <div id="multiplication-question" class="mt-4 hidden">
+                                <input type="number" id="multiplication-answer" class="p-2 border rounded-lg text-2xl w-24 text-center" placeholder="?">
+                                <button class="btn-primary ml-2" onclick="checkMultiplicationAnswer()">சரிபார்க்கவும்</button>
+                            </div>
+                            <div id="multiplication-feedback" class="mt-2"></div>
+                        </div>
+                    </div>
+                    <!-- Number Names (Matching Game) -->
+                    <div class="activity-card">
+                        <h3 class="text-xl font-bold text-center mb-4 text-indigo-700">எண் பெயர்களைப் பொருத்துக</h3>
+                        <p class="text-center text-sm mb-4 text-slate-500">சரியான எண்ணை அதன் பெயருடன் பொருத்தவும்.</p>
+                        <div id="matching-game-container" class="text-center flex-grow flex flex-col justify-center">
+                            <div class="matching-game">
+                                <div id="number-column" class="matching-column"></div>
+                                <div id="name-column" class="matching-column"></div>
+                            </div>
+                            <div id="matching-feedback" class="mt-4 font-bold"></div>
+                        </div>
+                        <button class="btn-primary mt-4" onclick="setupNumberNameMatching()">புதிய விளையாட்டு</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 2: கணித செயல்பாடுகள் -->
+            <div id="tab2" class="tab-pane p-4">
+                 <div class="activity-card mb-6">
+                    <div id="main-activity-content" class="text-center">
+                        <h3 class="text-2xl font-bold text-center mb-8 text-indigo-700">கணித செயல்பாடுகள்</h3>
+                        <div class="flex flex-col items-center gap-6 w-full max-w-lg mx-auto">
+                            <button class="w-full text-left p-6 rounded-xl bg-white hover:bg-indigo-50 transition-all duration-300 flex items-center justify-between shadow-sm hover:shadow-lg border border-slate-200" onclick="loadActivity('sub2_no_borrow')">
+                                <span class="font-bold text-lg text-slate-700">1. ஈரிலக்க கழித்தல் (இனமாற்றமின்றி)</span>
+                                <span class="text-2xl font-bold text-indigo-500">→</span>
+                            </button>
+                            <button class="w-full text-left p-6 rounded-xl bg-white hover:bg-indigo-50 transition-all duration-300 flex items-center justify-between shadow-sm hover:shadow-lg border border-slate-200" onclick="loadActivity('sub2_borrow')">
+                                <span class="font-bold text-lg text-slate-700">2. ஈரிலக்க கழித்தல் (இனமாற்றத்துடன்)</span>
+                                <span class="text-2xl font-bold text-indigo-500">→</span>
+                            </button>
+                            <button class="w-full text-left p-6 rounded-xl bg-white hover:bg-indigo-50 transition-all duration-300 flex items-center justify-between shadow-sm hover:shadow-lg border border-slate-200" onclick="loadActivity('tables_practice')">
+                                <span class="font-bold text-lg text-slate-700">3. வாய்ப்பாடு பயிற்சி</span>
+                                <span class="text-2xl font-bold text-indigo-500">→</span>
+                            </button>
+                        </div>
+                    </div>
+                     <div id="activity-container" class="mt-6"></div>
+                 </div>
+            </div>
+
+            <!-- Tab 3: கல்விசார் செயல்பாடுகள் -->
+            <div id="tab3" class="tab-pane p-4">
+                <div class="grid md:grid-cols-2 gap-8">
+                    <!-- Shape Identifier -->
+                    <div class="activity-card">
+                        <h3 class="text-xl font-bold text-center mb-4 text-indigo-700">வடிவங்களைக் கண்டறிதல்</h3>
+                        <p class="text-center mb-2 text-slate-500">படத்தில் உள்ள <strong id="shape-to-find" class="text-red-500"></strong> வடிவப் பொருட்களைக் கிளிக் செய்யவும்.</p>
+                        <div id="shape-scene" class="relative w-full h-64 bg-slate-200 rounded-lg overflow-hidden cursor-pointer"></div>
+                        <div id="shape-feedback" class="text-center mt-2 font-bold"></div>
+                        <button class="btn-primary mt-auto" onclick="setupShapeIdentifier()">வேறுபடம்</button>
+                    </div>
+                    <!-- Drawing Pad -->
+                    <div class="activity-card">
+                        <h3 class="text-xl font-bold text-center mb-4 text-indigo-700">வடிவங்களை வரைக</h3>
+                        <p class="text-center mb-4 text-slate-500">ஒரு கருவியைத் தேர்ந்தெடுத்து, கேன்வாஸில் வரையவும்.</p>
+                        <div class="drawing-toolbar flex justify-center items-center gap-2 flex-wrap">
+                            <button class="tool-btn active" data-tool="pencil" onclick="setTool(this)">✏️</button>
+                            <button class="tool-btn" data-tool="circle" onclick="setTool(this)">⚪</button>
+                            <button class="tool-btn" data-tool="rectangle" onclick="setTool(this)">⬜</button>
+                            <div class="color-swatch active" style="background-color: #000000;" data-color="#000000" onclick="changeColor(this)"></div>
+                            <div class="color-swatch" style="background-color: #ef4444;" data-color="#ef4444" onclick="changeColor(this)"></div>
+                            <div class="color-swatch" style="background-color: #3b82f6;" data-color="#3b82f6" onclick="changeColor(this)"></div>
+                            <div class="color-swatch" style="background-color: #22c55e;" data-color="#22c55e" onclick="changeColor(this)"></div>
+                            <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" id="fill-shape-check"><span>நிரப்பு</span></label>
+                            <button class="btn-secondary text-sm py-2 px-4" onclick="clearCanvas()">அழி</button>
+                        </div>
+                        <canvas id="drawing-canvas" class="w-full flex-grow bg-white mt-4" width="400" height="300"></canvas>
+                    </div>
+                    <!-- Bar Graph -->
+                     <div class="activity-card">
+                        <h3 class="text-xl font-bold text-center mb-4 text-indigo-700">பட்டை வரைபடம்</h3>
+                        <p class="text-center mb-4 text-slate-500">கொடுக்கப்பட்ட தரவுகளுக்கு பட்டை வரைபடம் வரையவும்.</p>
+                        <div class="grid grid-cols-3 gap-4 mb-4">
+                           <div><label for="bar1">ஆப்பிள்:</label><input type="number" id="bar1" class="w-full border rounded-lg p-2" value="5" min="0" max="10" oninput="updateBarGraph()"></div>
+                           <div><label for="bar2">ஆரஞ்சு:</label><input type="number" id="bar2" class="w-full border rounded-lg p-2" value="8" min="0" max="10" oninput="updateBarGraph()"></div>
+                           <div><label for="bar3">வாழை:</label><input type="number" id="bar3" class="w-full border rounded-lg p-2" value="3" min="0" max="10" oninput="updateBarGraph()"></div>
+                        </div>
+                        <div class="bar-container flex-grow">
+                           <div class="bar" id="bar-graph-1"><div class="bar-label">ஆப்பிள்</div></div>
+                           <div class="bar" id="bar-graph-2" style="background-color: #f97316;"><div class="bar-label">ஆரஞ்சு</div></div>
+                           <div class="bar" id="bar-graph-3" style="background-color: #facc15;"><div class="bar-label">வாழை</div></div>
+                        </div>
+                     </div>
+                     <!-- Mental Math -->
+                     <div class="activity-card text-center flex flex-col">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-xl font-bold text-indigo-700">மனக் கணக்கு</h3>
+                            <span id="mental-math-question-counter" class="text-sm font-bold bg-indigo-100 text-indigo-800 py-1 px-3 rounded-full"></span>
+                        </div>
+                        <div class="flex-grow flex flex-col justify-center">
+                            <p class="text-center mb-6 text-slate-500">விரைவாக பதிலளிக்கவும்!</p>
+                            <div id="mental-math-problem" class="text-slate-800"></div>
+                            <input type="number" id="mental-math-answer" class="p-2 border rounded-lg text-2xl w-32 text-center mx-auto my-4" placeholder="?">
+                            <div id="mental-math-feedback" class="mt-4"></div>
+                        </div>
+                        <div class="text-center mt-auto pt-6 flex justify-center items-center gap-4">
+                           <button class="btn-primary btn-secondary" id="mental-math-prev" onclick="loadPreviousMentalProblem()">முந்தைய கேள்வி</button>
+                           <button class="btn-primary" id="mental-math-check" onclick="checkMentalMathAnswer()">சரிபார்க்கவும்</button>
+                           <button class="btn-primary" id="mental-math-next" onclick="loadNextMentalProblem()">அடுத்த கேள்வி</button>
+                        </div>
+                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- Global State & Data ---
+        const numberNamesData = { 1: "ஒன்று", 2: "இரண்டு", 3: "மூன்று", 4: "நான்கு", 5: "ஐந்து", 6: "ஆறு", 7: "ஏழு", 8: "எட்டு", 9: "ஒன்பது", 10: "பத்து", 11: "பதினொன்று", 12: "பன்னிரண்டு", 13: "பதிமூன்று", 14: "பதினான்கு", 15: "பதினைந்து", 16: "பதினாறு", 17: "பதினேழு", 18: "பதினெட்டு", 19: "பத்தொன்பது", 20: "இருபது" };
+        const shapes = [ { name: 'வட்டம்', style: 'width:50px; height:50px; background: #ef4444; border-radius: 50%; top: 20%; left: 15%;' }, { name: 'சதுரம்', style: 'width:60px; height:60px; background: #3b82f6; top: 50%; left: 30%;' }, { name: 'செவ்வகம்', style: 'width:80px; height:40px; background: #22c55e; top: 65%; left: 60%;' }, { name: 'முக்கோணம்', style: 'width: 0; height: 0; border-left: 30px solid transparent; border-right: 30px solid transparent; border-bottom: 60px solid #f97316; top: 10%; left: 70%;' }, { name: 'வட்டம்', style: 'width:30px; height:30px; background: #ef4444; border-radius: 50%; top: 75%; left: 10%;' }, { name: 'சதுரம்', style: 'width:40px; height:40px; background: #3b82f6; top: 15%; left: 45%;' } ];
+        const groupColors = ['#60a5fa', '#f87171', '#4ade80', '#fbbf24', '#a78bfa', '#22d3ee', '#f472b6', '#818cf8', '#34d399', '#f97316'];
+        let currentShapeToFind = '';
+        let selectedNumber = null, selectedName = null, matchedPairs = 0;
+        const pairsToMatch = 5;
+
+        // Problem sets for all categories
+        const sub2DigitNoBorrowProblems = Array.from({length: 50}, () => { let n1, n2; do { n1 = Math.floor(Math.random() * 90) + 10; n2 = Math.floor(Math.random() * n1) + 10; } while ((n1 % 10) < (n2 % 10) || n1 <= n2); return {n1, n2}; });
+        const sub2DigitWithBorrowProblems = Array.from({length: 50}, () => { let n1, n2; do { n1 = Math.floor(Math.random() * 90) + 10; n2 = Math.floor(Math.random() * n1) + 10; } while ((n1 % 10) >= (n2 % 10) || n1 <= n2); return {n1, n2}; });
+        const tablePracticeProblems = [];
+        for(let i=1; i<=10; i++) { for(let j=1; j<=10; j++) { tablePracticeProblems.push({n1: i, n2: j}); } }
+        const mentalMathProblems = [
+            ...sub2DigitNoBorrowProblems.slice(0, 10).map(p => ({...p, type: 'sub2_no_borrow', answer: p.n1 - p.n2})),
+            ...sub2DigitWithBorrowProblems.slice(0, 10).map(p => ({...p, type: 'sub2_borrow', answer: p.n1 - p.n2}))
+        ];
+        
+        // State for math quiz
+        let currentProblemSet = [];
+        let currentProblemIndex = 0;
+        let currentActivityType = null;
+        let currentMentalMathProblemIndex = 0;
+
+        // --- Tab Management ---
+        function changeTab(event, tabId) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+            document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            if(tabId === 'tab1') {
+                setupInteractiveGrid();
+                setupNumberNameMatching();
+            } else if(tabId === 'tab2') {
+                showMainMenu();
+            } else if (tabId === 'tab3') {
+                setupDrawingPad();
+                renderMentalMathProblem();
+                setupShapeIdentifier();
+                updateBarGraph();
+            }
+        }
+
+        // --- Tab 1: வாய்மொழி பயிற்சி ---
+        function setupInteractiveGrid() {
+            const gridContainer = document.getElementById('interactive-grid');
+            if(!gridContainer) return;
+            const questionDiv = document.getElementById('multiplication-question');
+            const fillBtn = document.getElementById('fill-btn');
+            const feedbackDiv = document.getElementById('multiplication-feedback');
+            const counterDiv = document.getElementById('grid-counter');
+            const tableSelect = document.getElementById('table-num-select');
+            const multiplierSelect = document.getElementById('multiplier-select');
+
+            tableSelect.disabled = false;
+            multiplierSelect.disabled = false;
+
+            const rows = parseInt(tableSelect.value);
+            const cols = parseInt(multiplierSelect.value);
+            gridContainer.innerHTML = '';
+            gridContainer.style.gridTemplateColumns = `repeat(${cols}, 24px)`;
+            gridContainer.style.gridTemplateRows = `repeat(${rows}, 24px)`;
+            for (let i = 0; i < rows * cols; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'grid-cell-placeholder';
+                cell.id = `cell-${i}`;
+                gridContainer.appendChild(cell);
+            }
+            questionDiv.classList.add('hidden');
+            fillBtn.disabled = false;
+            feedbackDiv.innerHTML = '';
+            counterDiv.innerHTML = '';
+            document.getElementById('multiplication-answer').value = '';
+        }
+        function animateGridFill() {
+            const fillBtn = document.getElementById('fill-btn');
+            const questionDiv = document.getElementById('multiplication-question');
+            const counterDiv = document.getElementById('grid-counter');
+            const tableSelect = document.getElementById('table-num-select');
+            const multiplierSelect = document.getElementById('multiplier-select');
+            
+            tableSelect.disabled = true;
+            multiplierSelect.disabled = true;
+            fillBtn.disabled = true;
+
+            const rows = parseInt(tableSelect.value);
+            const cols = parseInt(multiplierSelect.value);
+            let currentRow = 0;
+            function fillRow() {
+                if (currentRow >= rows) {
+                    questionDiv.classList.remove('hidden');
+                    counterDiv.textContent = `மொத்தம்: ${rows * cols}`;
+                    return;
+                }
+                const rowColor = groupColors[currentRow % groupColors.length];
+                for (let i = 0; i < cols; i++) {
+                    const cellIndex = currentRow * cols + i;
+                    const cell = document.getElementById(`cell-${cellIndex}`);
+                    setTimeout(() => {
+                        cell.classList.add('grid-cell-filled');
+                        cell.style.backgroundColor = rowColor;
+                    }, i * 60);
+                }
+                currentRow++;
+                counterDiv.textContent = `${currentRow} குழு (${currentRow * cols})`;
+                setTimeout(fillRow, 700);
+            }
+            fillRow();
+        }
+        function checkMultiplicationAnswer() {
+            const feedbackDiv = document.getElementById('multiplication-feedback');
+            const tableNum = parseInt(document.getElementById('table-num-select').value);
+            const multiplier = parseInt(document.getElementById('multiplier-select').value);
+            const correctAnswer = tableNum * multiplier;
+            const userAnswer = parseInt(document.getElementById('multiplication-answer').value);
+            if (userAnswer === correctAnswer) {
+                feedbackDiv.innerHTML = `<div class="feedback correct">மிகச் சரி! ${tableNum} x ${multiplier} = ${correctAnswer}</div>`;
+            } else {
+                feedbackDiv.innerHTML = `<div class="feedback incorrect">தவறு. சரியான பதில் ${correctAnswer}. மீண்டும் முயற்சி செய்!</div>`;
+            }
+            setTimeout(setupInteractiveGrid, 2000);
+        }
+        function setupNumberNameMatching() {
+            const numberColumn = document.getElementById('number-column');
+            if(!numberColumn) return;
+            const nameColumn = document.getElementById('name-column');
+            const feedbackEl = document.getElementById('matching-feedback');
+            numberColumn.innerHTML = ''; nameColumn.innerHTML = '';
+            feedbackEl.textContent = ''; matchedPairs = 0;
+            const allNumbers = Object.keys(numberNamesData);
+            const shuffledNumbers = allNumbers.sort(() => 0.5 - Math.random());
+            const selectedNumbers = shuffledNumbers.slice(0, pairsToMatch);
+            const selectedNames = selectedNumbers.map(num => numberNamesData[num]);
+            const shuffledNames = selectedNames.sort(() => 0.5 - Math.random());
+            selectedNumbers.forEach(num => {
+                const item = document.createElement('div');
+                item.className = 'match-item'; item.textContent = num;
+                item.dataset.value = num; item.onclick = () => selectItem(item, 'number');
+                numberColumn.appendChild(item);
+            });
+            shuffledNames.forEach(name => {
+                const item = document.createElement('div');
+                item.className = 'match-item'; item.textContent = name;
+                item.dataset.value = name; item.onclick = () => selectItem(item, 'name');
+                nameColumn.appendChild(item);
+            });
+        }
+        function selectItem(element, type) {
+            if (element.classList.contains('matched')) return;
+            if (type === 'number') {
+                if (selectedNumber) selectedNumber.classList.remove('selected');
+                selectedNumber = element; selectedNumber.classList.add('selected');
+            } else {
+                if (selectedName) selectedName.classList.remove('selected');
+                selectedName = element; selectedName.classList.add('selected');
+            }
+            if (selectedNumber && selectedName) checkMatch();
+        }
+        function checkMatch() {
+            const numValue = selectedNumber.dataset.value;
+            const nameValue = selectedName.dataset.value;
+            const feedbackEl = document.getElementById('matching-feedback');
+            if (numberNamesData[numValue] === nameValue) {
+                selectedNumber.classList.add('matched'); selectedName.classList.add('matched');
+                selectedNumber.classList.remove('selected'); selectedName.classList.remove('selected');
+                selectedNumber = null; selectedName = null;
+                matchedPairs++;
+                if (matchedPairs === pairsToMatch) {
+                    feedbackEl.textContent = 'அருமை! அனைத்தையும் சரியாகப் பொருத்திவிட்டீர்கள்!';
+                    feedbackEl.className = 'mt-4 font-bold text-green-600';
+                }
+            } else {
+                selectedNumber.classList.add('incorrect'); selectedName.classList.add('incorrect');
+                feedbackEl.textContent = 'தவறான பொருத்தம், மீண்டும் முயற்சிக்கவும்.';
+                feedbackEl.className = 'mt-4 font-bold text-red-600';
+                setTimeout(() => {
+                    selectedNumber.classList.remove('incorrect', 'selected');
+                    selectedName.classList.remove('incorrect', 'selected');
+                    selectedNumber = null; selectedName = null;
+                    feedbackEl.textContent = '';
+                }, 1000);
+            }
+        }
+
+
+        // --- Tab 2 ---
+        
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function loadActivity(activityId) {
+            document.getElementById('main-activity-content').style.display = 'none';
+            switch(activityId) {
+                case 'sub2_no_borrow': 
+                    currentActivityType = 'sub2_no_borrow';
+                    currentProblemSet = shuffleArray([...sub2DigitNoBorrowProblems]);
+                    break;
+                case 'sub2_borrow': 
+                    currentActivityType = 'sub2_borrow';
+                    currentProblemSet = shuffleArray([...sub2DigitWithBorrowProblems]);
+                    break;
+                case 'tables_practice':
+                    currentActivityType = 'tables_practice';
+                    currentProblemSet = shuffleArray([...tablePracticeProblems]);
+                    break;
+            }
+            currentProblemIndex = 0;
+            renderProblem();
+        }
+
+        function renderProblem() {
+            const container = document.getElementById('activity-container');
+            if(!container) return;
+            if (currentProblemIndex >= currentProblemSet.length) {
+                container.innerHTML = `<div class="text-lg font-bold text-green-600 p-4 text-center">அருமை! இந்த செயல்பாட்டில் உள்ள அனைத்து கேள்விகளையும் முடித்துவிட்டீர்கள்!</div>`;
+                return;
+            }
+
+            const problem = currentProblemSet[currentProblemIndex];
+            let title, problemText, answer, gameHTML;
+
+            if (currentActivityType.includes('sub2')) {
+                title = currentActivityType === 'sub2_no_borrow' ? 'ஈரிலக்க கழித்தல் (இனமாற்றமின்றி)' : 'ஈரிலக்க கழித்தல் (இனமாற்றத்துடன்)';
+                problemText = '';
+                answer = problem.n1 - problem.n2;
+                gameHTML = getSubtractionMatHTML(problem);
+            } else if (currentActivityType === 'tables_practice') {
+                title = 'வாய்ப்பாடு பயிற்சி';
+                problemText = `${problem.n1} x ${problem.n2} = ?`;
+                answer = problem.n1 * problem.n2;
+                gameHTML = getTablesPracticeHTML(problem);
+            }
+
+            container.innerHTML = `
+                <div class="flex justify-between items-center mb-4">
+                    <h4 class="text-xl font-bold text-indigo-700">${title}</h4>
+                    <span class="text-sm font-bold bg-indigo-100 text-indigo-800 py-1 px-3 rounded-full">கேள்வி ${currentProblemIndex + 1} / ${currentProblemSet.length}</span>
+                </div>
+                <div class="flex justify-center items-center text-4xl font-bold mb-4">${problemText}</div>
+                ${gameHTML}
+                <div id="simple-math-feedback" class="mt-4"></div>
+                <div class="text-center mt-auto pt-6 flex justify-center items-center gap-4">
+                    <button class="btn-primary btn-secondary" onclick="loadPreviousProblem()" ${currentProblemIndex === 0 ? 'disabled' : ''}>முந்தைய கேள்வி</button>
+                    <div id="answer-section">
+                        <input type="number" id="user-answer" class="p-2 border rounded-lg text-2xl w-24 text-center" placeholder="?">
+                        <button class="btn-primary ml-2" onclick="checkAnswer(${answer})">சரிபார்க்கவும்</button>
+                    </div>
+                    <button class="btn-primary" onclick="loadNextProblem()" ${currentProblemIndex === currentProblemSet.length - 1 ? 'disabled' : ''}>அடுத்த கேள்வி</button>
+                </div>
+            `;
+        }
+        
+        function showMainMenu() {
+            const container = document.getElementById('activity-container');
+            const menu = document.getElementById('main-activity-content');
+            if(container) container.innerHTML = '';
+            if(menu) menu.style.display = 'block';
+        }
+
+        function getTablesPracticeHTML(problem) {
+            let gridHTML = `<div class="tables-visual-grid" style="grid-template-columns: repeat(${problem.n2}, auto);">`;
+            for(let i=0; i < problem.n1 * problem.n2; i++) {
+                gridHTML += '<div class="grid-dot"></div>';
+            }
+            gridHTML += '</div>';
+            return gridHTML;
+        }
+
+        function getSubtractionMatHTML(problem) {
+             const {n1, n2} = problem;
+             const tens1 = Math.floor(n1 / 10), ones1 = n1 % 10;
+             const hasBorrow = (ones1) < (n2 % 10);
+
+             return `<div class="subtraction-mat" id="sub-machine">
+                        <div class="sub-calculation">
+                            <div>${n1}</div>
+                            <div>- ${n2}</div>
+                            <div class="sub-line"></div>
+                            <div id="sub-calc-result" class="text-gray-400">?</div>
+                        </div>
+                        <div class="sub-workspace">
+                            <div class="sub-workspace-row">
+                                <div class="sub-workspace-col"><div class="sub-workspace-header">பத்துகள்</div><div class="sub-blocks" id="sub-tens-start">${Array(tens1).fill('<div class="ten-rod"></div>').join('')}</div></div>
+                                <div class="sub-workspace-col"><div class="sub-workspace-header">ஒன்றுகள்</div><div class="sub-blocks" id="sub-ones-start">${Array(ones1).fill('<div class="one-cube"></div>').join('')}</div></div>
+                            </div>
+                            <div class="sub-workspace-row sub-result-area">
+                                <div class="sub-workspace-col"><div class="sub-blocks" id="sub-tens-result"></div></div>
+                                <div class="sub-workspace-col"><div class="sub-blocks" id="sub-ones-result"></div></div>
+                            </div>
+                        </div>
+                        <div class="am-controls col-span-2" id="pvm-controls">
+                            <button class="btn-primary" id="sub-step1" onclick="sub_step1_borrow()" ${!hasBorrow ? 'disabled' : ''}>படி 1: இனமாற்றம் செய்</button>
+                            <button class="btn-primary" id="sub-step2" onclick="sub_step2_subtract_ones(${n2 % 10})">படி ${hasBorrow ? 2 : 1}: ஒன்றுகளைக் கழி</button>
+                            <button class="btn-primary" id="sub-step3" onclick="sub_step3_subtract_tens(${Math.floor(n2 / 10)})">படி ${hasBorrow ? 3 : 2}: பத்துகளைக் கழி</button>
+                        </div>
+                    </div>`;
+        }
+
+        function sub_step1_borrow() {
+            const tensStart = document.getElementById('sub-tens-start');
+            const onesStart = document.getElementById('sub-ones-start');
+            if(tensStart.children.length > 0) {
+                const borrowedRod = tensStart.children[0];
+                borrowedRod.classList.add('borrowed-rod');
+                setTimeout(() => {
+                    borrowedRod.remove();
+                    for(let i=0; i<10; i++) {
+                        const cube = document.createElement('div');
+                        cube.className = 'one-cube borrowed-cubes';
+                        onesStart.appendChild(cube);
+                    }
+                }, 500);
+            }
+            document.getElementById('sub-step1').disabled = true;
+        }
+
+        function sub_step2_subtract_ones(onesToSubtract) {
+            const onesStart = document.getElementById('sub-ones-start');
+            const onesResult = document.getElementById('sub-ones-result');
+            const cubes = Array.from(onesStart.children);
+            for(let i=0; i<onesToSubtract; i++) {
+                if(cubes[i]) cubes[i].classList.add('subtracted');
+            }
+            setTimeout(() => {
+                while(onesStart.children.length > 0) {
+                    const child = onesStart.children[0];
+                    if(!child.classList.contains('subtracted')) {
+                        onesResult.appendChild(child);
+                    } else {
+                        child.remove();
+                    }
+                }
+            }, 1000);
+            document.getElementById('sub-step2').disabled = true;
+        }
+
+        function sub_step3_subtract_tens(tensToSubtract) {
+            const tensStart = document.getElementById('sub-tens-start');
+            const tensResult = document.getElementById('sub-tens-result');
+            const rods = Array.from(tensStart.children);
+            for(let i=0; i<tensToSubtract; i++) {
+                if(rods[i]) rods[i].classList.add('subtracted');
+            }
+             setTimeout(() => {
+                while(tensStart.children.length > 0) {
+                    const child = tensStart.children[0];
+                    if(!child.classList.contains('subtracted')) {
+                        tensResult.appendChild(child);
+                    } else {
+                        child.remove();
+                    }
+                }
+            }, 1000);
+            document.getElementById('sub-step3').disabled = true;
+        }
+
+        function checkAnswer(correctAnswer) {
+            const userAnswerEl = document.getElementById('user-answer');
+            const feedbackEl = document.getElementById('simple-math-feedback');
+            
+            if (userAnswerEl.value === '') {
+                feedbackEl.innerHTML = `<div class="feedback warning">தயவுசெய்து ஒரு விடையை உள்ளிடவும்.</div>`;
+                return;
+            }
+
+            const userAnswer = parseInt(userAnswerEl.value);
+            if (userAnswer === correctAnswer) {
+                feedbackEl.innerHTML = `<div class="feedback correct">சரியான பதில்!</div>`;
+                if(document.getElementById('sub-calc-result')) {
+                    document.getElementById('sub-calc-result').textContent = correctAnswer;
+                    document.getElementById('sub-calc-result').classList.remove('text-gray-400');
+                    document.getElementById('sub-calc-result').classList.add('text-green-600');
+                }
+            } else {
+                feedbackEl.innerHTML = `<div class="feedback incorrect">தவறு. சரியான பதில் ${correctAnswer}.</div>`;
+            }
+        }
+        
+        function loadNextProblem() {
+            if (currentProblemIndex < currentProblemSet.length - 1) {
+                currentProblemIndex++;
+                renderProblem();
+            }
+        }
+        
+        function loadPreviousProblem() {
+            if (currentProblemIndex > 0) {
+                currentProblemIndex--;
+                renderProblem();
+            }
+        }
+
+        // --- Tab 3 ---
+        function setupShapeIdentifier() {
+            const scene = document.getElementById('shape-scene');
+            if(!scene) return;
+            const shapeToFindEl = document.getElementById('shape-to-find');
+            const feedbackEl = document.getElementById('shape-feedback');
+            scene.innerHTML = ''; feedbackEl.textContent = '';
+            const shapeNames = [...new Set(shapes.map(s => s.name))];
+            currentShapeToFind = shapeNames[Math.floor(Math.random() * shapeNames.length)];
+            shapeToFindEl.textContent = currentShapeToFind;
+            shapes.forEach(shape => {
+                const el = document.createElement('div');
+                el.className = 'absolute cursor-pointer transition-transform hover:scale-110';
+                el.style.cssText = shape.style; el.dataset.shapeName = shape.name;
+                el.onclick = () => {
+                    if (el.dataset.shapeName === currentShapeToFind) {
+                        el.style.outline = '4px solid #10b981';
+                        el.style.outlineOffset = '3px';
+                        feedbackEl.textContent = 'சரியாகக் கண்டுபிடித்தீர்கள்!';
+                        feedbackEl.className = 'text-center mt-2 font-bold text-green-600';
+                    } else {
+                         feedbackEl.textContent = 'தவறு, மீண்டும் முயற்சிக்கவும்!';
+                         feedbackEl.className = 'text-center mt-2 font-bold text-red-600';
+                    }
+                };
+                scene.appendChild(el);
+            });
+        }
+        function updateBarGraph() {
+            const val1 = document.getElementById('bar1').value || 0, val2 = document.getElementById('bar2').value || 0, val3 = document.getElementById('bar3').value || 0;
+            const maxValue = 10;
+            document.getElementById('bar-graph-1').style.height = `${(val1 / maxValue) * 100}%`;
+            document.getElementById('bar-graph-2').style.height = `${(val2 / maxValue) * 100}%`;
+            document.getElementById('bar-graph-3').style.height = `${(val3 / maxValue) * 100}%`;
+        }
+        
+        // Drawing Pad
+        let canvas, ctx, drawing = false, currentColor = '#000000', currentTool = 'pencil', startX, startY;
+        function setupDrawingPad() {
+            canvas = document.getElementById('drawing-canvas');
+            if(!canvas) return;
+            ctx = canvas.getContext('2d');
+            ctx.strokeStyle = currentColor;
+            ctx.fillStyle = currentColor;
+            ctx.lineWidth = 3;
+            ctx.lineCap = 'round';
+
+            canvas.addEventListener('mousedown', (e) => { 
+                drawing = true; 
+                startX = e.offsetX;
+                startY = e.offsetY;
+                if(currentTool === 'pencil') {
+                    ctx.beginPath();
+                    ctx.moveTo(startX, startY);
+                }
+            });
+            canvas.addEventListener('mouseup', (e) => { 
+                drawing = false; 
+                if(currentTool !== 'pencil') {
+                    drawShape(e.offsetX, e.offsetY);
+                }
+                ctx.beginPath();
+            });
+            canvas.addEventListener('mousemove', (e) => {
+                if(drawing && currentTool === 'pencil') {
+                    ctx.lineTo(e.offsetX, e.offsetY);
+                    ctx.stroke();
+                }
+            });
+        }
+        function drawShape(endX, endY) {
+            ctx.fillStyle = currentColor;
+            ctx.strokeStyle = currentColor;
+            const isFilled = document.getElementById('fill-shape-check').checked;
+            const width = endX - startX;
+            const height = endY - startY;
+            
+            if (currentTool === 'rectangle') {
+                isFilled ? ctx.fillRect(startX, startY, width, height) : ctx.strokeRect(startX, startY, width, height);
+            } else if (currentTool === 'circle') {
+                const radius = Math.sqrt(width*width + height*height) / 2;
+                ctx.beginPath();
+                ctx.arc(startX + width/2, startY + height/2, radius, 0, 2 * Math.PI);
+                isFilled ? ctx.fill() : ctx.stroke();
+            }
+        }
+        function setTool(el) {
+            currentTool = el.dataset.tool;
+            document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
+            el.classList.add('active');
+        }
+        function changeColor(el) {
+            currentColor = el.dataset.color;
+            ctx.strokeStyle = currentColor;
+            ctx.fillStyle = currentColor;
+            document.querySelectorAll('.color-swatch').forEach(sw => sw.classList.remove('active'));
+            el.classList.add('active');
+        }
+        function changeBrushSize(el) {
+            ctx.lineWidth = el.dataset.size;
+            document.querySelectorAll('.brush-size').forEach(b => b.classList.remove('active'));
+            el.classList.add('active');
+        }
+        function clearCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        // Mental Math
+        function renderMentalMathProblem() {
+            const problemEl = document.getElementById('mental-math-problem');
+            if(!problemEl) return;
+            const answerEl = document.getElementById('mental-math-answer');
+            const feedbackEl = document.getElementById('mental-math-feedback');
+            const counterEl = document.getElementById('mental-math-question-counter');
+            
+            const problem = mentalMathProblems[currentMentalMathProblemIndex];
+            
+            switch(problem.type) {
+                case 'sub2_no_borrow':
+                case 'sub2_borrow':
+                    problemEl.textContent = `${problem.n1} - ${problem.n2} = ?`;
+                    break;
+                default:
+                     problemEl.textContent = `${problem.n1} + ${problem.n2} = ?`;
+                     break;
+            }
+
+            answerEl.value = '';
+            feedbackEl.innerHTML = '';
+            answerEl.focus();
+            counterEl.textContent = `கேள்வி ${currentMentalMathProblemIndex + 1} / ${mentalMathProblems.length}`;
+            
+            document.getElementById('mental-math-prev').disabled = currentMentalMathProblemIndex === 0;
+            document.getElementById('mental-math-next').disabled = currentMentalMathProblemIndex === mentalMathProblems.length - 1;
+        }
+
+        function checkMentalMathAnswer() {
+            const answerEl = document.getElementById('mental-math-answer');
+            const feedbackEl = document.getElementById('mental-math-feedback');
+            const problem = mentalMathProblems[currentMentalMathProblemIndex];
+            
+            if (answerEl.value === '') {
+                feedbackEl.innerHTML = `<div class="feedback warning">தயவுசெய்து ஒரு விடையை உள்ளிடவும்.</div>`;
+                return;
+            }
+            if (parseInt(answerEl.value) === problem.answer) {
+                feedbackEl.innerHTML = `<div class="feedback correct">சரியான பதில்!</div>`;
+            } else {
+                feedbackEl.innerHTML = `<div class="feedback incorrect">தவறு! சரியான பதில் ${problem.answer}.</div>`;
+            }
+        }
+
+        function loadNextMentalProblem() {
+            if (currentMentalMathProblemIndex < mentalMathProblems.length - 1) {
+                currentMentalMathProblemIndex++;
+                renderMentalMathProblem();
+            }
+        }
+
+        function loadPreviousMentalProblem() {
+            if (currentMentalMathProblemIndex > 0) {
+                currentMentalMathProblemIndex--;
+                renderMentalMathProblem();
+            }
+        }
+
+
+        // --- Initial Load ---
+        window.onload = () => {
+            setupInteractiveGrid();
+            setupNumberNameMatching();
+            setupShapeIdentifier();
+            updateBarGraph();
+            setupDrawingPad();
+            renderMentalMathProblem();
+            document.querySelector('.tab-btn').classList.add('active');
+            document.querySelector('.tab-pane').classList.add('active');
+        };
+    </script>
+</body>
+</html>

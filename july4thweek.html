@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="ta">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>கணித சிமுலேஷன் - வகுத்தல்</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+Thambi+2:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <style>
+        body { font-family: 'Baloo Thambi 2', cursive; background-color: #f0f9ff; }
+        .tab-btn.active { border-bottom-color: #3b82f6; color: #1d4ed8; font-weight: bold; }
+        .content { display: none; }
+        .content.active { display: block; }
+        .card { background-color: white; border-radius: 1.5rem; padding: 1.5rem; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05); display: flex; flex-direction: column; }
+        .interactive-element { border: 2px dashed #93c5fd; border-radius: 1rem; padding: 1rem; margin-top: 1rem; min-height: 400px; flex-grow: 1; overflow: hidden; }
+        .btn-primary { background-color: #3b82f6; color: white; padding: 0.75rem 1.5rem; border-radius: 0.75rem; font-weight: bold; border: none; cursor: pointer; transition: background-color 0.3s; }
+        .btn-primary:hover { background-color: #2563eb; }
+        .btn-primary:disabled { background-color: #9ca3af; cursor: not-allowed; }
+        
+        /* Single-Digit Division */
+        .item-container { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; min-height: 50px; padding: 10px; border-radius: 1rem; background-color: #e0f2fe; }
+        .item { width: 30px; height: 30px; background-color: #f97316; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; cursor: pointer; transition: all 0.2s; }
+        .item.selected { border: 3px solid #2563eb; transform: scale(1.2); box-shadow: 0 0 10px rgba(59, 130, 246, 0.7); cursor: default; }
+        .group-box { position: relative; border: 2px solid #3b82f6; border-radius: 1rem; min-height: 100px; padding: 10px; display: flex; flex-wrap: wrap; gap: 5px; align-content: flex-start; transition: background-color 0.3s; cursor: pointer; }
+        .group-box:hover { background-color: #dbeafe; }
+        .group-box.frozen { background-color: #e5e7eb; cursor: not-allowed; border-style: solid; }
+        .group-box.frozen:hover { background-color: #e5e7eb; }
+        .frozen-icon { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 3rem; color: #16a34a; opacity: 0.5; }
+
+        /* Two-Digit Division */
+        .tens-block { width: 20px; height: 80px; background-color: #f97316; border: 1px solid #ea580c; margin: 2px; cursor: pointer; transition: all 0.3s; }
+        .ones-block { width: 20px; height: 20px; background-color: #3b82f6; border: 1px solid #2563eb; margin: 2px; cursor: pointer; transition: all 0.3s; }
+        .block-container { display: flex; flex-wrap: wrap; gap: 5px; align-items: flex-end; min-height: 90px; padding: 10px; background-color: #f3f4f6; border-radius: 0.5rem; }
+        .division-group-box { border: 2px solid #16a34a; border-radius: 1rem; padding: 10px; min-height: 120px; flex-grow: 1; display: flex; flex-wrap: wrap; gap: 4px; align-content: flex-start; }
+
+        /* Drawing Canvas */
+        #drawing-canvas { border: 2px solid #3b82f6; border-radius: 0.5rem; cursor: crosshair; }
+        .color-btn { width: 30px; height: 30px; border-radius: 50%; border: 2px solid transparent; cursor: pointer; }
+        .color-btn.active { border-color: #1d4ed8; transform: scale(1.2); }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <div class="text-center max-w-4xl mx-auto">
+        <h1 class="text-2xl md:text-4xl font-bold text-blue-800">கன்ய சம்பூர்ணா திட்டம் / கன்யா பெண்கள் கல்வி திட்டம்</h1>
+        <p class="text-sm md:text-lg text-gray-600 mt-2">இத்திட்டம் TITAN மற்றும் KALIKE நிறுவனங்களின் பங்களிப்புடன் செயல்படுத்தப்படுகிறது</p>
+        <h2 class="text-xl md:text-3xl font-bold text-orange-500 mt-4">நடுவுல கொஞ்சம் கற்றலைத் தேடி</h2>
+        <h3 class="text-lg md:text-2xl font-bold text-green-600 mt-2">கணிதம்</h3>
+        <p class="text-md md:text-xl text-gray-700 mt-1">ஜூலை - 4 வது வாரம்</p>
+    </div>
+
+    <div class="max-w-6xl mx-auto mt-8">
+        <!-- Tabs -->
+        <div class="flex justify-center border-b-2 border-gray-200 space-x-2 md:space-x-8">
+            <button class="tab-btn active text-base md:text-xl p-2 md:p-4" onclick="openTab('tab1')">வாய்மொழி பயிற்சி (15 நிமிடங்கள்)</button>
+            <button class="tab-btn text-base md:text-xl p-2 md:p-4" onclick="openTab('tab2')">ஆசிரியர் மற்றும் வலுப்படுத்துதல் செயல்பாடு (45 நிமிடங்கள்)</button>
+            <button class="tab-btn text-base md:text-xl p-2 md:p-4" onclick="openTab('tab3')">கல்விசார் செயல்பாடுகள் (15 நிமிடங்கள்)</button>
+        </div>
+
+        <!-- Tab 1 -->
+        <div id="tab1" class="content active p-4 md:p-8">
+             <div class="grid md:grid-cols-2 gap-8">
+                <div class="card">
+                    <h3 class="text-2xl font-bold text-center text-blue-700 mb-4">பெருக்கல் வாய்ப்பாடு</h3>
+                    <div class="text-center mb-4">
+                        <p class="mb-2">ஒரு எண்ணைத் தேர்ந்தெடுக்கவும் (6-10):</p>
+                        <div id="table-selector" class="flex justify-center space-x-2"></div>
+                    </div>
+                    <div class="interactive-element flex flex-col justify-between">
+                        <div id="multiplication-display" class="text-center">
+                             <p class="text-gray-500">தொடங்க ஒரு எண்ணை அழுத்தவும்.</p>
+                        </div>
+                        <div id="multiplication-controls" class="flex justify-between items-center mt-4"></div>
+                    </div>
+                </div>
+                <div class="card">
+                    <h3 class="text-2xl font-bold text-center text-blue-700 mb-4">எண்களின் பெயர்கள் (1-20)</h3>
+                     <div class="text-center mb-4">
+                        <div class="inline-flex rounded-md shadow-sm">
+                            <button id="learn-mode-btn" class="btn-primary btn-secondary active rounded-l-lg" onclick="setNumberMode('learn')">கற்க</button>
+                            <button id="practice-mode-btn" class="btn-primary btn-secondary rounded-r-lg" onclick="setNumberMode('practice')">பயிற்சி</button>
+                        </div>
+                    </div>
+                    <div class="interactive-element flex flex-col items-center justify-center">
+                        <div id="number-learn-mode" class="text-center">
+                            <div class="flex items-center justify-center gap-4">
+                                <button id="prev-number-btn" class="btn-primary text-2xl">&lt;</button>
+                                <div id="learn-number-display" class="text-6xl font-bold text-blue-500 w-24 text-center"></div>
+                                <button id="next-number-btn" class="btn-primary text-2xl">&gt;</button>
+                            </div>
+                            <div id="learn-name-display" class="text-3xl font-bold text-green-600 mt-4"></div>
+                            <i id="speak-btn" class="fas fa-volume-up speaker-btn mt-4 text-3xl cursor-pointer"></i>
+                        </div>
+                        <div id="number-practice-mode" class="hidden w-full text-center">
+                            <p class="mb-4">சரியான பெயரைத் தேர்ந்தெடுக்கவும்:</p>
+                            <div id="number-name-question" class="text-6xl font-bold text-blue-500 mb-4"></div>
+                            <div id="number-name-options" class="grid grid-cols-2 gap-4 w-full"></div>
+                            <div id="number-name-feedback" class="mt-4 font-bold text-lg"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 2 (REWORKED) -->
+        <div id="tab2" class="content p-4 md:p-8">
+             <div class="grid lg:grid-cols-1 gap-8">
+                <!-- Single Digit Division -->
+                <div class="card">
+                    <h3 class="text-2xl font-bold text-center text-blue-700 mb-4">ஓரிலக்க வகுத்தல்</h3>
+                    <div class="interactive-element text-center">
+                        <div id="s-div-problem" class="text-3xl font-bold my-2"></div>
+                        <p class="text-gray-600">பொருளைத் தேர்ந்தெடுத்து பெட்டிகளில் சமமாகப் பிரிக்கவும்.</p>
+                        <div id="s-div-items" class="item-container my-4"></div>
+                        <div id="s-div-groups" class="grid grid-cols-5 gap-4"></div>
+                        <div class="mt-4">
+                            <label>ஒரு பெட்டியில் எத்தனை?</label>
+                            <input type="number" id="s-div-answer" class="text-center text-xl p-2 border-2 rounded-lg w-28" placeholder="விடை">
+                            <button id="s-div-check-btn" class="btn-primary ml-2">சரிபார்</button>
+                        </div>
+                        <div id="s-div-feedback" class="mt-2 font-bold text-2xl h-8"></div>
+                    </div>
+                </div>
+                <!-- Two Digit Division (Redesigned) -->
+                <div class="card">
+                    <h3 class="text-2xl font-bold text-center text-blue-700 mb-4">ஈரிலக்க வகுத்தல் (பகிர்ந்தளித்தல்)</h3>
+                    <div class="interactive-element text-center">
+                        <div id="l-div-problem" class="text-3xl font-bold my-2"></div>
+                        <div id="l-div-feedback" class="mt-2 font-bold text-xl h-12 text-blue-600"></div>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 my-2">
+                            <div class="md:col-span-1">
+                                <h4 class="font-bold">பகிர்வதற்கான கட்டைகள்</h4>
+                                <div id="l-div-source-blocks" class="block-container p-4 bg-gray-100 rounded-lg"></div>
+                                <button id="l-div-exchange-btn" class="btn-primary mt-2 bg-yellow-500 hover:bg-yellow-600 hidden">பத்துக்களை மாற்று</button>
+                            </div>
+                            <div class="md:col-span-2">
+                                <h4 class="font-bold">குழுக்கள்</h4>
+                                <div id="l-div-groups-container" class="grid grid-cols-2 lg:grid-cols-4 gap-2 my-2"></div>
+                            </div>
+                        </div>
+                         <div class="mt-4 flex justify-center items-center gap-4">
+                            <div id="l-div-answer-area" class="hidden">
+                                <label>விடை (ஈவு):</label>
+                                <input type="number" id="l-div-answer" class="text-center text-xl p-2 border-2 rounded-lg w-28" placeholder="விடை">
+                                <button id="l-div-check-btn" class="btn-primary ml-2">சரிபார்</button>
+                            </div>
+                            <button id="l-div-reset-btn" class="btn-primary bg-green-600 hover:bg-green-700">புதிய கணக்கு</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 3 -->
+        <div id="tab3" class="content p-4 md:p-8">
+             <div class="grid md:grid-cols-2 gap-8">
+                <div class="card">
+                    <h3 class="text-2xl font-bold text-center text-blue-700 mb-4">சுற்றியுள்ள பொருட்களின் வடிவங்கள்</h3>
+                    <div class="flex flex-col h-full">
+                        <div class="interactive-element relative overflow-hidden bg-cyan-100 p-4 flex-grow">
+                            <p id="shape-finder-prompt" class="text-center font-bold mb-2"></p>
+                            <div id="scene-container" class="relative w-full h-5/6">
+                                <!-- Sun -->
+                                <div id="shape-sun" data-shape="வட்டம்" class="absolute w-16 h-16 bg-yellow-400 rounded-full cursor-pointer" style="top: 5%; right: 5%;" onclick="checkShapeFinder(this)"></div>
+                                <!-- House -->
+                                <div class="absolute" style="bottom: 0; left: 50%; transform: translateX(-50%); width: 160px; height: 160px;">
+                                    <!-- Roof -->
+                                    <div id="shape-roof" data-shape="முக்கோணம்" class="absolute w-0 h-0 border-l-[80px] border-l-transparent border-r-[80px] border-r-transparent border-b-[60px] border-b-red-500 cursor-pointer" style="top: 0; left: 0;" onclick="checkShapeFinder(this)"></div>
+                                    <!-- House Body -->
+                                    <div id="shape-house" data-shape="சதுரம்" class="absolute w-full h-[100px] bg-orange-400 cursor-pointer" style="top: 60px; left: 0;" onclick="checkShapeFinder(this)"></div>
+                                    <!-- Door -->
+                                    <div id="shape-door" data-shape="செவ்வகம்" class="absolute w-8 h-16 bg-amber-800 cursor-pointer" style="bottom: 0; left: 50%; transform: translateX(-50%);" onclick="checkShapeFinder(this)"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="shape-finder-feedback" class="text-center font-bold text-xl h-8 mt-2"></div>
+                    </div>
+                </div>
+               <div class="card">
+                    <h3 class="text-2xl font-bold text-center text-blue-700 mb-4">விதவிதமான வடிவங்களை வரைதல்</h3>
+                    <div class="interactive-element flex flex-col items-center">
+                        <canvas id="drawing-canvas" width="300" height="300"></canvas>
+                        <div class="flex flex-col items-center gap-4 mt-4">
+                             <div id="color-palette" class="flex justify-center gap-2"></div>
+                             <div class="flex justify-center gap-2">
+                                <button id="undo-btn" class="btn-primary bg-yellow-500 hover:bg-yellow-600 text-sm py-2 px-3">செயல்தவிர்</button>
+                                <button id="clear-canvas-btn" class="btn-primary bg-gray-500 hover:bg-gray-600 text-sm py-2 px-3">அழி</button>
+                             </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card">
+                    <h3 class="text-2xl font-bold text-center text-blue-700 mb-4">பட்டை வரைபடம் பயிற்சி</h3>
+                     <div class="interactive-element text-center">
+                        <p class="mb-2">வகுப்பில் உள்ள மாணவர்களின் எண்ணிக்கை (அதிகபட்சம் 50):</p>
+                        <div class="grid grid-cols-3 gap-2 mb-4">
+                            <div>
+                                <label for="bar-input-1" class="font-bold text-red-500">சிவப்பு</label>
+                                <input type="number" id="bar-input-1" class="w-full text-center border-2 rounded p-1" value="10" min="0" max="50">
+                            </div>
+                            <div>
+                                <label for="bar-input-2" class="font-bold text-green-500">பச்சை</label>
+                                <input type="number" id="bar-input-2" class="w-full text-center border-2 rounded p-1" value="25" min="0" max="50">
+                            </div>
+                            <div>
+                                <label for="bar-input-3" class="font-bold text-blue-500">நீலம்</label>
+                                <input type="number" id="bar-input-3" class="w-full text-center border-2 rounded p-1" value="15" min="0" max="50">
+                            </div>
+                        </div>
+                        <div class="flex justify-around items-end h-48 border-b-2 border-l-2 border-gray-400 p-2">
+                            <div class="w-12 h-full bg-red-500 transition-all duration-500" id="bar-red"></div>
+                            <div class="w-12 h-full bg-green-500 transition-all duration-500" id="bar-green"></div>
+                            <div class="w-12 h-full bg-blue-500 transition-all duration-500" id="bar-blue"></div>
+                        </div>
+                        <button id="draw-chart-btn" class="btn-primary mt-4">வரை</button>
+                    </div>
+                </div>
+               <div class="card">
+                    <h3 class="text-2xl font-bold text-center text-blue-700 mb-4">மனக் கணக்கு (வகுத்தல்)</h3>
+                    <div class="interactive-element flex flex-col items-center justify-center">
+                         <div class="w-full flex justify-between items-center mb-4">
+                            <h4 id="mental-math-counter" class="font-bold text-lg">வினா: 1 / 30</h4>
+                            <button id="mental-math-reset" class="btn-primary bg-red-500 hover:bg-red-600 text-sm py-2 px-3">மீண்டும் தொடங்கு</button>
+                        </div>
+                        <div id="mental-math-problem" class="text-4xl font-bold my-2"></div>
+                        <input type="number" id="mental-math-input" class="text-center text-2xl p-2 border-2 border-blue-300 rounded-lg w-40" placeholder="விடை">
+                        <button id="mental-math-check" class="btn-primary mt-2">சரிபார்</button>
+                        <div id="mental-math-feedback" class="mt-2 font-bold text-2xl h-8"></div>
+                        <div class="w-full flex justify-between items-center mt-2">
+                            <button id="mental-math-prev" class="btn-primary">&lt; முன்</button>
+                            <span class="font-bold">சரியானவை: <span id="mental-math-score">0</span></span>
+                            <button id="mental-math-next" class="btn-primary">அடுத்து &gt;</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- Global Variables ---
+        let tableSelector, multiplicationDisplay, multiplicationControls;
+        let currentMultiplier = 1;
+        let selectedTableNum = 0;
+        const numberNames = { 1: "ஒன்று", 2: "இரண்டு", 3: "மூன்று", 4: "நான்கு", 5: "ஐந்து", 6: "ஆறு", 7: "ஏழு", 8: "எட்டு", 9: "ஒன்பது", 10: "பத்து", 11: "பதினொன்று", 12: "பன்னிரண்டு", 13: "பதிமூன்று", 14: "பதினான்கு", 15: "பதினைந்து", 16: "பதினாறு", 17: "பதினேழு", 18: "பதினெட்டு", 19: "பத்தொன்பது", 20: "இருபது" };
+        let currentLearnNumber = 1;
+        let synth;
+        let currentQuizNumber;
+        
+        let sDivProblemEl, sDivItemsEl, sDivGroupsEl, sDivAnswerEl, sDivCheckBtn, sDivFeedbackEl;
+        let sDivDividend, sDivDivisor, sDivQuotient;
+        let sDivSelectedItem = null;
+
+        let lDivProblemEl, lDivSourceEl, lDivGroupsContainerEl, lDivFeedbackEl, lDivResetBtn, lDivExchangeBtn, lDivAnswerArea, lDivAnswerInput, lDivCheckBtn;
+        let lDivDividend, lDivDivisor, lDivQuotient;
+
+        let shapeFinderPrompt, shapeFinderFeedback;
+        const shapesToFind = ["வட்டம்", "சதுரம்", "செவ்வகம்", "முக்கோணம்"];
+        let currentShapeToFind;
+
+        let canvas, ctx, colorPalette, clearBtn, undoBtn;
+        let isDrawing = false;
+        let lastX = 0, lastY = 0;
+        let history = [];
+
+        let drawChartBtn, barInputs, bars;
+        
+        let mentalMathProblem, mentalMathInput, mentalMathCheck, mentalMathFeedback, mentalMathScore, mentalMathCounter, mentalMathPrev, mentalMathNext, mentalMathReset;
+        let mental_questions = [];
+        let currentMentalMathIndex = 0;
+        let score = 0;
+
+        // --- Tab Logic ---
+        function openTab(tabId) {
+            document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            event.currentTarget.classList.add('active');
+        }
+
+        // --- Tab 1 Functions ---
+        function renderMultiplicationStep() {
+            if (selectedTableNum === 0) return;
+            multiplicationDisplay.innerHTML = '';
+            const equation = document.createElement('p');
+            equation.className = 'text-2xl md:text-3xl font-bold mb-4';
+            equation.textContent = `${selectedTableNum} x ${currentMultiplier} = ${selectedTableNum * currentMultiplier}`;
+            multiplicationDisplay.appendChild(equation);
+            const separator = document.createElement('hr');
+            separator.className = 'my-2 md:my-4';
+            multiplicationDisplay.appendChild(separator);
+            const visualContainer = document.createElement('div');
+            visualContainer.className = 'flex flex-col items-center gap-2 mt-2';
+            for (let i = 0; i < currentMultiplier; i++) {
+                const group = document.createElement('div');
+                group.className = 'flex flex-wrap justify-center gap-1 p-1 rounded bg-sky-100 mb-1';
+                for (let j = 0; j < selectedTableNum; j++) {
+                    const object = document.createElement('div');
+                    object.className = 'w-4 h-4 bg-orange-400 rounded-full';
+                    group.appendChild(object);
+                }
+                visualContainer.appendChild(group);
+            }
+            multiplicationDisplay.appendChild(visualContainer);
+            renderMultiplicationControls();
+        }
+        function renderMultiplicationControls() {
+            multiplicationControls.innerHTML = '';
+            const prevBtn = document.createElement('button');
+            prevBtn.textContent = 'முன்';
+            prevBtn.className = 'btn-primary';
+            prevBtn.disabled = currentMultiplier <= 1;
+            if(prevBtn.disabled) prevBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            prevBtn.onclick = () => { currentMultiplier--; renderMultiplicationStep(); };
+            const stepText = document.createElement('span');
+            stepText.textContent = `${currentMultiplier} / 10`;
+            stepText.className = 'font-bold';
+            const nextBtn = document.createElement('button');
+            nextBtn.textContent = 'அடுத்து';
+            nextBtn.className = 'btn-primary';
+            nextBtn.disabled = currentMultiplier >= 10;
+            if(nextBtn.disabled) nextBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            nextBtn.onclick = () => { currentMultiplier++; renderMultiplicationStep(); };
+            multiplicationControls.appendChild(prevBtn);
+            multiplicationControls.appendChild(stepText);
+            multiplicationControls.appendChild(nextBtn);
+        }
+        function setNumberMode(mode) {
+            document.getElementById('number-learn-mode').classList.toggle('hidden', mode !== 'learn');
+            document.getElementById('number-practice-mode').classList.toggle('hidden', mode !== 'practice');
+            document.getElementById('learn-mode-btn').classList.toggle('active', mode === 'learn');
+            document.getElementById('practice-mode-btn').classList.toggle('active', mode !== 'learn');
+            if (mode === 'learn') displayLearnNumber(); else generateNumberNameQuestion();
+        }
+        function displayLearnNumber() {
+            document.getElementById('learn-number-display').textContent = currentLearnNumber;
+            document.getElementById('learn-name-display').textContent = numberNames[currentLearnNumber];
+        }
+        function generateNumberNameQuestion() {
+            const feedbackEl = document.getElementById('number-name-feedback');
+            feedbackEl.textContent = '';
+            currentQuizNumber = Math.floor(Math.random() * 20) + 1;
+            document.getElementById('number-name-question').textContent = currentQuizNumber;
+            const options = new Set([numberNames[currentQuizNumber]]);
+            while (options.size < 4) { options.add(numberNames[Math.floor(Math.random() * 20) + 1]); }
+            const shuffledOptions = Array.from(options).sort(() => Math.random() - 0.5);
+            const optionsContainer = document.getElementById('number-name-options');
+            optionsContainer.innerHTML = '';
+            shuffledOptions.forEach(option => {
+                const button = document.createElement('button');
+                button.textContent = option;
+                button.className = 'p-4 border-2 rounded-lg text-lg hover:bg-blue-100';
+                button.onclick = () => checkNumberName(option, button);
+                optionsContainer.appendChild(button);
+            });
+        }
+        function checkNumberName(selectedOption, btn) {
+            document.querySelectorAll('#number-name-options button').forEach(b => b.disabled = true);
+            const feedbackEl = document.getElementById('number-name-feedback');
+            if (selectedOption === numberNames[currentQuizNumber]) {
+                feedbackEl.textContent = 'சரியான விடை! 🎉';
+                feedbackEl.className = 'mt-4 font-bold text-lg text-green-600';
+                btn.classList.add('bg-green-500', 'text-white');
+                setTimeout(generateNumberNameQuestion, 1500);
+            } else {
+                feedbackEl.textContent = 'தவறான விடை, மீண்டும் முயற்சிக்கவும்.';
+                feedbackEl.className = 'mt-4 font-bold text-lg text-red-600';
+                btn.classList.add('bg-red-500', 'text-white');
+                setTimeout(generateNumberNameQuestion, 2000);
+            }
+        }
+
+        // --- Tab 2 Functions ---
+        // Single-Digit Division
+        function newSingleDigitDivision() {
+            sDivFeedbackEl.textContent = '';
+            sDivAnswerEl.value = '';
+            sDivSelectedItem = null;
+            sDivDivisor = Math.floor(Math.random() * 4) + 2;
+            sDivQuotient = Math.floor(Math.random() * 4) + 2;
+            sDivDividend = sDivDivisor * sDivQuotient;
+            sDivProblemEl.textContent = `${sDivDividend} ÷ ${sDivDivisor} = ?`;
+            sDivItemsEl.innerHTML = '';
+            for(let i=0; i<sDivDividend; i++) {
+                const item = document.createElement('div');
+                item.className = 'item';
+                item.addEventListener('click', selectItemOnClick);
+                sDivItemsEl.appendChild(item);
+            }
+            sDivGroupsEl.innerHTML = '';
+            sDivGroupsEl.style.gridTemplateColumns = `repeat(${sDivDivisor}, 1fr)`;
+            for(let i=0; i<sDivDivisor; i++) {
+                const box = document.createElement('div');
+                box.className = 'group-box';
+                box.addEventListener('click', placeItemInGroup);
+                sDivGroupsEl.appendChild(box);
+            }
+        }
+        function selectItemOnClick(e) {
+            if (sDivSelectedItem) {
+                sDivSelectedItem.classList.remove('selected');
+            }
+            if (sDivSelectedItem === e.currentTarget) {
+                sDivSelectedItem = null;
+                return;
+            }
+            sDivSelectedItem = e.currentTarget;
+            sDivSelectedItem.classList.add('selected');
+        }
+        function placeItemInGroup(e) {
+            const groupBox = e.currentTarget;
+            if (groupBox.classList.contains('frozen')) return;
+            if (!sDivSelectedItem) {
+                sDivFeedbackEl.textContent = 'முதலில் ஒரு பொருளைத் தேர்ந்தெடுக்கவும்.';
+                sDivFeedbackEl.className = 'mt-2 font-bold text-2xl h-8 text-blue-600';
+                setTimeout(() => { if (sDivFeedbackEl.textContent === 'முதலில் ஒரு பொருளைத் தேர்ந்தெடுக்கவும்.') sDivFeedbackEl.textContent = ''; }, 2000);
+                return;
+            }
+            if (groupBox.children.length < sDivQuotient) {
+                sDivSelectedItem.classList.remove('selected');
+                groupBox.appendChild(sDivSelectedItem);
+                sDivSelectedItem = null;
+                if (groupBox.children.length === sDivQuotient) {
+                    groupBox.classList.add('frozen');
+                    const icon = document.createElement('i');
+                    icon.className = 'fas fa-check-circle frozen-icon';
+                    groupBox.appendChild(icon);
+                }
+            } else {
+                sDivFeedbackEl.textContent = 'இந்தப் பெட்டி நிரம்பியுள்ளது!';
+                sDivFeedbackEl.className = 'mt-2 font-bold text-2xl h-8 text-red-600';
+                setTimeout(() => { if (sDivFeedbackEl.textContent === 'இந்தப் பெட்டி நிரம்பியுள்ளது!') sDivFeedbackEl.textContent = ''; }, 2000);
+            }
+        }
+        
+        // Two-Digit Division
+        function setupTwoDigitDivision() {
+            lDivDivisor = Math.floor(Math.random() * 4) + 2; // 2 to 5
+            lDivQuotient = Math.floor(Math.random() * 15) + 11; // 11 to 25
+            lDivDividend = lDivQuotient * lDivDivisor;
+
+            lDivProblemEl.textContent = `${lDivDividend} ÷ ${lDivDivisor} = ?`;
+            lDivFeedbackEl.textContent = 'முதலில் பத்துக்களைக் கிளிக் செய்து பகிரவும்.';
+            lDivFeedbackEl.className = 'mt-2 font-bold text-xl h-12 text-blue-600';
+            lDivAnswerArea.classList.add('hidden');
+            lDivAnswerInput.value = '';
+            lDivExchangeBtn.classList.add('hidden');
+            
+            lDivSourceEl.innerHTML = '';
+            const tens = Math.floor(lDivDividend / 10);
+            const ones = lDivDividend % 10;
+            for(let i=0; i<tens; i++) {
+                const tenBlock = document.createElement('div');
+                tenBlock.className = 'tens-block';
+                tenBlock.addEventListener('click', distributeTens);
+                lDivSourceEl.appendChild(tenBlock);
+            }
+            for(let i=0; i<ones; i++) {
+                const oneBlock = document.createElement('div');
+                oneBlock.className = 'ones-block';
+                oneBlock.addEventListener('click', distributeOnes);
+                lDivSourceEl.appendChild(oneBlock);
+            }
+
+            lDivGroupsContainerEl.innerHTML = '';
+            lDivGroupsContainerEl.style.gridTemplateColumns = `repeat(${lDivDivisor}, 1fr)`;
+            for(let i=0; i<lDivDivisor; i++) {
+                const box = document.createElement('div');
+                box.className = 'division-group-box';
+                lDivGroupsContainerEl.appendChild(box);
+            }
+        }
+        function distributeTens() {
+            const tensInSource = Array.from(lDivSourceEl.querySelectorAll('.tens-block'));
+            if (tensInSource.length < lDivDivisor) {
+                lDivFeedbackEl.textContent = 'போதுமான பத்துகள் இல்லை. மீதமுள்ளவற்றை மாற்று.';
+                lDivExchangeBtn.classList.remove('hidden');
+                return;
+            }
+            const groups = lDivGroupsContainerEl.querySelectorAll('.division-group-box');
+            for(let i=0; i<lDivDivisor; i++) {
+                const tenToMove = tensInSource[i];
+                tenToMove.removeEventListener('click', distributeTens);
+                groups[i].appendChild(tenToMove);
+            }
+            lDivFeedbackEl.textContent = 'மீதமுள்ள பத்துக்களைப் பகிரவும் அல்லது ஒன்றுகளைப் பகிரவும்.';
+            if (lDivSourceEl.querySelectorAll('.tens-block').length === 0) {
+                 lDivFeedbackEl.textContent = 'இப்போது ஒன்றுகளைக் கிளிக் செய்து பகிரவும்.';
+            }
+        }
+        function exchangeTens() {
+            const tensInSource = Array.from(lDivSourceEl.querySelectorAll('.tens-block'));
+            tensInSource.forEach(ten => {
+                ten.remove();
+                for(let i=0; i<10; i++) {
+                    const oneBlock = document.createElement('div');
+                    oneBlock.className = 'ones-block';
+                    oneBlock.addEventListener('click', distributeOnes);
+                    lDivSourceEl.appendChild(oneBlock);
+                }
+            });
+            lDivExchangeBtn.classList.add('hidden');
+            lDivFeedbackEl.textContent = 'இப்போது ஒன்றுகளைக் கிளிக் செய்து பகிரவும்.';
+        }
+        function distributeOnes() {
+            const onesInSource = Array.from(lDivSourceEl.querySelectorAll('.ones-block'));
+            if (onesInSource.length < lDivDivisor) {
+                lDivFeedbackEl.textContent = 'பகிர்வதற்கு போதுமான ஒன்றுகள் இல்லை. உங்கள் விடையை உள்ளிடவும்.';
+                lDivAnswerArea.classList.remove('hidden');
+                return;
+            }
+            const groups = lDivGroupsContainerEl.querySelectorAll('.division-group-box');
+            for(let i=0; i<lDivDivisor; i++) {
+                const oneToMove = onesInSource[i];
+                oneToMove.removeEventListener('click', distributeOnes);
+                groups[i].appendChild(oneToMove);
+            }
+             if (lDivSourceEl.querySelectorAll('.ones-block').length === 0) {
+                 lDivFeedbackEl.textContent = 'பகிர்வு முடிந்தது! உங்கள் விடையை உள்ளிடவும்.';
+                 lDivAnswerArea.classList.remove('hidden');
+            }
+        }
+
+        // --- Tab 3 Functions ---
+        function newShapeFinderQuestion() {
+            shapeFinderFeedback.textContent = '';
+            currentShapeToFind = shapesToFind[Math.floor(Math.random() * shapesToFind.length)];
+            shapeFinderPrompt.textContent = `${currentShapeToFind} வடிவத்தைக் கிளிக் செய்யவும்.`;
+        }
+        function checkShapeFinder(el) {
+            const selectedShape = el.dataset.shape;
+            if (selectedShape === currentShapeToFind) {
+                shapeFinderFeedback.textContent = 'சரியான விடை! 🎉';
+                shapeFinderFeedback.className = 'text-center font-bold text-xl h-8 mt-2 text-green-600';
+                setTimeout(newShapeFinderQuestion, 2000);
+            } else {
+                shapeFinderFeedback.textContent = 'தவறு, மீண்டும் முயற்சிக்கவும்.';
+                shapeFinderFeedback.className = 'text-center font-bold text-xl h-8 mt-2 text-red-600';
+            }
+        }
+        function saveCanvasState() {
+            history.push(ctx.getImageData(0, 0, canvas.width, canvas.height));
+        }
+        function undoLast() {
+            if (history.length > 1) {
+                history.pop();
+                ctx.putImageData(history[history.length - 1], 0, 0);
+            } else {
+                 history.pop();
+                 ctx.clearRect(0, 0, canvas.width, canvas.height);
+            }
+        }
+        function draw(e) {
+            if (!isDrawing) return;
+            e.preventDefault();
+            ctx.beginPath();
+            ctx.moveTo(lastX, lastY);
+            const [x, y] = getMousePos(canvas, e);
+            ctx.lineTo(x, y);
+            ctx.stroke();
+            [lastX, lastY] = [x, y];
+        }
+        function getMousePos(canvas, evt) {
+            const rect = canvas.getBoundingClientRect();
+            const event = evt.touches ? evt.touches[0] : evt;
+            return [event.clientX - rect.left, event.clientY - rect.top];
+        }
+        function startDrawing(e) {
+            e.preventDefault();
+            isDrawing = true;
+            [lastX, lastY] = getMousePos(canvas, e);
+        }
+        function stopDrawing() {
+            if (isDrawing) {
+                isDrawing = false;
+                saveCanvasState();
+            }
+        }
+        function drawChart() {
+            const maxVal = 50;
+            barInputs.forEach((input, index) => {
+                let val = parseInt(input.value) || 0;
+                if (val < 0) val = 0;
+                if (val > maxVal) val = maxVal;
+                input.value = val;
+                const heightPercent = (val / maxVal) * 100;
+                bars[index].style.height = `${heightPercent}%`;
+            });
+        }
+        function generateMentalMathQuiz() {
+            mental_questions = [];
+            let attempts = 0;
+            while(mental_questions.length < 30 && attempts < 200) {
+                attempts++;
+                const dividend = Math.floor(Math.random() * 96) + 4; // Dividend from 4 to 99
+                const possibleDivisors = [];
+                for (let i = 2; i <= 9; i++) {
+                    if (dividend % i === 0) {
+                        possibleDivisors.push(i);
+                    }
+                }
+                if (possibleDivisors.length > 0) {
+                    const divisor = possibleDivisors[Math.floor(Math.random() * possibleDivisors.length)];
+                    const answer = dividend / divisor;
+                    if (!mental_questions.some(q => q.dividend === dividend && q.divisor === divisor)) {
+                         mental_questions.push({ dividend, divisor, answer, userAnswer: null });
+                    }
+                }
+            }
+            // Fallback to fill up to 30 questions if unique ones are hard to find
+            while (mental_questions.length < 30) {
+                let divisor = Math.floor(Math.random() * 8) + 2;
+                let answer = Math.floor(Math.random() * 8) + 2;
+                let dividend = divisor * answer;
+                mental_questions.push({ dividend, divisor, answer, userAnswer: null });
+            }
+        }
+        function displayMentalMathQuestion(index) {
+            const q = mental_questions[index];
+            mentalMathProblem.textContent = `${q.dividend} ÷ ${q.divisor} = ?`;
+            mentalMathInput.value = '';
+            mentalMathFeedback.textContent = '';
+            mentalMathCounter.textContent = `வினா: ${index + 1} / 30`;
+            mentalMathPrev.disabled = index === 0;
+            mentalMathNext.disabled = index === mental_questions.length - 1;
+        }
+
+        // --- Initial Load ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- Variable Assignments ---
+            tableSelector = document.getElementById('table-selector');
+            multiplicationDisplay = document.getElementById('multiplication-display');
+            multiplicationControls = document.getElementById('multiplication-controls');
+            synth = window.speechSynthesis;
+            
+            sDivProblemEl = document.getElementById('s-div-problem');
+            sDivItemsEl = document.getElementById('s-div-items');
+            sDivGroupsEl = document.getElementById('s-div-groups');
+            sDivAnswerEl = document.getElementById('s-div-answer');
+            sDivCheckBtn = document.getElementById('s-div-check-btn');
+            sDivFeedbackEl = document.getElementById('s-div-feedback');
+            
+            lDivProblemEl = document.getElementById('l-div-problem');
+            lDivSourceEl = document.getElementById('l-div-source-blocks');
+            lDivGroupsContainerEl = document.getElementById('l-div-groups-container');
+            lDivFeedbackEl = document.getElementById('l-div-feedback');
+            lDivResetBtn = document.getElementById('l-div-reset-btn');
+            lDivExchangeBtn = document.getElementById('l-div-exchange-btn');
+            lDivAnswerArea = document.getElementById('l-div-answer-area');
+            lDivAnswerInput = document.getElementById('l-div-answer');
+            lDivCheckBtn = document.getElementById('l-div-check-btn');
+
+            shapeFinderPrompt = document.getElementById('shape-finder-prompt');
+            shapeFinderFeedback = document.getElementById('shape-finder-feedback');
+            
+            canvas = document.getElementById('drawing-canvas');
+            ctx = canvas.getContext('2d');
+            ctx.lineWidth = 3;
+            ctx.lineCap = 'round';
+            ctx.strokeStyle = '#000000';
+            colorPalette = document.getElementById('color-palette');
+            clearBtn = document.getElementById('clear-canvas-btn');
+            undoBtn = document.getElementById('undo-btn');
+            
+            drawChartBtn = document.getElementById('draw-chart-btn');
+            barInputs = [document.getElementById('bar-input-1'), document.getElementById('bar-input-2'), document.getElementById('bar-input-3')];
+            bars = [document.getElementById('bar-red'), document.getElementById('bar-green'), document.getElementById('bar-blue')];
+            
+            mentalMathProblem = document.getElementById('mental-math-problem');
+            mentalMathInput = document.getElementById('mental-math-input');
+            mentalMathCheck = document.getElementById('mental-math-check');
+            mentalMathFeedback = document.getElementById('mental-math-feedback');
+            mentalMathScore = document.getElementById('mental-math-score');
+            mentalMathCounter = document.getElementById('mental-math-counter');
+            mentalMathPrev = document.getElementById('mental-math-prev');
+            mentalMathNext = document.getElementById('mental-math-next');
+            mentalMathReset = document.getElementById('mental-math-reset');
+
+            // --- Event Listeners ---
+            sDivCheckBtn.onclick = () => {
+                 if (sDivAnswerEl.value.trim() === '') {
+                    sDivFeedbackEl.textContent = 'விடையை உள்ளிடவும்.';
+                    sDivFeedbackEl.className = 'mt-2 font-bold text-2xl text-yellow-600';
+                    return; 
+                }
+                const userAnswer = parseInt(sDivAnswerEl.value);
+                if (userAnswer === sDivQuotient) {
+                    sDivFeedbackEl.textContent = 'மிகச் சரி! 👍';
+                    sDivFeedbackEl.className = 'mt-2 font-bold text-2xl text-green-600';
+                    setTimeout(newSingleDigitDivision, 2000);
+                } else {
+                    sDivFeedbackEl.textContent = `தவறு, சரியான விடை: ${sDivQuotient}`;
+                    sDivFeedbackEl.className = 'mt-2 font-bold text-2xl text-red-600';
+                    setTimeout(newSingleDigitDivision, 3000);
+                }
+            };
+            lDivResetBtn.onclick = setupTwoDigitDivision;
+            lDivExchangeBtn.onclick = exchangeTens;
+            lDivCheckBtn.onclick = () => {
+                if (lDivAnswerInput.value.trim() === '') {
+                    lDivFeedbackEl.textContent = 'விடையை உள்ளிடவும்.';
+                    lDivFeedbackEl.className = 'mt-2 font-bold text-xl h-12 text-yellow-600';
+                    return;
+                }
+                const userAnswer = parseInt(lDivAnswerInput.value);
+                if (userAnswer === lDivQuotient) {
+                    lDivFeedbackEl.textContent = 'மிகச் சரி! 🎉';
+                    lDivFeedbackEl.className = 'mt-2 font-bold text-xl h-12 text-green-600';
+                    setTimeout(setupTwoDigitDivision, 2000);
+                } else {
+                    lDivFeedbackEl.textContent = `தவறு, சரியான விடை: ${lDivQuotient}`;
+                    lDivFeedbackEl.className = 'mt-2 font-bold text-xl h-12 text-red-600';
+                }
+            };
+            undoBtn.onclick = undoLast;
+            clearBtn.onclick = () => {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                history = [];
+                saveCanvasState();
+            };
+            drawChartBtn.onclick = drawChart;
+            mentalMathCheck.onclick = () => {
+                if (mentalMathInput.value === '') {
+                    mentalMathFeedback.textContent = 'விடையை உள்ளிடவும்.';
+                    mentalMathFeedback.className = 'mt-2 font-bold text-xl text-yellow-500';
+                    return;
+                }
+                const userAnswer = parseInt(mentalMathInput.value);
+                const q = mental_questions[currentMentalMathIndex];
+                if (userAnswer === q.answer) {
+                    mentalMathFeedback.textContent = 'சபாஷ்!  ';
+                    mentalMathFeedback.className = 'mt-2 font-bold text-2xl text-green-600';
+                    if (q.userAnswer === null) {
+                        score++;
+                        mentalMathScore.textContent = score;
+                    }
+                } else {
+                    mentalMathFeedback.textContent = `தவறு. சரியான விடை: ${q.answer}`;
+                    mentalMathFeedback.className = 'mt-2 font-bold text-2xl text-red-600';
+                }
+                q.userAnswer = userAnswer;
+            };
+            mentalMathNext.onclick = () => { if(currentMentalMathIndex < mental_questions.length - 1) { currentMentalMathIndex++; displayMentalMathQuestion(currentMentalMathIndex); } };
+            mentalMathPrev.onclick = () => { if(currentMentalMathIndex > 0) { currentMentalMathIndex--; displayMentalMathQuestion(currentMentalMathIndex); } };
+            mentalMathReset.onclick = () => {
+                score = 0;
+                mentalMathScore.textContent = score;
+                currentMentalMathIndex = 0;
+                generateMentalMathQuiz();
+                displayMentalMathQuestion(0);
+            };
+            canvas.addEventListener('mousedown', startDrawing);
+            canvas.addEventListener('mousemove', draw);
+            canvas.addEventListener('mouseup', stopDrawing);
+            canvas.addEventListener('mouseout', stopDrawing);
+            canvas.addEventListener('touchstart', startDrawing, { passive: false });
+            canvas.addEventListener('touchmove', draw, { passive: false });
+            canvas.addEventListener('touchend', stopDrawing);
+            const colors = ['#000000', '#ef4444', '#3b82f6', '#10b981', '#f97316'];
+            colors.forEach(color => {
+                const colorBtn = document.createElement('button');
+                colorBtn.className = 'color-btn';
+                colorBtn.style.backgroundColor = color;
+                if (color === '#000000') colorBtn.classList.add('active');
+                colorBtn.onclick = () => {
+                    ctx.strokeStyle = color;
+                    document.querySelectorAll('.color-btn').forEach(b => b.classList.remove('active'));
+                    colorBtn.classList.add('active');
+                };
+                colorPalette.appendChild(colorBtn);
+            });
+
+            // --- Initial Function Calls ---
+            for (let i = 6; i <= 10; i++) {
+                const btn = document.createElement('button');
+                btn.textContent = i;
+                btn.className = 'btn-primary bg-sky-500 hover:bg-sky-600 w-12 h-12 text-xl';
+                btn.onclick = () => {
+                    selectedTableNum = i;
+                    currentMultiplier = 1;
+                    renderMultiplicationStep();
+                };
+                tableSelector.appendChild(btn);
+            }
+            displayLearnNumber();
+            document.getElementById('prev-number-btn').onclick = () => { currentLearnNumber = (currentLearnNumber === 1) ? 20 : currentLearnNumber - 1; displayLearnNumber(); };
+            document.getElementById('next-number-btn').onclick = () => { currentLearnNumber = (currentLearnNumber === 20) ? 1 : currentLearnNumber + 1; displayLearnNumber(); };
+            document.getElementById('speak-btn').onclick = () => {
+                if(synth.speaking) {
+                    synth.cancel();
+                }
+                const utterance = new SpeechSynthesisUtterance(numberNames[currentLearnNumber]);
+                utterance.lang = 'ta-IN';
+                synth.speak(utterance);
+            };
+
+            setNumberMode('learn');
+            newSingleDigitDivision();
+            setupTwoDigitDivision();
+            newShapeFinderQuestion();
+            drawChart();
+            generateMentalMathQuiz();
+            displayMentalMathQuestion(0);
+            saveCanvasState();
+        });
+    </script>
+</body>
+</html>
