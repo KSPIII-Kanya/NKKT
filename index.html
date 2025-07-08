@@ -4,123 +4,172 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>கன்ய சம்பூர்ணா திட்டம் - கணிதம்</title>
+    
+    <!-- Tailwind CSS for styling -->
     <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts: Noto Sans Tamil and Poppins -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Tamil:wght@400;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Tamil:wght@400;500;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
     <style>
+        /* Custom styles for the page */
         body {
             font-family: 'Poppins', sans-serif;
-            background-color: #f8f9fa;
+            background-color: #f0f4f8;
         }
         .tamil-heading {
             font-family: 'Noto Sans Tamil', sans-serif;
         }
+        .tamil-text {
+            font-family: 'Noto Sans Tamil', sans-serif;
+        }
         .card {
             transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+            overflow: hidden;
         }
         .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            transform: translateY(-8px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        .card-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-size: cover;
+            background-position: center;
+            opacity: 0.1;
+            transition: opacity 0.3s ease;
+        }
+        .card:hover .card-bg {
+            opacity: 0.2;
+        }
+        .hero-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .file-icon {
+            transition: transform 0.3s ease;
+        }
+        .card:hover .file-icon {
+            transform: scale(1.1);
         }
     </style>
 </head>
 <body class="text-gray-800">
 
-    <header class="bg-gradient-to-r from-blue-600 to-indigo-700 text-white shadow-lg">
-        <div class="container mx-auto px-6 py-12 text-center">
-            <h1 class="text-4xl md:text-5xl font-bold tamil-heading">கன்ய சம்பூர்ணா திட்டம்/கன்யா பெண்கள் கல்வி திட்டம்</h1>
-            <p class="text-lg md:text-xl mt-4 tamil-heading">இத்திட்டம் TITAN மற்றும் KALIKE நிறுவனங்களின் பங்களிப்புடன் செயல்படுத்தப்படுகிறது</p>
-            <p class="text-2xl md:text-3xl mt-6 font-semibold tamil-heading">நடுவுல கொஞ்சம் கற்றலைத் தேடி</p>
-            <p class="mt-2 text-xl md:text-2xl font-bold tamil-heading">கணிதம்</p>
+    <!-- Header Section -->
+    <header class="hero-section text-white shadow-2xl">
+        <!-- Responsive padding and text alignment -->
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16 text-center">
+            <!-- Responsive typography for different screen sizes -->
+            <h1 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tamil-heading leading-tight">கன்ய சம்பூர்ணா திட்டம்/கன்யா பெண்கள் கல்வி திட்டம்</h1>
+            <p class="text-lg sm:text-xl md:text-2xl mt-4 tamil-heading font-light">இத்திட்டம் TITAN மற்றும் KALIKE நிறுவனங்களின் பங்களிப்புடன் செயல்படுத்தப்படுகிறது</p>
+            <div class="border-t-2 border-white w-24 mx-auto my-6 opacity-50"></div>
+            <p class="text-2xl sm:text-3xl md:text-4xl mt-6 font-semibold tamil-heading">நடுவுல கொஞ்சம் கற்றலைத் தேடி</p>
+            <p class="mt-2 text-xl sm:text-2xl md:text-3xl font-bold tamil-heading">கணிதம்</p>
         </div>
     </header>
 
-    <div class="container mx-auto px-4 py-12">
+    <!-- Main Container with responsive padding -->
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
 
+        <!-- Main Content -->
         <main>
-            <h2 class="text-3xl font-bold text-gray-800 mb-8 text-center">Weekly HTML File Directory</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-
-                <div class="card bg-white rounded-xl shadow-md overflow-hidden">
-                    <a href="june3rdweek.html" class="block p-6">
-                        <div class="flex items-center">
-                            <svg class="w-10 h-10 text-blue-500 mr-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                            <div>
-                                <h3 class="text-xl font-semibold text-gray-900">June - 3rd Week</h3>
-                                <p class="text-gray-600 mt-1">Project files for the third week of June.</p>
+            <!-- June Section -->
+            <section class="mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold text-blue-800 mb-8 md:mb-12 text-center tamil-heading">ஜூன் மாத கோப்புகள்</h2>
+                <!-- Responsive grid layout for cards -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-10">
+                    <div class="card bg-white rounded-xl shadow-lg">
+                        <div class="card-bg" style="background-image: url('https://placehold.co/600x400/E0F7FA/FFFFFF?text=&font=poppins');"></div>
+                        <a href="june3rdweek.html" class="relative block p-6 md:p-8">
+                            <div class="flex items-center">
+                                <i class="fas fa-file-alt text-3xl md:text-4xl text-blue-500 file-icon"></i>
+                                <div class="ml-4">
+                                    <h3 class="text-xl md:text-2xl font-semibold text-gray-900 tamil-text">ஜூன் - 3வது வாரம்</h3>
+                                </div>
                             </div>
-                        </div>
-                    </a>
-                </div>
-
-                <div class="card bg-white rounded-xl shadow-md overflow-hidden">
-                    <a href="june4thweek.html" class="block p-6">
-                        <div class="flex items-center">
-                            <svg class="w-10 h-10 text-blue-500 mr-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                            <div>
-                                <h3 class="text-xl font-semibold text-gray-900">June - 4th Week</h3>
-                                <p class="text-gray-600 mt-1">Project files for the fourth week of June.</p>
+                        </a>
+                    </div>
+                    <div class="card bg-white rounded-xl shadow-lg">
+                        <div class="card-bg" style="background-image: url('https://placehold.co/600x400/E0F7FA/FFFFFF?text=&font=poppins');"></div>
+                        <a href="june4thweek.html" class="relative block p-6 md:p-8">
+                            <div class="flex items-center">
+                                <i class="fas fa-file-alt text-3xl md:text-4xl text-blue-500 file-icon"></i>
+                                <div class="ml-4">
+                                    <h3 class="text-xl md:text-2xl font-semibold text-gray-900 tamil-text">ஜூன் - 4வது வாரம்</h3>
+                                </div>
                             </div>
-                        </div>
-                    </a>
+                        </a>
+                    </div>
                 </div>
+            </section>
 
-                <div class="card bg-white rounded-xl shadow-md overflow-hidden">
-                    <a href="july1stweek.html" class="block p-6">
-                        <div class="flex items-center">
-                            <svg class="w-10 h-10 text-green-500 mr-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                            <div>
-                                <h3 class="text-xl font-semibold text-gray-900">July - 1st Week</h3>
-                                <p class="text-gray-600 mt-1">Project files for the first week of July.</p>
+            <!-- July Section -->
+            <section>
+                <h2 class="text-3xl md:text-4xl font-bold text-green-800 mb-8 md:mb-12 text-center tamil-heading">ஜூலை மாத கோப்புகள்</h2>
+                <!-- Responsive grid layout for cards -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-10">
+                    <div class="card bg-white rounded-xl shadow-lg">
+                        <div class="card-bg" style="background-image: url('https://placehold.co/600x400/E8F5E9/FFFFFF?text=&font=poppins');"></div>
+                        <a href="july1stweek.html" class="relative block p-6 md:p-8">
+                            <div class="flex items-center">
+                               <i class="fas fa-file-alt text-3xl md:text-4xl text-green-500 file-icon"></i>
+                                <div class="ml-4">
+                                    <h3 class="text-xl md:text-2xl font-semibold text-gray-900 tamil-text">ஜூலை - 1வது வாரம்</h3>
+                                </div>
                             </div>
-                        </div>
-                    </a>
-                </div>
-
-                <div class="card bg-white rounded-xl shadow-md overflow-hidden">
-                    <a href="july2ndweek.html" class="block p-6">
-                        <div class="flex items-center">
-                            <svg class="w-10 h-10 text-green-500 mr-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                            <div>
-                                <h3 class="text-xl font-semibold text-gray-900">July - 2nd Week</h3>
-                                <p class="text-gray-600 mt-1">Project files for the second week of July.</p>
+                        </a>
+                    </div>
+                    <div class="card bg-white rounded-xl shadow-lg">
+                        <div class="card-bg" style="background-image: url('https://placehold.co/600x400/E8F5E9/FFFFFF?text=&font=poppins');"></div>
+                        <a href="july2ndweek.html" class="relative block p-6 md:p-8">
+                            <div class="flex items-center">
+                                <i class="fas fa-file-alt text-3xl md:text-4xl text-green-500 file-icon"></i>
+                                <div class="ml-4">
+                                    <h3 class="text-xl md:text-2xl font-semibold text-gray-900 tamil-text">ஜூலை - 2வது வாரம்</h3>
+                                </div>
                             </div>
-                        </div>
-                    </a>
-                </div>
-
-                <div class="card bg-white rounded-xl shadow-md overflow-hidden">
-                    <a href="July3rdweek.html" class="block p-6">
-                        <div class="flex items-center">
-                            <svg class="w-10 h-10 text-green-500 mr-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                            <div>
-                                <h3 class="text-xl font-semibold text-gray-900">July - 3rd Week</h3>
-                                <p class="text-gray-600 mt-1">Project files for the third week of July.</p>
+                        </a>
+                    </div>
+                    <div class="card bg-white rounded-xl shadow-lg">
+                        <div class="card-bg" style="background-image: url('https://placehold.co/600x400/E8F5E9/FFFFFF?text=&font=poppins');"></div>
+                        <a href="July3rdweek.html" class="relative block p-6 md:p-8">
+                            <div class="flex items-center">
+                                <i class="fas fa-file-alt text-3xl md:text-4xl text-green-500 file-icon"></i>
+                                <div class="ml-4">
+                                    <h3 class="text-xl md:text-2xl font-semibold text-gray-900 tamil-text">ஜூலை - 3வது வாரம்</h3>
+                                </div>
                             </div>
-                        </div>
-                    </a>
-                </div>
-
-                <div class="card bg-white rounded-xl shadow-md overflow-hidden">
-                    <a href="july4thweek.html" class="block p-6">
-                        <div class="flex items-center">
-                            <svg class="w-10 h-10 text-green-500 mr-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                            <div>
-                                <h3 class="text-xl font-semibold text-gray-900">July - 4th Week</h3>
-                                <p class="text-gray-600 mt-1">Project files for the fourth week of July.</p>
+                        </a>
+                    </div>
+                    <div class="card bg-white rounded-xl shadow-lg">
+                        <div class="card-bg" style="background-image: url('https://placehold.co/600x400/E8F5E9/FFFFFF?text=&font=poppins');"></div>
+                        <a href="july4thweek.html" class="relative block p-6 md:p-8">
+                            <div class="flex items-center">
+                                <i class="fas fa-file-alt text-3xl md:text-4xl text-green-500 file-icon"></i>
+                                <div class="ml-4">
+                                    <h3 class="text-xl md:text-2xl font-semibold text-gray-900 tamil-text">ஜூலை - 4வது வாரம்</h3>
+                                </div>
                             </div>
-                        </div>
-                    </a>
+                        </a>
+                    </div>
                 </div>
-            </div>
+            </section>
         </main>
     </div>
 
-    <footer class="bg-gray-800 text-white mt-12">
-        <div class="container mx-auto px-6 py-8 text-center">
-            <p>&copy; 2024 கன்ய சம்பூர்ணா திட்டம். All Rights Reserved.</p>
-            <p class="text-sm text-gray-400 mt-2">This index file was generated to organize project assets.</p>
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white mt-16">
+        <div class="container mx-auto px-6 py-10 text-center">
+            <!-- Footer content is removed as per request -->
         </div>
     </footer>
 
