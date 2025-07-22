@@ -1,0 +1,1207 @@
+<!DOCTYPE html>
+<html lang="ta">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>கணித சிமுலேஷன்</title>
+    <!-- Embedded styles, no external CDN needed -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Catamaran:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        /* Embedded TailwindCSS and Custom Styles */
+        :root {
+            --tw-bg-opacity: 1;
+            --tw-text-opacity: 1;
+        }
+        *, ::before, ::after { box-sizing: border-box; border-width: 0; border-style: solid; border-color: #e5e7eb; }
+        html { line-height: 1.5; -webkit-text-size-adjust: 100%; -moz-tab-size: 4; tab-size: 4; font-family: 'Catamaran', sans-serif; }
+        body { margin: 0; line-height: inherit; font-family: 'Catamaran', sans-serif; background-color: #F0F9FF; display: flex; flex-direction: column; min-height: 100vh; color: #374151; }
+        .container { flex-grow: 1; width: 100%; margin-right: auto; margin-left: auto; padding: 1rem; }
+        @media (min-width: 768px) { .container { padding: 1.5rem; } }
+        
+        /* Layout */
+        .grid { display: grid; }
+        .grid-cols-5 { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+        .grid-cols-10 { grid-template-columns: repeat(10, minmax(0, 1fr)); }
+        .gap-1 { gap: 0.25rem; }
+        .gap-2 { gap: 0.5rem; }
+        .gap-4 { gap: 1rem; }
+        .gap-6 { gap: 1.5rem; }
+        .flex { display: flex; }
+        .flex-col { flex-direction: column; }
+        .flex-wrap { flex-wrap: wrap; }
+        .items-center { align-items: center; }
+        .items-end { align-items: flex-end; }
+        .justify-center { justify-content: center; }
+        .justify-between { justify-content: space-between; }
+        .justify-around { justify-content: space-around; }
+        .flex-grow { flex-grow: 1; }
+        .relative { position: relative; }
+        .absolute { position: absolute; }
+        .fixed { position: fixed; }
+        .z-10 { z-index: 10; }
+        .top-1\/2 { top: 50%; }
+        .left-1\/2 { left: 50%; }
+        
+        /* Spacing */
+        .p-2 { padding: 0.5rem; }
+        .p-3 { padding: 0.75rem; }
+        .p-4 { padding: 1rem; }
+        .p-6 { padding: 1.5rem; }
+        .py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
+        .py-3 { padding-top: 0.75rem; padding-bottom: 0.75rem; }
+        .px-4 { padding-left: 1rem; padding-right: 1rem; }
+        .m-auto { margin: auto; }
+        .mt-1 { margin-top: 0.25rem; }
+        .mt-2 { margin-top: 0.5rem; }
+        .mt-4 { margin-top: 1rem; }
+        .mt-8 { margin-top: 2rem; }
+        .mb-1 { margin-bottom: 0.25rem; }
+        .mb-2 { margin-bottom: 0.5rem; }
+        .mb-4 { margin-bottom: 1rem; }
+        .mb-6 { margin-bottom: 1.5rem; }
+        .mb-8 { margin-bottom: 2rem; }
+        .ml-4 { margin-left: 1rem; }
+        .mr-1 { margin-right: 0.25rem; }
+        .mr-2 { margin-right: 0.5rem; }
+        .-mr-4 { margin-right: -1rem; }
+        .-ml-8 { margin-left: -2rem; }
+        
+        /* Sizing */
+        .w-12 { width: 3rem; }
+        .w-16 { width: 4rem; }
+        .w-32 { width: 8rem; }
+        .w-40 { width: 10rem; }
+        .w-64 { width: 16rem; }
+        .w-full { width: 100%; }
+        .w-1\/3 { width: 33.333333%; }
+        .h-6 { height: 1.5rem; }
+        .h-12 { height: 3rem; }
+        .h-16 { height: 4rem; }
+        .h-32 { height: 8rem; }
+        .h-48 { height: 12rem; }
+        .min-h-\[60px\] { min-height: 60px; }
+        .min-h-\[80px\] { min-height: 80px; }
+        .min-h-screen { min-height: 100vh; }
+        
+        /* Typography */
+        .text-sm { font-size: 0.875rem; line-height: 1.25rem; }
+        .text-md { font-size: 1rem; line-height: 1.5rem; }
+        .text-lg { font-size: 1.125rem; line-height: 1.75rem; }
+        .text-xl { font-size: 1.25rem; line-height: 1.75rem; }
+        .text-2xl { font-size: 1.5rem; line-height: 2rem; }
+        .text-3xl { font-size: 1.875rem; line-height: 2.25rem; }
+        .text-4xl { font-size: 2.25rem; line-height: 2.5rem; }
+        .text-5xl { font-size: 3rem; line-height: 1; }
+        .font-bold { font-weight: 700; }
+        .font-black { font-weight: 900; }
+        .font-semibold { font-weight: 600; }
+        .text-center { text-align: center; }
+        .text-white { color: rgb(255 255 255 / var(--tw-text-opacity)); }
+        .text-gray-600 { color: rgb(75 85 99 / var(--tw-text-opacity)); }
+        .text-gray-700 { color: rgb(55 65 81 / var(--tw-text-opacity)); }
+        .text-gray-800 { color: rgb(31 41 55 / var(--tw-text-opacity)); }
+        .text-blue-600 { color: rgb(37 99 235 / var(--tw-text-opacity)); }
+        .text-blue-700 { color: rgb(29 78 216 / var(--tw-text-opacity)); }
+        .text-blue-800 { color: rgb(30 64 175 / var(--tw-text-opacity)); }
+        .text-cyan-600 { color: rgb(8 145 178 / var(--tw-text-opacity)); }
+        .text-cyan-700 { color: rgb(14 116 144 / var(--tw-text-opacity)); }
+        .text-red-600 { color: rgb(220 38 38 / var(--tw-text-opacity)); }
+        .text-green-600 { color: rgb(22 163 74 / var(--tw-text-opacity)); }
+
+        /* Backgrounds */
+        .bg-white { background-color: rgb(255 255 255 / var(--tw-bg-opacity)); }
+        .bg-white\/50 { background-color: rgb(255 255 255 / 0.5); }
+        .bg-white\/80 { background-color: rgb(255 255 255 / 0.8); }
+        .bg-gray-200 { background-color: rgb(229 231 235 / var(--tw-bg-opacity)); }
+        .bg-green-100 { background-color: rgb(220 252 231 / var(--tw-bg-opacity)); }
+        .bg-green-200 { background-color: rgb(187 247 208 / var(--tw-bg-opacity)); }
+        .bg-green-500 { background-color: rgb(34 197 94 / var(--tw-bg-opacity)); }
+        .bg-blue-100 { background-color: rgb(219 234 254 / var(--tw-bg-opacity)); }
+        .bg-red-500 { background-color: rgb(239 68 68 / var(--tw-bg-opacity)); }
+        .bg-yellow-400 { background-color: rgb(250 204 21 / var(--tw-bg-opacity)); }
+        
+        /* Borders */
+        .rounded-lg { border-radius: 0.5rem; }
+        .rounded-t-lg { border-top-left-radius: 0.5rem; border-top-right-radius: 0.5rem; }
+        .rounded-b-lg { border-bottom-left-radius: 0.5rem; border-bottom-right-radius: 0.5rem; }
+        .rounded-tr-lg { border-top-right-radius: 0.5rem; }
+        .rounded-full { border-radius: 9999px; }
+        .border-2 { border-width: 2px; }
+        .border-b-2 { border-bottom-width: 2px; }
+        .border-gray-300 { border-color: rgb(209 213 219 / var(--tw-border-opacity)); }
+        .border-dashed { border-style: dashed; }
+        .border-cyan-400 { border-color: rgb(34 211 238 / var(--tw-border-opacity)); }
+        .border-yellow-600 { border-color: rgb(202 138 4 / var(--tw-border-opacity)); }
+
+        /* Effects */
+        .shadow-lg { box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1); }
+        .shadow-md { box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1); }
+        .shadow-inner { box-shadow: inset 0 2px 4px 0 rgb(0 0 0 / 0.05); }
+        
+        /* Transitions */
+        .transition { transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter; transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); transition-duration: 150ms; }
+        
+        /* Transforms */
+        .transform { transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y)); }
+        .-translate-y-1\/2 { --tw-translate-y: -50%; transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y)); }
+        .-translate-x-1\/2 { --tw-translate-x: -50%; transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y)); }
+        
+        /* Other */
+        .cursor-pointer { cursor: pointer; }
+        .cursor-grab { cursor: grab; }
+        .hidden { display: none; }
+        
+        @media (min-width: 768px) {
+            .md\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+            .md\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .md\:flex-row { flex-direction: row; }
+            .md\:p-6 { padding: 1.5rem; }
+            .md\:text-lg { font-size: 1.125rem; line-height: 1.75rem; }
+            .md\:text-3xl { font-size: 1.875rem; line-height: 2.25rem; }
+            .md\:text-4xl { font-size: 2.25rem; line-height: 2.5rem; }
+            .md\:mb-0 { margin-bottom: 0px; }
+            .md\:w-64 { width: 16rem; }
+        }
+
+        /* Custom Styles */
+        .tab-btn { transition: all 0.3s ease; border-bottom: 4px solid transparent; }
+        .tab-btn.active { background-color: #3B82F6; color: white; border-bottom: 4px solid #F59E0B; transform: translateY(-2px); box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; animation: fadeIn 0.5s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .game-card { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.3); border-radius: 1.5rem; box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1); transition: transform 0.3s ease, box-shadow 0.3s ease; }
+        .game-card:hover { transform: translateY(-5px); box-shadow: 0 12px 32px 0 rgba(31, 38, 135, 0.15); }
+        .styled-btn { background: linear-gradient(45deg, #22D3EE, #3B82F6); color: white; font-weight: bold; border-radius: 9999px; padding: 0.75rem 1.5rem; border: none; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); transition: all 0.3s ease; cursor: pointer; }
+        .styled-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25); }
+        .styled-btn:disabled { background: #9CA3AF; cursor: not-allowed; }
+        .feedback-modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1000; transition: all 0.3s ease-in-out; }
+        .feedback-modal.hidden { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+        .shake { animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both; }
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-1px, 0, 0); }
+            20%, 80% { transform: translate3d(2px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+            40%, 60% { transform: translate3d(4px, 0, 0); }
+        }
+        .map-grid-cell { border: 1px solid #ccc; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; transition: all 0.3s ease; }
+        .measurement-game { border: 2px solid #3B82F6; border-radius: 1rem; padding: 1rem; background-color: white; display: flex; flex-direction: column; justify-content: space-between; }
+        .balance-scale { display: flex; justify-content: center; align-items: flex-end; height: 150px; margin-bottom: 1.5rem; }
+        .scale-arm { width: 120px; height: 10px; background-color: #9CA3AF; transition: transform 0.5s ease; }
+        .scale-pan { width: 80px; height: 40px; background-color: #FBBF24; border: 2px solid #F59E0B; border-bottom-left-radius: 40px; border-bottom-right-radius: 40px; display: flex; flex-direction: column; justify-content: center; align-items: center; font-size: 0.9rem; font-weight: bold; padding: 4px; }
+        .scale-base { width: 10px; height: 80px; background-color: #9CA3AF; position: relative; top: -10px; }
+        .jug { width: 100px; height: 150px; border: 4px solid #3B82F6; border-top: none; border-radius: 0 0 20px 20px; position: relative; background-color: #BFDBFE; }
+        .jug-fill { position: absolute; bottom: 0; width: 100%; background-color: #60A5FA; transition: height 0.5s ease; }
+        .ruler { width: 100%; height: 40px; background: linear-gradient(to right, #FBBF24, #FDE68A); border: 2px solid #F59E0B; border-radius: 5px; position: relative; overflow: hidden; }
+        .ruler-fill { position: absolute; left: 0; top: 0; height: 100%; background-color: #34D399; transition: width 0.3s ease; }
+        .shape-bin { border: 3px dashed #9CA3AF; min-height: 8rem; }
+        .shape-bin.over { border-color: #22C55E; background-color: #DCFCE7; }
+        .number-grid-item { background-color: #FEF3C7; border: 2px solid #FBBF24; aspect-ratio: 1 / 1; transition: all 0.2s ease; }
+        .number-grid-item:hover { background-color: #FDE68A; transform: scale(1.05); }
+        .number-grid-item.highlight { background-color: #22C55E; color: white; border-color: #16A34A; }
+
+        /* Festival Simulation Styles */
+        .festival-task { border: 2px solid #10B981; border-radius: 1rem; padding: 1rem; background-color: white; display: flex; flex-direction: column; min-height: 320px;}
+        .banner-assembly-area { background-color: #F3F4F6; border: 2px dashed #9CA3AF; min-height: 60px; display: flex; align-items: center; padding: 4px; border-radius: 0.5rem; transition: background-color 0.3s; }
+        .banner-assembly-area.error { border-color: #EF4444; }
+        .cloth-piece { background-color: #6EE7B7; color: #065F46; font-weight: bold; padding: 0.5rem; border-radius: 0.25rem; cursor: pointer; text-align: center; border: 2px solid #10B981; transition: transform 0.2s; }
+        .cloth-piece:hover { transform: scale(1.05); }
+        .cloth-pieces-container { display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: center; min-height: 40px; }
+        .festival-jug { width: 120px; height: 180px; border: 4px solid #3B82F6; border-top: none; border-radius: 0 0 25px 25px; position: relative; background-color: #BFDBFE; margin: 0 auto; }
+        .festival-jug-fill { position: absolute; bottom: 0; width: 100%; background-color: #60A5FA; transition: height 0.5s ease; }
+        .festival-jug.error .festival-jug-fill { background-color: #F87171; }
+        .measuring-cup { background-color: #FBBF24; color: #92400E; font-weight: bold; padding: 0.5rem; border-radius: 0.5rem; cursor: pointer; text-align: center; border: 2px solid #D97706; transition: transform 0.2s; }
+        .measuring-cup:hover { transform: scale(1.05); }
+        .measuring-cups-container { display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: center; }
+
+        .bar {
+            transition: height 0.3s ease;
+        }
+
+        .shop-item {
+            border: 2px solid #D1D5DB;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            text-align: center;
+            font-weight: bold;
+        }
+        .bar-control-btn {
+            background-color: #3B82F6;
+            color: white;
+            border-radius: 9999px;
+            width: 2rem;
+            height: 2rem;
+            font-size: 1.5rem;
+            line-height: 2rem;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <div class="container mx-auto p-4 md:p-6">
+        <!-- Header -->
+        <header class="text-center mb-8">
+            <h1 class="text-3xl md:text-4xl font-black text-blue-800" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.1);">கன்ய சம்பூர்ணா திட்டம் / கன்யா பெண்கள் கல்வி திட்டம்</h1>
+            <p class="text-md md:text-lg text-gray-600 mt-1">இத்திட்டம் TITAN மற்றும் KALIKE நிறுவனங்களின் பங்களிப்புடன் செயல்படுத்தப்படுகிறது</p>
+            <h2 class="text-2xl md:text-3xl font-bold text-cyan-600 mt-4">நடுவுல கொஞ்சம் கற்றலைத் தேடி</h2>
+            <p class="text-md text-blue-800 font-semibold"><b>Created by Mrs A Keerthana, Program Coordinator STEM, Kalike Kanya Sampoorna Project.</b></p>
+            <h3 class="text-xl md:text-2xl font-bold text-gray-700 mt-2">கணிதம்</h3>
+            <p class="text-lg md:text-xl text-red-600 font-semibold mt-1">ஜுலை - 5வது வாரம்</p>
+        </header>
+
+        <!-- Tabs -->
+        <div class="mb-6">
+            <div class="flex flex-wrap justify-center border-b-2 border-gray-300">
+                <button class="tab-btn flex-grow text-center py-3 px-4 font-bold text-gray-700 bg-white/50 rounded-t-lg mr-1 mb-1 md:mb-0" onclick="openTab(event, 'tab1')">வாய்மொழி பயிற்சி (15 நிமிடங்கள்)</button>
+                <button class="tab-btn flex-grow text-center py-3 px-4 font-bold text-gray-700 bg-white/50 rounded-t-lg mr-1 mb-1 md:mb-0" onclick="openTab(event, 'tab2')">ஆசிரியர் மற்றும் வலுப்படுத்துதல் செயல்பாடு (45 நிமிடங்கள்)</button>
+                <button class="tab-btn flex-grow text-center py-3 px-4 font-bold text-gray-700 bg-white/50 rounded-t-lg mb-1 md:mb-0" onclick="openTab(event, 'tab3')">கல்விசார் செயல்பாடுகள் (15 நிமிடங்கள்)</button>
+            </div>
+        </div>
+
+        <!-- Tab Content -->
+        <div id="tab1" class="tab-content">
+            <div class="p-4 md:p-6 bg-white/80 rounded-b-lg rounded-tr-lg shadow-lg">
+                <h2 class="text-2xl font-bold text-center text-blue-700 mb-6">ஊடாடும் பயிற்சி</h2>
+                
+                <div class="game-card p-6 mb-8">
+                    <h3 class="text-xl font-semibold mb-4 text-center">பெருக்கல் விளையாட்டு</h3>
+                    <div id="multiplication-game" class="text-center">
+                        <div id="problem-visual" class="flex flex-wrap justify-center items-center min-h-[80px] mb-4 text-4xl"></div>
+                        <p id="problem-question" class="text-3xl font-bold mb-4">5 x 3 = ?</p>
+                        <input type="number" id="problem-answer" class="p-3 border-2 border-gray-300 rounded-lg text-center text-2xl w-40 focus:border-blue-500 focus:ring focus:ring-blue-200 focus:outline-none" placeholder="விடை">
+                        <button onclick="checkMultiplicationAnswer()" class="styled-btn ml-4">சரிபார்</button>
+                        <p id="problem-feedback" class="mt-4 font-semibold text-lg h-6"></p>
+                    </div>
+                </div>
+
+                <div class="game-card p-6">
+                    <h3 class="text-xl font-semibold mb-2 text-center">எண்ணைத் தேடு</h3>
+                    <p id="number-hunt-prompt" class="text-center text-xl font-bold text-cyan-700 mb-4">எண் <span id="target-number">25</span>-ஐக் கண்டுபிடி!</p>
+                    <div id="number-grid" class="grid grid-cols-10 gap-1 p-2 bg-green-100 rounded-lg">
+                        <!-- Number grid will be generated here by JS -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="tab2" class="tab-content">
+            <div class="p-4 bg-white/80 rounded-b-lg rounded-tr-lg shadow-lg">
+                 <h2 class="text-2xl font-bold text-center text-blue-700 mb-6">ஆசிரியர் செயல்பாடு மற்றும் வலுப்படுத்துதல் செயல்பாடு</h2>
+                
+                <!-- Measurement Game -->
+                <div class="mb-8 p-6 game-card">
+                    <div class="flex justify-center items-center gap-4 mb-4">
+                      <h3 class="text-xl font-semibold text-center">1. அளவீடுகள் விளையாட்டு</h3>
+                      <button onclick="resetMeasurementGames()" class="px-4 py-2 bg-yellow-400 text-gray-800 rounded-full font-bold hover:bg-yellow-500 transition text-sm">மீண்டும் அமை</button>
+                    </div>
+                    <div class="grid md:grid-cols-3 gap-6 text-center">
+                        
+                        <!-- Length Game -->
+                        <div class="measurement-game">
+                            <h4 class="font-bold mb-2">A) தையல் கடை (நீளம்)</h4>
+                            <p class="text-sm mb-2">100 செ.மீ துணியை அளக்க, 'சேர்' பொத்தானை அழுத்தவும்.</p>
+                            <div class="ruler mx-auto mb-2">
+                                <div id="ruler-fill" class="ruler-fill"></div>
+                            </div>
+                            <button onclick="addLength()" class="styled-btn text-sm py-2 px-4 mt-auto">10 செ.மீ சேர்</button>
+                            <p class="font-semibold mt-2">மொத்தம்: <span id="length-counter">0</span> செ.மீ</p>
+                            <p id="length-feedback" class="h-6 mt-1 text-green-600 font-bold"></p>
+                        </div>
+
+                        <!-- Weight Game -->
+                        <div class="measurement-game">
+                            <h4 class="font-bold mb-2">B) மளிகைக் கடை (எடை)</h4>
+                            <p class="text-sm mb-2">தராசை சமன் செய்ய, 'சேர்' பொத்தானை அழுத்தவும்.</p>
+                            <div class="balance-scale">
+                                <div id="left-arm" class="scale-arm" style="transform-origin: right center;">
+                                    <div class="scale-pan">1 கி.கி</div>
+                                </div>
+                                <div class="scale-base"></div>
+                                <div id="right-arm" class="scale-arm" style="transform-origin: left center;">
+                                    <div class="scale-pan"></div>
+                                </div>
+                            </div>
+                            <button onclick="addWeight()" class="styled-btn text-sm py-2 px-4 mt-auto">100 கிராம் சேர்</button>
+                            <p class="font-semibold mt-2">மொத்தம்: <span id="weight-counter-display">0</span> கி</p>
+                            <p id="weight-feedback" class="h-6 mt-1 text-green-600 font-bold"></p>
+                        </div>
+
+                        <!-- Volume Game -->
+                        <div class="measurement-game">
+                            <h4 class="font-bold mb-2">C) பழச்சாறு கடை (கொள்ளளவு)</h4>
+                            <p class="text-sm mb-2">ஜாடியை நிரப்ப, 'ஊற்று' பொத்தானை அழுத்தவும்.</p>
+                            <div class="jug mx-auto mb-2">
+                                <div id="jug-fill" class="jug-fill" style="height: 0%;"></div>
+                            </div>
+                            <button onclick="addVolume()" class="styled-btn text-sm py-2 px-4 mt-auto">100 மி.லி ஊற்று</button>
+                            <p class="font-semibold mt-2">மொத்தம்: <span id="volume-counter">0</span> மி.லி</p>
+                            <p id="volume-feedback" class="h-6 mt-1 text-green-600 font-bold"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Directions -->
+                <div class="mb-8 p-6 game-card">
+                    <h3 class="text-xl font-semibold mb-4">2. திசைகள் மற்றும் வரைபடம்</h3>
+                    <p class="mb-4 text-center">பூனையை அதன் இலக்கான மீனிடம் கொண்டு செல்ல, திசை பொத்தான்களைப் பயன்படுத்தவும்!</p>
+                    <div class="flex flex-col md:flex-row items-center justify-center gap-6">
+                        <div id="map-container" class="grid grid-cols-5 gap-1 bg-gray-200 p-2 rounded-lg shadow-inner"></div>
+                        <div class="flex flex-col items-center">
+                            <!-- FIX: Responsive map buttons -->
+                            <button onclick="movePlayer('up')" class="styled-btn mb-2 w-full md:w-64">வடக்கு (North) ↑</button>
+                            <div class="flex w-full gap-2">
+                                <button onclick="movePlayer('left')" class="styled-btn w-full md:w-64">மேற்கு / இடது (West / Left) ←</button>
+                                <button onclick="movePlayer('right')" class="styled-btn w-full md:w-64">கிழக்கு / வலது (East / Right) →</button>
+                            </div>
+                            <button onclick="movePlayer('down')" class="styled-btn mt-2 w-full md:w-64">தெற்கு (South) ↓</button>
+                            <button onclick="resetMap()" class="mt-4 px-4 py-2 bg-red-500 text-white rounded-full font-bold hover:bg-red-600 transition">மீண்டும் தொடங்கு</button>
+                        </div>
+                    </div>
+                    <p id="map-feedback" class="text-center mt-4 font-semibold text-lg h-6 text-blue-600"></p>
+                </div>
+                
+                <!-- Life Math -->
+                <div class="mb-8 p-6 game-card">
+                    <h3 class="text-xl font-semibold mb-4">3. வாழ்க்கை கணக்குகள் (+, -, *, /)</h3>
+                    <div id="life-math-problem" class="text-center bg-white p-6 rounded-lg shadow-md">
+                        <div id="life-math-visuals" class="flex justify-center items-center flex-wrap gap-2 mb-4 text-3xl min-h-[60px]"></div>
+                        <p id="problem-text" class="text-lg mb-4"></p>
+                        <input type="number" id="life-math-answer" class="p-2 border rounded-md text-center" placeholder="விடை">
+                        <button onclick="checkLifeMathAnswer()" class="styled-btn ml-4">சரிபார்</button>
+                        <p id="life-math-feedback" class="mt-2 font-semibold h-6"></p>
+                    </div>
+                </div>
+
+                <!-- School Festival Simulation -->
+                <div class="p-6 game-card">
+                    <div class="flex justify-center items-center gap-4 mb-4">
+                        <h3 class="text-xl font-semibold mb-4">4. பள்ளி விழா ஏற்பாடுகள்</h3>
+                         <button onclick="resetFestivalSim()" class="px-4 py-2 bg-yellow-400 text-gray-800 rounded-full font-bold hover:bg-yellow-500 transition text-sm">மீண்டும் அமை</button>
+                    </div>
+                    <div id="festival-tasks-container">
+                        <!-- Task 1: Banner Making -->
+                        <div class="festival-task-slide">
+                            <div class="festival-task">
+                                <h4 class="font-bold mb-2">A) பேனர் தயாரித்தல் (நீளம்)</h4>
+                                <p id="banner-task-description" class="text-sm mb-2 flex-grow">5 மீ பேனர் செய்ய, சரியான துணித் துண்டுகளைக் கிளிக் செய்யவும்.</p>
+                                <div id="banner-assembly-area" class="banner-assembly-area w-full my-2"></div>
+                                <p class="font-semibold my-2">மொத்தம்: <span id="banner-progress">0</span> / <span id="banner-target">500</span> செ.மீ</p>
+                                <div id="cloth-pieces-container" class="cloth-pieces-container mt-auto"></div>
+                            </div>
+                        </div>
+                        <!-- Task 2: Lemonade Making -->
+                        <div class="festival-task-slide hidden">
+                            <div class="festival-task">
+                                <h4 class="font-bold mb-2">B) எலுமிச்சை சாறு தயாரித்தல் (கொள்ளளவு)</h4>
+                                <p id="lemonade-task-description" class="text-sm mb-2 flex-grow">2 லிட்டர் தண்ணீர் நிரப்ப, சரியான குவளைகளைக் கிளிக் செய்யவும்.</p>
+                                <div class="relative my-2">
+                                    <div id="festival-jug" class="festival-jug">
+                                        <div id="festival-jug-fill" class="festival-jug-fill"></div>
+                                    </div>
+                                </div>
+                                 <p class="font-semibold my-2">மொத்தம்: <span id="lemonade-progress">0</span> / <span id="lemonade-target">2000</span> மி.லி</p>
+                                <div id="measuring-cups-container" class="measuring-cups-container mt-auto"></div>
+                            </div>
+                        </div>
+                        <!-- Task 3: Packing Sweets -->
+                        <div class="festival-task-slide hidden">
+                            <div class="festival-task">
+                                <h4 class="font-bold mb-2">C) இனிப்பு பொட்டலம் (எடை)</h4>
+                                <p id="sweets-task-description" class="text-sm mb-2 flex-grow">தராசை சமன் செய்ய, 500 கிராம் இனிப்புகளைச் சேர்க்கவும்.</p>
+                                 <div class="balance-scale my-2">
+                                    <div id="festival-scale-left" class="scale-arm" style="transform-origin: right center;">
+                                        <div id="sweets-target-weight" class="scale-pan">500 கி</div>
+                                    </div>
+                                    <div class="scale-base"></div>
+                                    <div id="festival-scale-right" class="scale-arm" style="transform-origin: left center;">
+                                        <div id="sweets-pan" class="scale-pan">0 கி</div>
+                                    </div>
+                                </div>
+                                <p class="font-semibold my-2">மொத்தம்: <span id="sweets-progress">0</span> / <span id="sweets-target">500</span> கி</p>
+                                <button onclick="addSweets()" class="styled-btn text-sm py-2 px-4 mt-auto">50கி இனிப்பு சேர்</button>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Navigation for Festival Tasks -->
+                    <div class="flex justify-between items-center mt-4">
+                        <button id="prev-task-btn" onclick="navigateFestivalTask(-1)" class="styled-btn">முந்தையது</button>
+                        <p id="task-counter" class="font-bold text-lg">செயல்பாடு 1 / 3</p>
+                        <button id="next-task-btn" onclick="navigateFestivalTask(1)" class="styled-btn">அடுத்தது</button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <div id="tab3" class="tab-content">
+             <div class="p-4 bg-white/80 rounded-b-lg rounded-tr-lg shadow-lg">
+                <h2 class="text-2xl font-bold text-center text-blue-700 mb-6">கல்விசார் செயல்பாடுகள்</h2>
+                <div class="grid md:grid-cols-2 gap-6">
+                    <!-- Shape Sorter Game -->
+                    <div class="game-card p-4">
+                        <h3 class="text-xl font-semibold mb-2">1. வடிவங்களை வரிசைப்படுத்து</h3>
+                        <p class="mb-4">பொருளை அதன் சரியான வடிவப் பெட்டியில் இழுத்து விடவும்.</p>
+                        <div class="flex justify-around mb-4">
+                            <div id="shape-object-container" class="w-32 h-32 flex items-center justify-center bg-gray-200 rounded-lg">
+                                <div id="shape-object" draggable="true" class="text-5xl cursor-grab"></div>
+                            </div>
+                        </div>
+                        <div class="flex justify-around gap-2">
+                            <div class="shape-bin w-1/3 p-2 rounded-lg flex flex-col items-center justify-center" data-shape="வட்டம்">
+                                <svg class="w-12 h-12 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 21a9 9 0 100-18 9 9 0 000 18z"></path></svg>
+                                <p class="font-bold">வட்டம்</p>
+                            </div>
+                            <div class="shape-bin w-1/3 p-2 rounded-lg flex flex-col items-center justify-center" data-shape="சதுரம்">
+                                 <svg class="w-12 h-12 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h18v18H3z"></path></svg>
+                                <p class="font-bold">சதுரம்</p>
+                            </div>
+                            <div class="shape-bin w-1/3 p-2 rounded-lg flex flex-col items-center justify-center" data-shape="முக்கோணம்">
+                                 <svg class="w-12 h-12 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 2L2 22h20L12 2z"></path></svg>
+                                <p class="font-bold">முக்கோணம்</p>
+                            </div>
+                        </div>
+                        <p id="shape-sorter-feedback" class="mt-2 font-semibold h-6 text-center"></p>
+                    </div>
+
+                    <!-- Drawing Shapes -->
+                    <div class="game-card p-4">
+                        <h3 class="text-xl font-semibold mb-2">2. விதவிதமான வடிவங்களை வரைதல்</h3>
+                        <p class="mb-4">கீழே உள்ள கேன்வாஸில் ஒரு வடிவம் வரையவும்.</p>
+                        <canvas id="drawing-canvas" class="w-full bg-white border-2 border-gray-400 rounded-lg cursor-crosshair"></canvas>
+                        <div class="mt-2 text-center">
+                            <button onclick="clearCanvas()" class="px-4 py-2 bg-red-500 text-white rounded-full font-bold hover:bg-red-600 transition">அழி</button>
+                        </div>
+                    </div>
+
+                    <!-- Bar Graph -->
+                    <div class="game-card p-4">
+                        <h3 class="text-xl font-semibold mb-2">3. பட்டை வரைபடம் பயிற்சி</h3>
+                        <p class="mb-4">கீழே உள்ள பழங்களின் எண்ணிக்கைக்கு ஏற்ப வரைபடத்தை சரிசெய்யவும்.</p>
+                        <div class="flex justify-around items-end h-48 p-4 bg-gray-100 border rounded-lg">
+                            <div class="bar w-12 bg-red-500" style="height: 40%;"></div>
+                            <div class="bar w-12 bg-yellow-400" style="height: 50%;"></div>
+                            <div class="bar w-12 bg-green-500" style="height: 30%;"></div>
+                        </div>
+                        <div class="flex justify-around mt-2">
+                            <div class="w-1/3 px-2 text-center">
+                                <p>🍎: <span class="font-bold">4</span></p>
+                                <input type="range" min="0" max="10" value="4" class="w-full" oninput="updateBar(this, 0)">
+                            </div>
+                            <div class="w-1/3 px-2 text-center">
+                                <p>🍌: <span class="font-bold">5</span></p>
+                                <input type="range" min="0" max="10" value="5" class="w-full" oninput="updateBar(this, 1)">
+                            </div>
+                            <div class="w-1/3 px-2 text-center">
+                                <p>🍇: <span class="font-bold">3</span></p>
+                                <input type="range" min="0" max="10" value="3" class="w-full" oninput="updateBar(this, 2)">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Mental Math -->
+                    <div class="game-card p-4">
+                        <h3 class="text-xl font-semibold mb-2">4. மனக் கணக்கு</h3>
+                        <div id="mental-math-game" class="text-center bg-white p-6 rounded-lg shadow-md">
+                            <div id="mental-math-visual" class="flex justify-center items-center mb-4 text-xl text-blue-600 font-semibold min-h-[120px]"></div>
+                            <p id="mental-math-problem" class="text-2xl font-bold mb-4">5 + 8 = ?</p>
+                            <input type="number" id="mental-math-answer" class="p-2 border rounded-md text-center w-32" placeholder="விடை">
+                            <button onclick="checkMentalMath()" class="styled-btn ml-4">சரிபார்</button>
+                            <p id="mental-math-feedback" class="mt-2 font-semibold h-6"></p>
+                            <button onclick="nextMentalMath()" class="mt-4 px-6 py-2 bg-gray-500 text-white font-bold rounded-full hover:bg-gray-600 transition">அடுத்தது</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    
+    <!-- Feedback Modal -->
+    <div id="feedback-modal" class="feedback-modal hidden p-6 bg-green-500 text-white text-3xl font-bold rounded-lg shadow-2xl">
+    </div>
+
+
+    <script>
+        // --- General Tab Logic ---
+        function openTab(evt, tabName) {
+            let i, tabcontent, tablinks;
+            tabcontent = document.getElementsByClassName("tab-content");
+            for (i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].classList.remove('active');
+            }
+            tablinks = document.getElementsByClassName("tab-btn");
+            for (i = 0; i < tablinks.length; i++) {
+                tablinks[i].classList.remove("active");
+            }
+            document.getElementById(tabName).classList.add('active');
+            evt.currentTarget.classList.add("active");
+        }
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelector('.tab-btn').click();
+            initTab1();
+            initTab2();
+            initTab3();
+        });
+
+        // --- Feedback Modal ---
+        function showFeedback(message, isSuccess = true) {
+            const modal = document.getElementById('feedback-modal');
+            modal.innerHTML = message; // Allow HTML like emojis
+            modal.className = modal.className.replace(/bg-green-500|bg-red-500/g, '');
+            modal.classList.add(isSuccess ? 'bg-green-500' : 'bg-red-500');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 1500);
+        }
+
+        // --- Tab 1: வாய்மொழி பயிற்சி (Interactive) ---
+        let currentMultiplicationAnswer;
+        let targetNumberToFind;
+
+        function initTab1() {
+            generateMultiplicationQuestion();
+            generateNumberGrid();
+            generateNumberHuntChallenge();
+        }
+
+        function generateMultiplicationQuestion() {
+            const num1 = Math.floor(Math.random() * 5) + 1;
+            const num2 = Math.floor(Math.random() * 10) + 1;
+            currentMultiplicationAnswer = num1 * num2;
+            
+            const icons = ['⭐', '🍎', '⚽️', '🚗', '🎈'];
+            const icon = icons[num1 - 1];
+
+            const visualDiv = document.getElementById('problem-visual');
+            visualDiv.innerHTML = '';
+            let visualHtml = `<div class="flex flex-wrap justify-center items-center gap-2">`;
+            for (let i = 0; i < num2; i++) {
+                visualHtml += `<div class="p-2 border border-dashed border-cyan-400 rounded-lg">${icon.repeat(num1)}</div>`;
+            }
+            visualHtml += `</div>`;
+            visualDiv.innerHTML = visualHtml;
+
+            document.getElementById('problem-question').textContent = `${num2} x ${num1} = ?`;
+            document.getElementById('problem-answer').value = '';
+            document.getElementById('problem-feedback').textContent = '';
+            document.getElementById('problem-answer').classList.remove('shake');
+        }
+
+        function checkMultiplicationAnswer() {
+            const answerInput = document.getElementById('problem-answer');
+            const userAnswer = parseInt(answerInput.value);
+            const feedback = document.getElementById('problem-feedback');
+
+            if (userAnswer === currentMultiplicationAnswer) {
+                feedback.textContent = 'சரியான விடை! அருமை!';
+                feedback.style.color = 'green';
+                showFeedback('🎉 சரியான விடை! 🎉', true);
+                setTimeout(generateMultiplicationQuestion, 2000);
+            } else {
+                feedback.textContent = 'தவறான விடை. மீண்டும் முயற்சிக்கவும்.';
+                feedback.style.color = 'red';
+                answerInput.classList.add('shake');
+                showFeedback('🤔 மீண்டும் முயல்க! 🤔', false);
+                setTimeout(() => answerInput.classList.remove('shake'), 500);
+            }
+        }
+
+        function generateNumberGrid() {
+            const grid = document.getElementById('number-grid');
+            grid.innerHTML = '';
+            let numbers = Array.from({length: 100}, (_, i) => i + 1);
+            
+            for (let i = numbers.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [numbers[i], numbers[j]] = [numbers[j], numbers[i]];
+            }
+
+            for (const number of numbers) {
+                const item = document.createElement('button');
+                item.className = 'number-grid-item flex items-center justify-center font-bold text-lg rounded-lg cursor-pointer';
+                item.textContent = number;
+                item.dataset.number = number;
+                item.onclick = () => checkNumberFind(number);
+                grid.appendChild(item);
+            }
+        }
+        
+        function generateNumberHuntChallenge() {
+            targetNumberToFind = Math.floor(Math.random() * 100) + 1;
+            document.getElementById('target-number').textContent = targetNumberToFind;
+            const items = document.querySelectorAll('.number-grid-item');
+            items.forEach(s => s.classList.remove('highlight'));
+        }
+
+        function checkNumberFind(clickedNumber) {
+            if (clickedNumber === targetNumberToFind) {
+                showFeedback(`👍 ${clickedNumber} சரிதான்! 👍`, true);
+                const item = document.querySelector(`.number-grid-item[data-number="${clickedNumber}"]`);
+                if(item) item.classList.add('highlight');
+                setTimeout(generateNumberHuntChallenge, 2000);
+            } else {
+                 const item = document.querySelector(`.number-grid-item[data-number="${clickedNumber}"]`);
+                 if(item) {
+                     item.classList.add('shake');
+                     setTimeout(() => item.classList.remove('shake'), 500);
+                 }
+                 showFeedback('🤔 தவறான எண் 🤔', false);
+            }
+        }
+
+
+        // --- Tab 2: ஆசிரியர் செயல்பாடு ---
+        const mapSize = 5;
+        let playerPos = {};
+        let destPos = {};
+        const obstacles = [{x:0, y:1}, {x:1, y:3}, {x:3, y:0}, {x:4, y:2}];
+        let lifeMathCorrectAnswer;
+        let lifeMathQuestionNumber = 1;
+        
+        // Measurement game state
+        let currentLength = 0;
+        let currentWeight = 0;
+        let currentVolume = 0;
+
+        // Festival simulation state
+        let BANNER_TARGET_CM;
+        let LEMONADE_TARGET_ML;
+        let SWEETS_TARGET_G;
+        let bannerTotalLength = 0;
+        let lemonadeTotalVolume = 0;
+        let sweetsTotalWeight = 0;
+        let currentFestivalTaskIndex = 0;
+
+        function initTab2() {
+            resetMeasurementGames();
+            resetMap();
+            generateLifeMathProblem();
+            initFestivalSim();
+        }
+
+        function resetMeasurementGames() {
+            currentLength = 0;
+            document.getElementById('length-counter').textContent = 0;
+            document.getElementById('ruler-fill').style.width = '0%';
+            document.getElementById('length-feedback').textContent = '';
+
+            currentWeight = 0;
+            document.getElementById('weight-counter-display').textContent = 0;
+            document.getElementById('weight-feedback').textContent = '';
+            updateScale(document.getElementById('left-arm'), document.getElementById('right-arm'), currentWeight, 1000);
+
+            currentVolume = 0;
+            document.getElementById('volume-counter').textContent = 0;
+            document.getElementById('jug-fill').style.height = '0%';
+            document.getElementById('volume-feedback').textContent = '';
+        }
+
+        function addLength() {
+            if (currentLength >= 100) return;
+            currentLength += 10;
+            document.getElementById('length-counter').textContent = currentLength;
+            document.getElementById('ruler-fill').style.width = `${currentLength}%`;
+            if (currentLength === 100) {
+                document.getElementById('length-feedback').textContent = 'அருமை! 100 செ.மீ = 1 மீ';
+                showFeedback('🎉 1 மீட்டர்! 🎉', true);
+            }
+        }
+
+        function addWeight() {
+            if (currentWeight >= 1000) return;
+            currentWeight += 100;
+            document.getElementById('weight-counter-display').textContent = currentWeight;
+            updateScale(document.getElementById('left-arm'), document.getElementById('right-arm'), currentWeight, 1000);
+            if (currentWeight === 1000) {
+                document.getElementById('weight-feedback').textContent = 'சரியான எடை! 1000 கி = 1 கி.கி';
+                showFeedback('🎉 1 கிலோகிராம்! 🎉', true);
+            }
+        }
+
+        function updateScale(leftArm, rightArm, current, target) {
+            const maxRotation = 8; 
+            const rotation = ((target - current) / target) * maxRotation;
+            leftArm.style.transform = `rotate(${rotation}deg)`;
+            rightArm.style.transform = `rotate(${-rotation}deg)`;
+        }
+
+        function addVolume() {
+            if (currentVolume >= 1000) return;
+            currentVolume += 100;
+            document.getElementById('volume-counter').textContent = currentVolume;
+            document.getElementById('jug-fill').style.height = `${currentVolume / 10}%`;
+             if (currentVolume === 1000) {
+                document.getElementById('volume-feedback').textContent = 'நிரம்பியது! 1000 மி.லி = 1 லி';
+                showFeedback('🎉 1 லிட்டர்! 🎉', true);
+            }
+        }
+
+        function createMap() {
+            const container = document.getElementById('map-container');
+            container.innerHTML = '';
+            container.style.gridTemplateColumns = `repeat(${mapSize}, 1fr)`;
+            for (let r = 0; r < mapSize; r++) {
+                for (let c = 0; c < mapSize; c++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'map-grid-cell w-12 h-12 md:w-14 md:h-14';
+                    cell.id = `cell-${c}-${r}`;
+                    if (c === playerPos.x && r === playerPos.y) cell.innerHTML = '🐱';
+                    if (c === destPos.x && r === destPos.y) cell.innerHTML = '🐟';
+                    if (obstacles.some(o => o.x === c && o.y === r)) cell.innerHTML = '🧱';
+                    container.appendChild(cell);
+                }
+            }
+        }
+
+        function movePlayer(direction) {
+            const feedbackEl = document.getElementById('map-feedback');
+            const oldPos = { ...playerPos };
+            let newPos = { ...playerPos };
+            let directionText = '';
+
+            if (direction === 'up') { if(playerPos.y > 0) newPos.y--; directionText = 'வடக்கு'; }
+            if (direction === 'down') { if(playerPos.y < mapSize - 1) newPos.y++; directionText = 'தெற்கு'; }
+            if (direction === 'left') { if(playerPos.x > 0) newPos.x--; directionText = 'மேற்கு / இடது'; }
+            if (direction === 'right') { if(playerPos.x < mapSize - 1) newPos.x++; directionText = 'கிழக்கு / வலது'; }
+
+            if (obstacles.some(o => o.x === newPos.x && o.y === newPos.y)) {
+                feedbackEl.textContent = 'தடங்கல்! வேறு வழியில் செல்லவும்.';
+                feedbackEl.style.color = 'red';
+                return;
+            }
+            
+            if(oldPos.x !== newPos.x || oldPos.y !== newPos.y) {
+                 playerPos = newPos;
+                document.getElementById(`cell-${oldPos.x}-${oldPos.y}`).innerHTML = '';
+                document.getElementById(`cell-${playerPos.x}-${playerPos.y}`).innerHTML = '🐱';
+                feedbackEl.textContent = `நீங்கள் ${directionText} திசையில் நகர்கிறீர்கள்.`;
+                feedbackEl.style.color = '#2563EB';
+            }
+
+            if (playerPos.x === destPos.x && playerPos.y === destPos.y) {
+                feedbackEl.textContent = 'வெற்றி! சரியாகச் சென்றீர்கள்!';
+                feedbackEl.style.color = 'green';
+                showFeedback('வெற்றி! 🐱 → 🐟', true);
+                setTimeout(resetMap, 2000);
+            }
+        }
+        
+        function resetMap() {
+            const getNewPos = () => ({ x: Math.floor(Math.random() * mapSize), y: Math.floor(Math.random() * mapSize) });
+            const isPositionOnObstacle = (pos) => obstacles.some(o => o.x === pos.x && o.y === pos.y);
+            do { destPos = getNewPos(); } while (isPositionOnObstacle(destPos));
+            do { playerPos = getNewPos(); } while (isPositionOnObstacle(playerPos) || (playerPos.x === destPos.x && playerPos.y === destPos.y));
+            document.getElementById('map-feedback').textContent = '';
+            createMap();
+        }
+
+        function generateLifeMathProblem() {
+            const visualsContainer = document.getElementById('life-math-visuals');
+            const problemTextEl = document.getElementById('problem-text');
+            visualsContainer.innerHTML = '';
+            problemTextEl.innerHTML = '';
+
+            const operations = ['+', '-', '*', '/'];
+            const op = operations[Math.floor(Math.random() * operations.length)];
+            let num1, num2, problemText, visualsHtml = '';
+
+            switch(op) {
+                case '+':
+                    num1 = Math.floor(Math.random() * 5) + 2; num2 = Math.floor(Math.random() * 5) + 2;
+                    visualsHtml = `<div class="flex items-center justify-center gap-4"><div class="p-2 bg-green-100 rounded-lg">${'🥭'.repeat(num1)}</div><span class="text-4xl font-bold">+</span><div class="p-2 bg-green-100 rounded-lg">${'🥭'.repeat(num2)}</div></div>`;
+                    problemText = `ராமு ${num1} மாம்பழங்களையும், சோமு ${num2} மாம்பழங்களையும் வாங்கினால், மொத்தம் எத்தனை மாம்பழங்கள்?`;
+                    lifeMathCorrectAnswer = num1 + num2;
+                    break;
+                case '-':
+                    num2 = Math.floor(Math.random() * 5) + 2; num1 = num2 + Math.floor(Math.random() * 5) + 2;
+                     visualsHtml = `<div class="flex items-center justify-center gap-4"><div class="p-2 bg-red-100 rounded-lg">${'🥚'.repeat(num1)}</div><span class="text-4xl font-bold">-</span><div class="p-2 bg-red-100 rounded-lg">${'🥚'.repeat(num2)}</div></div>`;
+                    problemText = `ஒரு கடையில் ${num1} முட்டைகள் இருந்தன. அதில் ${num2} முட்டைகள் விற்றுவிட்டால், மீதம் எத்தனை?`;
+                    lifeMathCorrectAnswer = num1 - num2;
+                    break;
+                case '*':
+                    num1 = Math.floor(Math.random() * 4) + 2; num2 = Math.floor(Math.random() * 4) + 2;
+                    let groups = ''; for(let i=0; i<num2; i++){ groups += `<div class="p-2 bg-blue-100 rounded-lg">${'✏️'.repeat(num1)}</div>`; }
+                    visualsHtml = `<div class="flex items-center justify-center gap-2 flex-wrap">${groups}</div>`;
+                    problemText = `ஒரு பெட்டியில் ${num1} பென்சில்கள் இருந்தால், ${num2} பெட்டிகளில் மொத்தம் எத்தனை பென்சில்கள் இருக்கும்?`;
+                    lifeMathCorrectAnswer = num1 * num2;
+                    break;
+                case '/':
+                    num2 = Math.floor(Math.random() * 4) + 2; lifeMathCorrectAnswer = Math.floor(Math.random() * 5) + 2; num1 = lifeMathCorrectAnswer * num2;
+                    visualsHtml = `<div class="flex flex-col items-center justify-center gap-2"><div class="p-2 bg-yellow-100 rounded-lg text-2xl">${'🍬'.repeat(num1)}</div><div class="text-xl">→ ${num2} குழுக்களாக பிரிக்கவும்</div></div>`;
+                    problemText = `${num1} இனிப்புகளை ${num2} மாணவர்களுக்கு சமமாகப் பிரித்தால், ஒருவருக்கு எத்தனை கிடைக்கும்?`;
+                    lifeMathCorrectAnswer = num1 / num2;
+                    break;
+            }
+            visualsContainer.innerHTML = visualsHtml;
+            problemTextEl.innerHTML = `<span class="font-bold text-blue-700">கேள்வி ${lifeMathQuestionNumber}:</span> ${problemText}`;
+            document.getElementById('life-math-answer').value = '';
+            document.getElementById('life-math-feedback').textContent = '';
+        }
+
+        function checkLifeMathAnswer() {
+            const userAnswer = parseInt(document.getElementById('life-math-answer').value);
+            const feedback = document.getElementById('life-math-feedback');
+            if (userAnswer === lifeMathCorrectAnswer) {
+                feedback.textContent = 'சரியான விடை! அருமை!';
+                feedback.style.color = 'green';
+                showFeedback('சரியான விடை! 👍', true);
+                lifeMathQuestionNumber++;
+                setTimeout(generateLifeMathProblem, 2000);
+            } else {
+                feedback.textContent = 'தவறான விடை. மீண்டும் முயற்சிக்கவும்.';
+                feedback.style.color = 'red';
+            }
+        }
+
+        // --- Festival Simulation Logic ---
+        function initFestivalSim() {
+            resetFestivalSim();
+        }
+
+        function resetFestivalSim() {
+            BANNER_TARGET_CM = (Math.floor(Math.random() * 11) + 4) * 50; // 200 to 700 cm
+            LEMONADE_TARGET_ML = (Math.floor(Math.random() * 9) + 4) * 250; // 1000 to 3000 ml
+            SWEETS_TARGET_G = (Math.floor(Math.random() * 16) + 5) * 50; // 250 to 1000 g
+
+            bannerTotalLength = 0;
+            const assemblyArea = document.getElementById('banner-assembly-area');
+            assemblyArea.innerHTML = '';
+            assemblyArea.classList.remove('error');
+            document.getElementById('banner-task-description').textContent = `${BANNER_TARGET_CM / 100} மீ பேனர் செய்ய, சரியான துணித் துண்டுகளைக் கிளிக் செய்யவும்.`;
+            document.getElementById('banner-progress').textContent = 0;
+            document.getElementById('banner-target').textContent = BANNER_TARGET_CM;
+            setupBannerTask();
+
+            lemonadeTotalVolume = 0;
+            const jug = document.getElementById('festival-jug');
+            const jugFill = document.getElementById('festival-jug-fill');
+            jug.classList.remove('error');
+            jugFill.style.height = '0%';
+            document.getElementById('lemonade-task-description').textContent = `${LEMONADE_TARGET_ML / 1000} லிட்டர் தண்ணீர் நிரப்ப, சரியான குவளைகளைக் கிளிக் செய்யவும்.`;
+            document.getElementById('lemonade-progress').textContent = 0;
+            document.getElementById('lemonade-target').textContent = LEMONADE_TARGET_ML;
+            setupLemonadeTask();
+
+            sweetsTotalWeight = 0;
+            document.getElementById('sweets-task-description').textContent = `தராசை சமன் செய்ய, ${SWEETS_TARGET_G} கிராம் இனிப்புகளைச் சேர்க்கவும்.`;
+            document.getElementById('sweets-progress').textContent = 0;
+            document.getElementById('sweets-target').textContent = SWEETS_TARGET_G;
+            document.getElementById('sweets-target-weight').textContent = `${SWEETS_TARGET_G} கி`;
+            document.getElementById('sweets-pan').textContent = `0 கி`;
+            updateScale(document.getElementById('festival-scale-left'), document.getElementById('festival-scale-right'), 0, SWEETS_TARGET_G);
+            
+            currentFestivalTaskIndex = 0;
+            showCurrentFestivalTask();
+        }
+
+        function setupBannerTask() {
+            const piecesContainer = document.getElementById('cloth-pieces-container');
+            piecesContainer.innerHTML = '';
+            const pieces = [ {len: 200, text: '200செ.மீ'}, {len: 100, text: '1மீ'}, {len: 50, text: '50செ.மீ'}, {len: 150, text: '150செ.மீ'} ];
+            
+            pieces.forEach(p => {
+                const pieceEl = document.createElement('div');
+                pieceEl.className = 'cloth-piece';
+                pieceEl.textContent = p.text;
+                pieceEl.onclick = () => addBannerPiece(p.len);
+                piecesContainer.appendChild(pieceEl);
+            });
+        }
+        
+        function addBannerPiece(length) {
+            const assemblyArea = document.getElementById('banner-assembly-area');
+            if (bannerTotalLength >= BANNER_TARGET_CM) return;
+
+            bannerTotalLength += length;
+
+            const droppedPiece = document.createElement('div');
+            droppedPiece.className = 'cloth-piece';
+            droppedPiece.textContent = `${length}cm`;
+            droppedPiece.style.width = `${(length / BANNER_TARGET_CM) * 100}%`;
+            assemblyArea.appendChild(droppedPiece);
+            
+            document.getElementById('banner-progress').textContent = bannerTotalLength;
+
+            if (bannerTotalLength > BANNER_TARGET_CM) {
+                assemblyArea.classList.add('error');
+                showFeedback('அதிக நீளம்!', false);
+            } else if (bannerTotalLength === BANNER_TARGET_CM) {
+                assemblyArea.classList.remove('error');
+                showFeedback('சரியான நீளம்! 🎉', true);
+            } else {
+                assemblyArea.classList.remove('error');
+            }
+        }
+
+        function setupLemonadeTask() {
+            const cupsContainer = document.getElementById('measuring-cups-container');
+            cupsContainer.innerHTML = '';
+            const cups = [{vol: 500, text: '500மி.லி'}, {vol: 250, text: '250மி.லி'}, {vol: 1000, text: '1லி'}];
+
+            cups.forEach(c => {
+                const cupEl = document.createElement('div');
+                cupEl.className = 'measuring-cup';
+                cupEl.textContent = c.text;
+                cupEl.onclick = () => pourLemonade(c.vol);
+                cupsContainer.appendChild(cupEl);
+            });
+        }
+
+        function pourLemonade(volume) {
+            const jug = document.getElementById('festival-jug');
+            const jugFill = document.getElementById('festival-jug-fill');
+            
+            if (lemonadeTotalVolume >= LEMONADE_TARGET_ML) return;
+
+            lemonadeTotalVolume += volume;
+            jugFill.style.height = `${(lemonadeTotalVolume / LEMONADE_TARGET_ML) * 100}%`;
+            document.getElementById('lemonade-progress').textContent = lemonadeTotalVolume;
+
+            if (lemonadeTotalVolume > LEMONADE_TARGET_ML) {
+                jug.classList.add('error');
+                showFeedback('வழிந்துவிட்டது!', false);
+            } else if (lemonadeTotalVolume === LEMONADE_TARGET_ML) {
+                jug.classList.remove('error');
+                showFeedback('சரியான அளவு! 🎉', true);
+            } else {
+                 jug.classList.remove('error');
+            }
+        }
+        
+        function addSweets() {
+            if (sweetsTotalWeight >= SWEETS_TARGET_G) return;
+            sweetsTotalWeight += 50;
+            document.getElementById('sweets-progress').textContent = sweetsTotalWeight;
+            document.getElementById('sweets-pan').textContent = `${sweetsTotalWeight} கி`;
+            updateScale(document.getElementById('festival-scale-left'), document.getElementById('festival-scale-right'), sweetsTotalWeight, SWEETS_TARGET_G);
+            
+            if (sweetsTotalWeight === SWEETS_TARGET_G) {
+                 showFeedback('சரியான எடை! 🎉', true);
+            }
+        }
+
+        function navigateFestivalTask(direction) {
+            currentFestivalTaskIndex += direction;
+            showCurrentFestivalTask();
+        }
+
+        function showCurrentFestivalTask() {
+            const tasks = document.querySelectorAll('.festival-task-slide');
+            const prevBtn = document.getElementById('prev-task-btn');
+            const nextBtn = document.getElementById('next-task-btn');
+            const counter = document.getElementById('task-counter');
+
+            tasks.forEach((task, index) => {
+                task.classList.toggle('hidden', index !== currentFestivalTaskIndex);
+            });
+
+            prevBtn.disabled = currentFestivalTaskIndex === 0;
+            nextBtn.disabled = currentFestivalTaskIndex === tasks.length - 1;
+
+            counter.textContent = `செயல்பாடு ${currentFestivalTaskIndex + 1} / ${tasks.length}`;
+        }
+
+
+        // --- Tab 3: கல்விசார் செயல்பாடுகள் ---
+        let drawingCanvas, drawingCtx, isDrawing = false;
+        const shapeObjects = [
+            { emoji: '🏀', shape: 'வட்டம்' }, { emoji: '🕰️', shape: 'வட்டம்' }, { emoji: '📀', shape: 'வட்டம்' },
+            { emoji: '📖', shape: 'சதுரம்' }, { emoji: '🖼️', shape: 'சதுரம்' }, { emoji: '🎲', shape: 'சதுரம்' },
+            { emoji: '🍕', shape: 'முக்கோணம்' }, { emoji: '🍉', shape: 'முக்கோணம்' }, { emoji: '⛺', shape: 'முக்கோணம்' }
+        ];
+        let currentShapeIndex = 0;
+        let currentMentalQuestion;
+        const mentalMathQuestions = [
+            { q: "500 செ.மீ = ? மீ", a: 5, type: 'conversion', from: '5 x 100செ.மீ', to_unit: 'மீ', operation: (container) => {
+                container.innerHTML = `<div class="p-2 bg-blue-100 rounded-lg">${currentMentalQuestion.from}</div>`;
+                setTimeout(() => {
+                    container.innerHTML += `<span class="font-bold text-2xl mx-2">=</span><div class="p-2 bg-green-100 rounded-lg">${currentMentalQuestion.a} ${currentMentalQuestion.to_unit}</div>`;
+                }, 1000);
+            }},
+            { q: "2 கி.கி = ? கி", a: 2000, type: 'conversion', from: '2 கி.கி', to: '2 x 1000கி', operation: (container) => {
+                container.innerHTML = `<div class="p-2 bg-blue-100 rounded-lg">${currentMentalQuestion.from}</div>`;
+                setTimeout(() => {
+                    container.innerHTML = `<div class="p-2 bg-green-100 rounded-lg">${currentMentalQuestion.to}</div>`;
+                }, 1000);
+            }},
+            { q: "3 லி = ? மி.லி", a: 3000, type: 'conversion', from: '3 லி', to: '3 x 1000மி.லி', operation: (container) => {
+                 container.innerHTML = `<div class="p-2 bg-blue-100 rounded-lg">${currentMentalQuestion.from}</div>`;
+                setTimeout(() => {
+                    container.innerHTML = `<div class="p-2 bg-green-100 rounded-lg">${currentMentalQuestion.to}</div>`;
+                }, 1000);
+            }},
+            { q: "1.5 மீ = ? செ.மீ", a: 150, type: 'conversion', from: '1மீ + 50செ.மீ', to: '100செ.மீ + 50செ.மீ', operation: (container) => {
+                container.innerHTML = `<div class="p-2 bg-blue-100 rounded-lg">${currentMentalQuestion.from}</div>`;
+                setTimeout(() => {
+                    container.innerHTML = `<div class="p-2 bg-green-100 rounded-lg">${currentMentalQuestion.to}</div>`;
+                }, 1000);
+            }},
+            { q: "750 கி + 250 கி = ? கி.கி", a: 1, type: 'addition', num1: '750கி', num2: '250கி', result: '1000கி = 1கி.கி', operation: (container) => {
+                container.innerHTML = `<div class="p-2 bg-blue-100 rounded-lg">${currentMentalQuestion.num1}</div> <span class="font-bold text-2xl mx-2">+</span> <div class="p-2 bg-blue-100 rounded-lg">${currentMentalQuestion.num2}</div>`;
+                setTimeout(() => {
+                    container.innerHTML += `<span class="font-bold text-2xl mx-2">=</span><div class="p-2 bg-green-100 rounded-lg">${currentMentalQuestion.result}</div>`;
+                }, 1000);
+            }},
+            { q: "1 கி.கி - 250 கி = ? கி", a: 750, type: 'subtraction', num1: '1000கி', num2: '250கி', result: '750கி', operation: (container) => {
+                container.innerHTML = `<div class="p-2 bg-blue-100 rounded-lg">${currentMentalQuestion.num1}</div> <span class="font-bold text-2xl mx-2">-</span> <div class="p-2 bg-blue-100 rounded-lg">${currentMentalQuestion.num2}</div>`;
+                setTimeout(() => {
+                    container.innerHTML += `<span class="font-bold text-2xl mx-2">=</span><div class="p-2 bg-green-100 rounded-lg">${currentMentalQuestion.result}</div>`;
+                }, 1000);
+            }}
+        ];
+
+        function initTab3() {
+            drawingCanvas = document.getElementById('drawing-canvas');
+            drawingCtx = drawingCanvas.getContext('2d');
+            
+            // Responsive Canvas Setup
+            function resizeCanvas() {
+                const parent = drawingCanvas.parentElement;
+                drawingCanvas.width = parent.clientWidth;
+                drawingCanvas.height = 200; // Keep a fixed height or calculate based on aspect ratio
+            }
+            window.addEventListener('resize', resizeCanvas);
+            resizeCanvas(); // Initial size
+
+            // Touch and Mouse Event Listeners
+            drawingCanvas.addEventListener('mousedown', startDrawing);
+            drawingCanvas.addEventListener('mouseup', stopDrawing);
+            drawingCanvas.addEventListener('mousemove', draw);
+            drawingCanvas.addEventListener('touchstart', startDrawing, { passive: false });
+            drawingCanvas.addEventListener('touchend', stopDrawing, { passive: false });
+            drawingCanvas.addEventListener('touchmove', draw, { passive: false });
+            
+            const shapeObjectEl = document.getElementById('shape-object');
+            const shapeBins = document.querySelectorAll('.shape-bin');
+
+            shapeObjectEl.addEventListener('dragstart', (e) => {
+                e.dataTransfer.setData('text/plain', shapeObjects[currentShapeIndex].shape);
+            });
+
+            shapeBins.forEach(bin => {
+                bin.addEventListener('dragover', (e) => { e.preventDefault(); bin.classList.add('over'); });
+                bin.addEventListener('dragleave', () => { bin.classList.remove('over'); });
+                bin.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    bin.classList.remove('over');
+                    const droppedShape = e.dataTransfer.getData('text/plain');
+                    const targetShape = bin.dataset.shape;
+                    const feedbackEl = document.getElementById('shape-sorter-feedback');
+
+                    if (droppedShape === targetShape) {
+                        feedbackEl.textContent = 'சரியான விடை!';
+                        feedbackEl.style.color = 'green';
+                        showFeedback('👍 அருமை!', true);
+                        loadNextShapeObject();
+                    } else {
+                        feedbackEl.textContent = 'தவறு, மீண்டும் முயற்சிக்கவும்.';
+                        feedbackEl.style.color = 'red';
+                        showFeedback('🤔 தவறான பெட்டி!', false);
+                    }
+                });
+            });
+
+            loadNextShapeObject();
+            nextMentalMath();
+        }
+
+        function loadNextShapeObject() {
+            currentShapeIndex = Math.floor(Math.random() * shapeObjects.length);
+            document.getElementById('shape-object').textContent = shapeObjects[currentShapeIndex].emoji;
+            document.getElementById('shape-sorter-feedback').textContent = '';
+        }
+
+        function getEventPosition(e) {
+            const rect = drawingCanvas.getBoundingClientRect();
+            if (e.touches && e.touches.length > 0) {
+                return {
+                    x: e.touches[0].clientX - rect.left,
+                    y: e.touches[0].clientY - rect.top
+                };
+            }
+            return {
+                x: e.clientX - rect.left,
+                y: e.clientY - rect.top
+            };
+        }
+
+        function startDrawing(e) {
+            e.preventDefault();
+            isDrawing = true; 
+            const pos = getEventPosition(e);
+            draw(e, pos); 
+        }
+
+        function stopDrawing(e) {
+            e.preventDefault();
+            isDrawing = false; 
+            drawingCtx.beginPath(); 
+        }
+
+        function draw(e, startPos) {
+            if (!isDrawing) return;
+            e.preventDefault();
+            
+            const pos = startPos || getEventPosition(e);
+            
+            drawingCtx.lineWidth = 5;
+            drawingCtx.lineCap = 'round';
+            drawingCtx.strokeStyle = '#2563EB';
+            
+            drawingCtx.lineTo(pos.x, pos.y);
+            drawingCtx.stroke();
+            drawingCtx.beginPath();
+            drawingCtx.moveTo(pos.x, pos.y);
+        }
+
+        function clearCanvas() {
+            drawingCtx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
+        }
+        
+        function updateBar(slider, barIndex) {
+            const bars = document.querySelectorAll('.bar');
+            const percentage = slider.value * 10;
+            bars[barIndex].style.height = `${percentage}%`;
+            const p = slider.parentElement.querySelector('p');
+            const emojis = ['🍎', '🍌', '🍇'];
+            p.innerHTML = `${emojis[barIndex]}: <span class="font-bold">${slider.value}</span>`;
+        }
+        
+        function nextMentalMath() {
+            currentMentalQuestion = mentalMathQuestions[Math.floor(Math.random() * mentalMathQuestions.length)];
+            const visualContainer = document.getElementById('mental-math-visual');
+            visualContainer.innerHTML = `<button id="help-btn" class="styled-btn text-sm py-2 px-4">உதவி</button>`;
+            
+            const helpBtn = document.getElementById('help-btn');
+            if (helpBtn) {
+                helpBtn.onclick = () => {
+                    currentMentalQuestion.operation(visualContainer);
+                };
+            }
+            
+            document.getElementById('mental-math-problem').textContent = currentMentalQuestion.q;
+            document.getElementById('mental-math-answer').value = '';
+            document.getElementById('mental-math-feedback').textContent = '';
+        }
+
+        function checkMentalMath() {
+            const userAnswer = parseFloat(document.getElementById('mental-math-answer').value);
+            const feedback = document.getElementById('mental-math-feedback');
+            if (userAnswer === currentMentalQuestion.a) {
+                feedback.textContent = 'சரியான விடை!';
+                feedback.style.color = 'green';
+                showFeedback('மிகச் சரி! ✨', true);
+                setTimeout(nextMentalMath, 2000);
+            } else {
+                feedback.textContent = 'தவறான விடை.';
+                feedback.style.color = 'red';
+            }
+        }
+
+    </script>
+</body>
+</html>
