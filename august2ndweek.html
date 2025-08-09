@@ -1,0 +1,2286 @@
+<!DOCTYPE html>
+<html lang="ta">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>கணித சிமுலேஷன்</title>
+    <!-- The script below is the official Tailwind CSS Play CDN. It dynamically generates styles based on the classes in your HTML. -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts for the 'Arima' typeface -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Arima:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* Custom styles to complement Tailwind CSS and apply the Arima font */
+        body {
+            font-family: 'Arima', sans-serif;
+            background-color: #f0f7ff;
+        }
+        .tab-btn {
+            transition: all 0.3s ease;
+            border-bottom: 4px solid transparent;
+        }
+        .tab-btn.active {
+            border-bottom-color: #3b82f6;
+            color: #1e40af;
+            font-weight: bold;
+        }
+        .content-box {
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            padding: 1.5rem;
+            min-height: 500px;
+        }
+        .simulation-container {
+            border: 2px dashed #93c5fd;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1rem;
+            background-color: #eff6ff;
+        }
+        .btn-primary {
+            background-color: #3b82f6;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-weight: bold;
+            transition: background-color 0.3s;
+            border: none;
+            cursor: pointer;
+        }
+        .btn-primary:hover {
+            background-color: #2563eb;
+        }
+         .btn-secondary {
+            background-color: #6b7280;
+            color: white;
+        }
+        .btn-secondary:hover {
+            background-color: #4b5563;
+        }
+        .btn-primary:disabled {
+            background-color: #9ca3af;
+            cursor: not-allowed;
+        }
+        .input-field {
+            border: 2px solid #c7d2fe;
+            border-radius: 6px;
+            padding: 0.5rem;
+            width: 100px;
+            text-align: center;
+        }
+        .custom-select {
+            appearance: none;
+            background-color: #e0e7ff;
+            border: 2px solid #c7d2fe;
+            padding: 0.75rem 2.5rem 0.75rem 1rem;
+            border-radius: 8px;
+            color: #3730a3;
+            font-weight: bold;
+            cursor: pointer;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 0.5rem center;
+            background-repeat: no-repeat;
+            background-size: 1.5em 1.5em;
+        }
+        .pv-digit {
+            transition: all 0.3s ease;
+            display: inline-block;
+        }
+        .pv-digit.active {
+            color: #d946ef;
+            transform: scale(1.2) translateY(-2px);
+        }
+        .place-value-scale.active {
+            box-shadow: 0 0 0 3px #d946ef;
+            border: 2px solid #d946ef;
+        }
+
+        /* Styles for Click and Place Simulation */
+        .clickable-part {
+            padding: 0.5rem 1rem;
+            background-color: #60a5fa;
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            user-select: none;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .clickable-part:hover {
+            background-color: #3b82f6;
+            transform: scale(1.05);
+        }
+        .clickable-part:active {
+             transform: scale(0.98);
+        }
+        .placement-zone {
+            padding: 1rem;
+            border: 2px solid #60a5fa;
+            border-radius: 8px;
+            min-height: 60px;
+            background-color: #eff6ff;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #1e3a8a;
+        }
+
+        /* Styles for Term Sorting & Click-and-Place Simulations */
+        .option-part, .clickable-term {
+            padding: 0.5rem 1rem;
+            background-color: #a5b4fc;
+            color: #312e81;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            user-select: none;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            font-weight: bold;
+        }
+        .option-part:hover, .clickable-term:hover {
+            background-color: #818cf8;
+            transform: scale(1.05);
+        }
+        .option-part.selected, .clickable-term.selected {
+            background-color: #fde047;
+            color: #713f12;
+            box-shadow: 0 0 0 3px #facc15;
+            transform: scale(1.1);
+        }
+        .option-part.sorted, .clickable-term.placed {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background-color: #d1d5db;
+        }
+        .sort-bucket, .drop-zone {
+            border: 2px dashed #a5b4fc;
+            background-color: #eef2ff;
+            min-height: 100px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-radius: 8px;
+            padding: 0.5rem;
+        }
+        .sort-bucket:hover, .drop-zone:hover {
+            background-color: #c7d2fe;
+            border-color: #818cf8;
+        }
+        .sorted-item {
+            font-size: 1.25rem;
+            font-weight: bold;
+            padding: 0.25rem 0.5rem;
+            border-radius: 6px;
+        }
+        .drop-zone .clickable-term {
+            margin: 0.25rem;
+        }
+
+        /* Animation Styles */
+        @keyframes popIn {
+            0% { transform: scale(0.5); opacity: 0; }
+            80% { transform: scale(1.1); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .animate-pop-in {
+            animation: popIn 0.5s ease-out forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+
+        /* Exponent Styles */
+        .exp-block {
+            width: 40px; height: 40px; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; border-radius: 6px; cursor: pointer; transition: all 0.3s;
+        }
+        .exp-block.moved { opacity: 0.3; cursor: not-allowed; }
+        .exp-block.cancelled { text-decoration: line-through; background-color: #9ca3af !important; opacity: 0.5; }
+        .fraction { display: inline-flex; flex-direction: column; align-items: center; text-align: center; margin: 0 1rem; }
+        .fraction-line { border-top: 2px solid black; width: 100%; min-width: 50px; margin: 4px 0; }
+        .rule-btn { background-color: #e0e7ff; color: #4338ca; }
+        .rule-btn.active { background-color: #4f46e5; color: white; }
+        
+        /* Multiplication Game Styles */
+        #baskets-container {
+            padding-top: 1.5rem; /* Give space for the numbers above */
+        }
+        .basket {
+            position: relative;
+            width: 140px; /* Increased width */
+            height: 110px; /* Increased height */
+            cursor: pointer;
+            background-color: #ffffff;
+            border: 3px solid #a5b4fc;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .basket-number {
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #2a9d8f;
+            color: white;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            border: 2px solid white;
+            z-index: 10;
+        }
+        .basket-counter { display: none; }
+        .apple-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-content: center;
+            gap: 4px;
+            padding: 8px;
+        }
+        .apple {
+            font-size: 1.5rem; 
+            animation: popIn 0.3s ease;
+            flex-shrink: 0;
+            line-height: 1;
+        }
+        .progress-bar-container { background-color: #e0e7ff; border-radius: 99px; padding: 2px; }
+        .progress-bar { background-color: #4ade80; color: #166534; text-align: center; font-weight: bold; border-radius: 99px; transition: width 0.5s ease; }
+    
+        /* Perimeter and Area Styles */
+        #shape-canvas {
+            background-color: #e0f2fe;
+            border-radius: 12px;
+        }
+        .explanation-box-rich {
+            background: linear-gradient(135deg, #e0f2fe, #dbeafe);
+            border: 2px solid #93c5fd;
+            border-radius: 12px;
+            padding: 1rem;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+        }
+        .explanation-item {
+            opacity: 0;
+            animation: fadeIn 0.8s ease-out forwards;
+        }
+        
+        /* Tab 3 Updated Styles */
+        .nav-button {
+            padding: 0.5rem 1rem;
+            border-radius: 9999px;
+            font-weight: bold;
+            transition: background-color 0.2s;
+        }
+        .geo-step {
+            padding: 0.75rem;
+            border: 2px solid #a5b4fc;
+            background-color: #eef2ff;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+        .geo-step:hover:not(.disabled):not(.completed) {
+            background-color: #c7d2fe;
+            border-color: #818cf8;
+        }
+        .geo-step.completed {
+            background-color: #dcfce7;
+            border-color: #4ade80;
+            color: #15803d;
+            cursor: not-allowed;
+        }
+        .geo-step.active {
+            background-color: #c7d2fe;
+            border-color: #818cf8;
+            box-shadow: 0 0 0 3px #818cf8;
+        }
+        .geo-step.disabled {
+            background-color: #f3f4f6;
+            border-color: #d1d5db;
+            color: #9ca3af;
+            cursor: not-allowed;
+        }
+        #graph-canvas-interactive {
+            background-color: #fff;
+            border: 2px solid #9ca3af;
+            border-radius: 8px;
+            cursor: crosshair;
+        }
+        .math-block {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.25rem 0.5rem;
+            margin: 0.25rem;
+            border-radius: 6px;
+            font-weight: bold;
+            color: white;
+            transition: all 0.3s ease;
+        }
+        .lp-item.cancelled {
+            opacity: 0.3;
+            text-decoration: line-through;
+        }
+        .vocab-btn {
+            padding: 0.75rem;
+            background-color: #e0e7ff;
+            color: #4338ca;
+            border-radius: 8px;
+            text-align: center;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            word-break: break-word;
+        }
+        .vocab-btn:hover {
+            background-color: #c7d2fe;
+        }
+        .vocab-btn.active {
+            background-color: #4f46e5;
+            color: white;
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body class="bg-blue-50 text-gray-800 p-2 sm:p-4">
+
+    <div class="max-w-7xl mx-auto">
+        <!-- Header -->
+        <header class="text-center p-4 rounded-lg bg-white shadow-md mb-4">
+            <h1 class="text-2xl sm:text-3xl font-bold text-blue-800">கன்ய சம்பூர்ணா திட்டம் / கன்யா பெண்கள் கல்வி திட்டம்</h1>
+            <p class="text-sm sm:text-base text-blue-600">இத்திட்டம் TITAN மற்றும் KALIKE நிறுவனங்களின் பங்களிப்புடன் செயல்படுத்தப்படுகிறது</p>
+            <h2 class="text-xl sm:text-2xl font-bold text-orange-500 mt-2">நடுவுல கொஞ்சம் கற்றலைத் தேடி</h2>
+            <h3 class="text-lg sm:text-xl text-green-600 font-semibold">கணிதம்</h3>
+            <p class="text-md text-gray-500">ஆகஸ்ட் - 2வது வாரம்</p>
+        </header>
+
+        <!-- Tabs -->
+        <div class="mb-4 bg-white rounded-lg shadow-sm">
+            <div id="tabs" class="flex flex-wrap justify-center border-b-2 border-gray-200">
+                <button onclick="changeTab(0)" class="tab-btn active text-sm sm:text-lg p-3 sm:p-4">வாய்மொழி பயிற்சி (15 நிமிடங்கள்)</button>
+                <button onclick="changeTab(1)" class="tab-btn text-sm sm:text-lg p-3 sm:p-4">ஆசிரியர் செயல்பாடு (45 நிமிடங்கள்)</button>
+                <button onclick="changeTab(2)" class="tab-btn text-sm sm:text-lg p-3 sm:p-4">கல்விசார் செயல்பாடுகள் (15 நிமிடங்கள்)</button>
+                <button onclick="changeTab(3)" class="tab-btn text-sm sm:text-lg p-3 sm:p-4">சொற்களஞ்சியப் பெருக்கம் (10 நிமிடங்கள்)</button>
+            </div>
+        </div>
+
+        <!-- Tab Content -->
+        <div id="tab-contents">
+            <!-- Tab 1: வாய்மொழி பயிற்சி -->
+            <div class="tab-content">
+                <div class="content-box">
+                    <h2 class="text-2xl font-bold text-blue-700 mb-4">வாய்மொழி பயிற்சி</h2>
+                    
+                    <!-- Multiplication Tables -->
+                    <div class="simulation-container mb-6">
+                        <h3 class="text-xl font-semibold mb-2">பெருக்கல் வாய்ப்பாடு விளையாட்டு</h3>
+                        <p class="mb-4">ஒரு எண்ணைத் தேர்ந்தெடுத்து, அதன் பெருக்கல் வாய்ப்பாட்டை விளையாட்டு மூலம் கற்கலாம்.</p>
+                        <div id="multiplication-buttons" class="flex flex-wrap gap-2 mb-4">
+                            <!-- Buttons are dynamically generated by JavaScript -->
+                        </div>
+                        <div id="table-display" class="mt-4 p-4 bg-white rounded-lg min-h-[300px] flex items-start justify-center">
+                            <p>தொடங்க ஒரு எண்ணை அழுத்தவும்.</p>
+                        </div>
+                    </div>
+
+                    <!-- Exponents -->
+                    <div class="simulation-container">
+                        <h3 class="text-xl font-semibold mb-2">அடுக்குக் குறியீடுகள் விதி</h3>
+                        <p class="mb-4">ஒரு விதியைத் தேர்ந்தெடுத்து, உங்கள் எண்களை உள்ளிட்டு அது எப்படி வேலை செய்கிறது என்பதைப் பாருங்கள்.</p>
+                        <div id="exponent-rule-buttons" class="flex flex-wrap gap-2 mb-4">
+                            <button class="rule-btn p-2 rounded-lg font-semibold" onclick="showExponentRule('product')">பெருக்கல் விதி</button>
+                            <button class="rule-btn p-2 rounded-lg font-semibold" onclick="showExponentRule('quotient')">வகுத்தல் விதி</button>
+                            <button class="rule-btn p-2 rounded-lg font-semibold" onclick="showExponentRule('power')">அடுக்கிற்கு அடுக்கு விதி</button>
+                            <button class="rule-btn p-2 rounded-lg font-semibold" onclick="showExponentRule('zero')">பூஜ்ய அடுக்கு விதி</button>
+                        </div>
+                        <div id="exponent-display" class="mt-4 p-4 bg-white rounded-lg min-h-[300px]">
+                             <p>ஒரு விதியைத் தேர்ந்தெடுக்கவும்.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 2: ஆசிரியர் செயல்பாடு -->
+            <div class="tab-content hidden">
+                <div class="content-box">
+                    <h2 class="text-2xl font-bold text-blue-700 mb-4">ஆசிரியர் செயல்பாடு மற்றும் வலுப்படுத்துதல்</h2>
+                    <div class="mb-4">
+                        <p class="text-center text-gray-600 mb-2">கீழே உள்ள பட்டியலில் இருந்து ஒரு தலைப்பைத் தேர்ந்தெடுக்கவும்</p>
+                        <select id="topic-selector" class="custom-select w-full text-lg">
+                            <!-- Options will be generated by JS -->
+                        </select>
+                    </div>
+                    <div id="simulation-content-area">
+                        <!-- Simulation content will be loaded here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 3: கல்விசார் செயல்பாடுகள் -->
+            <div class="tab-content hidden">
+                <div class="content-box">
+                    <h2 class="text-2xl font-bold text-blue-700 mb-4">கல்விசார் செயல்பாடுகள்</h2>
+                    <div class="space-y-6">
+                        <!-- Activity 1: வாழ்க்கை கணக்குகள் -->
+                        <div class="simulation-container">
+                             <h3 class="text-xl font-semibold mb-2">1. வாழ்க்கை கணக்குகள்</h3>
+                             <div id="life-problem-sim-area"></div>
+                        </div>
+                        <!-- Activity 2: வடிவியல் பயிற்சி -->
+                        <div class="simulation-container">
+                             <h3 class="text-xl font-semibold mb-2">2. வடிவியல் பயிற்சி: செங்குத்து இருசமவெட்டி</h3>
+                             <div id="geometry-sim-area"></div>
+                        </div>
+                         <!-- Activity 3: வரைபட பயிற்சி -->
+                        <div class="simulation-container">
+                             <h3 class="text-xl font-semibold mb-2">3. வரைபட பயிற்சி: புள்ளிகள் குறித்தல்</h3>
+                             <div id="graphing-sim-area"></div>
+                        </div>
+                         <!-- Activity 4: மனக் கணக்கு -->
+                        <div class="simulation-container">
+                             <h3 class="text-xl font-semibold mb-2">4. மனக் கணக்கு</h3>
+                             <div id="mental-math-sim-area"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 4: சொற்களஞ்சியப் பெருக்கம் -->
+            <div class="tab-content hidden">
+                <div class="content-box">
+                    <h2 class="text-2xl font-bold text-blue-700 mb-4">இயற்கணிதம் தொடர்பான சொற்கள்</h2>
+                    <div class="flex flex-col md:flex-row gap-4">
+                        <div class="w-full md:w-1/3">
+                            <div id="vocabulary-buttons" class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                <!-- Buttons are dynamically generated by JavaScript -->
+                            </div>
+                        </div>
+                        <div id="term-explanation" class="w-full md:w-2/3 p-4 bg-blue-50 rounded-lg flex items-center justify-center min-h-[300px]">
+                            <p>விளக்கத்தைக் காண ஒரு சொல்லைத் தேர்ந்தெடுக்கவும்.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- Core Tab Logic ---
+        const tabs = document.querySelectorAll('.tab-btn');
+        const tabContents = document.querySelectorAll('.tab-content');
+
+        function changeTab(index) {
+            tabs.forEach((tab, i) => {
+                tab.classList.toggle('active', i === index);
+            });
+            tabContents.forEach((content, i) => {
+                content.classList.toggle('hidden', i !== index);
+            });
+        }
+
+        // --- Global Helper Functions for Exponents ---
+        const createBaseExponentPair = (b, p) => `<div class="exp-base-exponent-pair"><span class="exp-base">${b}</span><sup class="exp-exponent">${p}</sup></div>`;
+        const operator = (op) => `<div class="text-4xl font-bold mx-4">${op}</div>`;
+        
+        // --- Tab 1: வாய்மொழி பயிற்சி (Multiplication Game) ---
+        let currentTableNum = 0;
+        let currentMultiplier = 1;
+
+        function generateTable(num) {
+            currentTableNum = num;
+            currentMultiplier = 1;
+            setupMultiplicationUI();
+        }
+
+        function setupMultiplicationUI() {
+            const display = document.getElementById('table-display');
+            display.innerHTML = `
+                <div class="flex flex-col md:flex-row gap-8 w-full">
+                    <div class="flex-grow flex flex-col items-center gap-4 w-full animate-fade-in">
+                        <div class="progress-bar-container w-full">
+                            <div id="multiplication-progress-bar" class="progress-bar" style="width: 0%">0%</div>
+                        </div>
+                        <h3 id="multiplication-question" class="text-3xl font-bold font-mono"></h3>
+                        <div id="baskets-container" class="flex flex-wrap justify-center items-end gap-x-2 gap-y-12 mt-4 mb-8 min-h-[150px]"></div>
+                        <p id="table-feedback" class="h-6 mt-2 font-bold text-green-600"></p>
+                    </div>
+                    <div id="completed-steps-display" class="w-full md:w-1/3 p-4 bg-blue-50 rounded-lg border-2 border-blue-200">
+                         <h4 class="text-lg font-bold text-blue-700 mb-2 border-b-2 border-blue-200 pb-1">முடிந்த கணக்குகள்</h4>
+                         <div id="steps-list" class="space-y-2 text-lg font-semibold"></div>
+                    </div>
+                </div>`;
+            addNewBasket();
+        }
+
+        function addNewBasket() {
+            if (currentMultiplier > 10) {
+                const display = document.getElementById('table-display');
+                // Keep the completed steps visible after finishing
+                const completedStepsHTML = document.getElementById('completed-steps-display').outerHTML;
+                display.innerHTML = `
+                    <div class="flex flex-col md:flex-row gap-8 w-full">
+                        <div class="flex-grow text-center animate-fade-in p-4">
+                            <h3 class="text-2xl font-bold text-green-600">அருமை!</h3>
+                            <p class="mt-2">${currentTableNum} ஆம் வாய்ப்பாட்டை வெற்றிகரமாக முடித்துவிட்டீர்கள். 🎉</p>
+                            <button class="btn-primary mt-4" onclick="startNewTable()">புதிய வாய்ப்பாட்டைத் தொடங்கு</button>
+                        </div>
+                        ${completedStepsHTML}
+                    </div>
+                `;
+                return;
+            }
+
+            const progress = (currentMultiplier - 1) * 10;
+            document.getElementById('multiplication-progress-bar').style.width = `${progress}%`;
+            document.getElementById('multiplication-progress-bar').textContent = `${progress}%`;
+            document.getElementById('multiplication-question').innerHTML = `${currentTableNum} &times; ${currentMultiplier} = ?`;
+            document.getElementById('table-feedback').textContent = `பெட்டி ${currentMultiplier}-ல் ${currentTableNum} ஆப்பிள்களை வைக்கவும்.`;
+
+            const basketsContainer = document.getElementById('baskets-container');
+            
+            // If this is not the first basket, add a plus symbol before it.
+            if (currentMultiplier > 1) {
+                const plusSymbol = document.createElement('div');
+                plusSymbol.className = 'flex items-center justify-center text-4xl font-bold text-gray-500 animate-fade-in';
+                plusSymbol.textContent = '+';
+                basketsContainer.appendChild(plusSymbol);
+            }
+
+            const newBasket = document.createElement('div');
+            newBasket.className = 'basket animate-fade-in';
+            newBasket.onclick = function() { addApple(this); };
+            newBasket.innerHTML = `
+                <div class="basket-number">${currentMultiplier}</div>
+                <div class="apple-container"></div>
+                <div class="basket-counter">0</div>`;
+            basketsContainer.appendChild(newBasket);
+        }
+
+        function addApple(basketElement) {
+            if (basketElement.dataset.completed === 'true') return;
+
+            const counter = basketElement.querySelector('.basket-counter');
+            const appleContainer = basketElement.querySelector('.apple-container');
+            let currentCount = parseInt(counter.textContent);
+
+            const apple = document.createElement('span');
+            apple.className = 'apple';
+            apple.textContent = '🍎';
+            appleContainer.appendChild(apple);
+
+            currentCount++;
+            counter.textContent = currentCount;
+
+            if (currentCount === currentTableNum) {
+                basketElement.dataset.completed = 'true';
+                basketElement.onclick = null;
+                
+                const questionEl = document.getElementById('multiplication-question');
+                const feedbackEl = document.getElementById('table-feedback');
+                const answer = currentTableNum * currentMultiplier;
+                
+                questionEl.innerHTML = `${currentTableNum} &times; ${currentMultiplier} = <span class="text-blue-600">${answer}</span>`;
+                feedbackEl.textContent = 'சரியான எண்ணிக்கை!';
+
+                // Add the completed step to the permanent list
+                const stepsList = document.getElementById('steps-list');
+                const stepEntry = document.createElement('p');
+                stepEntry.className = 'text-gray-700 animate-fade-in';
+                stepEntry.innerHTML = `${currentTableNum} &times; ${currentMultiplier} = <span class="text-blue-600">${answer}</span>`;
+                stepsList.appendChild(stepEntry);
+
+                currentMultiplier++;
+                setTimeout(addNewBasket, 1500);
+            }
+        }
+        
+        function startNewTable() {
+            document.getElementById('table-display').innerHTML = '<p>தொடங்க ஒரு எண்ணை அழுத்தவும்.</p>';
+        }
+
+        // --- Tab 1: வாய்மொழி பயிற்சி (Exponents) ---
+        let cancelledPairCount = 0;
+        let movedBlocks = 0;
+
+        const exponentRules = {
+            product: {
+                title: 'பெருக்கல் விதி',
+                formula: 'a<sup>m</sup> &times; a<sup>n</sup> = a<sup>m+n</sup>',
+                explanation: 'அதாவது, ஒரே அடிமானத்தைக் கொண்ட எண்களைப் பெருக்கும்போது, அடுக்குகளைக் கூட்ட வேண்டும்.'
+            },
+            quotient: {
+                title: 'வகுத்தல் விதி',
+                formula: 'a<sup>m</sup> / a<sup>n</sup> = a<sup>m-n</sup>',
+                explanation: 'அதாவது, ஒரே அடிமானத்தைக் கொண்ட எண்களை வகுக்கும்போது, அடுக்குகளைக் கழிக்க வேண்டும்.'
+            },
+            power: {
+                title: 'அடுக்கிற்கு அடுக்கு விதி',
+                formula: '(a<sup>m</sup>)<sup>n</sup> = a<sup>m&times;n</sup>',
+                explanation: 'அதாவது, ஒரு அடுக்கின் மேல் இன்னொரு அடுக்கு இருந்தால், அடுக்குகளைப் பெருக்க வேண்டும்.'
+            },
+            zero: {
+                title: 'பூஜ்ய அடுக்கு விதி',
+                formula: 'a<sup>0</sup> = 1',
+                explanation: 'எந்த ஒரு எண்ணின் அடுக்கு பூஜ்ஜியமாக இருந்தால், அதன் மதிப்பு 1 ஆகும் (a&ne;0).'
+            }
+        };
+
+        function showExponentRule(rule) {
+            const display = document.getElementById('exponent-display');
+            
+            document.querySelectorAll('#exponent-rule-buttons .rule-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelector(`#exponent-rule-buttons .rule-btn[onclick="showExponentRule('${rule}')"]`).classList.add('active');
+
+            const currentRule = exponentRules[rule];
+            let inputFields;
+            let m_val = 3, n_val = 2;
+            if(rule === 'quotient') { m_val = 5; }
+
+            if (rule === 'product' || rule === 'quotient' || rule === 'power') {
+                inputFields = `
+                    <label>a = <input id="exp-base" type="number" value="2" class="input-field"></label>
+                    <label>m = <input id="exp-m" type="number" value="${m_val}" class="input-field"></label>
+                    <label>n = <input id="exp-n" type="number" value="${n_val}" class="input-field"></label>
+                `;
+            } else if (rule === 'zero') {
+                inputFields = `<label>a = <input id="exp-base" type="number" value="5" class="input-field"></label>`;
+            }
+
+            display.innerHTML = `
+                <div class="animate-fade-in text-center">
+                    <h4 class="text-xl font-bold text-indigo-700">${currentRule.title}</h4>
+                    <div class="p-3 bg-indigo-50 rounded-lg my-2">
+                        <p class="text-2xl font-mono">${currentRule.formula}</p>
+                        <p class="font-bold text-lg text-gray-700 mt-2">${currentRule.explanation}</p>
+                    </div>
+                    <div class="flex flex-wrap justify-center items-center gap-4 my-4">${inputFields}</div>
+                    <div class="flex justify-center gap-4">
+                        <button class="btn-primary" onclick="runExponentSimulation('${rule}')">செயல்படுத்துக</button>
+                        <button class="btn-primary bg-gray-500 hover:bg-gray-600" onclick="showExponentRule('${rule}')">மீட்டமை</button>
+                    </div>
+                    <div id="exponent-simulation-steps" class="mt-4 text-left space-y-4"></div>
+                </div>
+            `;
+        }
+
+        function runExponentSimulation(rule) {
+            const stepsContainer = document.getElementById('exponent-simulation-steps');
+            stepsContainer.innerHTML = '';
+            movedBlocks = 0; 
+            cancelledPairCount = 0;
+
+            const base = parseInt(document.getElementById('exp-base').value);
+            const m = document.getElementById('exp-m') ? parseInt(document.getElementById('exp-m').value) : 0;
+            const n = document.getElementById('exp-n') ? parseInt(document.getElementById('exp-n').value) : 0;
+            
+            const max_val = 7; // To keep visualizations manageable
+            if (isNaN(base) || base < 0 || base > 10 || 
+               (document.getElementById('exp-m') && (isNaN(m) || m < 0 || m > max_val)) ||
+               (document.getElementById('exp-n') && (isNaN(n) || n < 0 || n > max_val))) {
+                stepsContainer.innerHTML = `<p class="text-red-500 text-center font-bold">தயவுசெய்து சரியான எண்களை உள்ளிடவும் (a: 0-10, m/n: 0-${max_val}).</p>`;
+                return;
+            }
+             if (rule === 'quotient' && m < n) {
+                stepsContainer.innerHTML = `<p class="text-red-500 text-center font-bold">வகுத்தல் விதிக்கு, m-ன் மதிப்பு n-ஐ விட பெரியதாக இருக்க வேண்டும்.</p>`;
+                return;
+            }
+
+
+            const addStep = (title, content) => {
+                const el = document.createElement('div');
+                el.className = 'p-3 bg-gray-50 rounded-lg mb-2 animate-fade-in';
+                el.innerHTML = `<p class="font-bold text-gray-600">${title}</p><div class="text-blue-800 mt-2 flex flex-wrap items-center justify-center">${content}</div>`;
+                stepsContainer.appendChild(el);
+                return el;
+            };
+            
+            const createBlock = (val, color = 'bg-blue-500', id = '', rule = '') => `<div id="${id}" class="exp-block ${color}" onclick="moveBlock('${id}', '${rule}')">${val}</div>`;
+            const createGroup = (content, color = 'bg-blue-100') => `<div class="p-2 rounded-lg ${color} flex flex-wrap items-center justify-center gap-2">${content}</div>`;
+
+            if (rule === 'product') {
+                let group1 = '';
+                for(let i=0; i<m; i++) group1 += createBlock(base, 'bg-blue-500', `block-m-${i}`, 'product');
+                let group2 = '';
+                for(let i=0; i<n; i++) group2 += createBlock(base, 'bg-pink-500', `block-n-${i}`, 'product');
+                
+                addStep('1. கேள்வி:', `<div class="text-4xl flex flex-wrap items-center justify-center">${createBaseExponentPair(base, m)} ${operator('&times;')} ${createBaseExponentPair(base, n)}</div>`);
+                addStep('2. விரிவாக்கம்:', `<div id="source-blocks" class="flex items-center text-lg">${createGroup(group1) + operator('&times;') + createGroup(group2, 'bg-pink-100')}</div>`);
+                addStep('3. எல்லா கட்டங்களையும் ஒன்றாகக் கீழே உள்ள பெட்டியில் சேர்க்கவும்:', 
+                    `<div id="dest-container" class="w-full min-h-[60px] p-2 rounded-lg bg-green-100 border-2 border-dashed border-green-400 flex flex-wrap items-center justify-center gap-2"></div>
+                     <p id="block-counter" class="font-bold text-lg ml-4">0 / ${m+n}</p>`
+                );
+            } else if (rule === 'quotient') {
+                let numeratorBlocks = '';
+                for(let i=0; i<m; i++) numeratorBlocks += `<div id="num-block-${i}" class="exp-block bg-blue-500" onclick="handleCancelClick()">${base}</div>`;
+                let denominatorBlocks = '';
+                for(let i=0; i<n; i++) denominatorBlocks += `<div id="den-block-${i}" class="exp-block bg-pink-500" onclick="handleCancelClick()">${base}</div>`;
+
+                addStep('1. கேள்வி:', `<div class="text-4xl flex flex-wrap items-center justify-center"><div class="fraction">
+                    <div class="numerator">${createBaseExponentPair(base, m)}</div>
+                    <div class="fraction-line"></div>
+                    <div class="denominator">${createBaseExponentPair(base, n)}</div>
+                </div></div>`);
+                addStep('2. விரிவாக்கம்:', `<div class="fraction text-lg">
+                    <div id="numerator-blocks" class="numerator flex flex-wrap gap-2 justify-center">${createGroup(numeratorBlocks)}</div>
+                    <div class="fraction-line"></div>
+                    <div id="denominator-blocks" class="denominator flex flex-wrap gap-2 justify-center">${createGroup(denominatorBlocks, 'bg-pink-100')}</div>
+                </div>`);
+                addStep('3. பொதுவான காரணிகளை ரத்து செய்ய, தொகுதியிலும் பகுதியிலும் உள்ள கட்டங்களைக் கிளிக் செய்யவும்:', '');
+
+            } else if (rule === 'power') {
+                let sourceGroups = '';
+                for(let i=0; i<n; i++) {
+                    let groupM = '';
+                    for(let j=0; j<m; j++) {
+                        groupM += createBlock(base, 'bg-blue-500', `block-${i}-${j}`, 'power');
+                    }
+                    sourceGroups += createGroup(groupM, 'bg-blue-100');
+                    if (i < n - 1) {
+                         sourceGroups += operator('&times;');
+                    }
+                }
+                addStep('1. கேள்வி:', `<div class="text-4xl flex flex-wrap items-center justify-center">(${createBaseExponentPair(base, m)})<sup class="exp-exponent">${n}</sup></div>`);
+                addStep('2. விரிவாக்கம்:', `<div id="source-blocks" class="flex items-center flex-wrap justify-center text-lg">${sourceGroups}</div>`);
+                addStep('3. எல்லா கட்டங்களையும் ஒன்றாகக் கீழே உள்ள பெட்டியில் சேர்க்கவும்:', 
+                    `<div id="dest-container" class="w-full min-h-[60px] p-2 rounded-lg bg-green-100 border-2 border-dashed border-green-400 flex flex-wrap items-center justify-center gap-2"></div>
+                     <p id="block-counter" class="font-bold text-lg ml-4">0 / ${m*n}</p>`
+                );
+            } else if (rule === 'zero') {
+                let temp_m = 2;
+                addStep('1. விளக்கம்:', `<div class="text-lg">எந்த எண்ணையும் அதே எண்ணால் வகுத்தால் 1 கிடைக்கும்.</div>`);
+                addStep('2. எடுத்துக்காட்டு:', `<div class="text-3xl flex items-center">${createBaseExponentPair(base, temp_m)} ${operator('/')} ${createBaseExponentPair(base, temp_m)}</div> ${operator('=')} <p class="font-mono text-3xl">${Math.pow(base,temp_m)} / ${Math.pow(base,temp_m)} = 1</p>`);
+                addStep('3. விதியின்படி:', `<div class="text-3xl flex items-center">${createBaseExponentPair(base, temp_m)} ${operator('/')} ${createBaseExponentPair(base, temp_m)}</div> ${operator('=')} ${createBaseExponentPair(base, `${temp_m}-${temp_m}`)} ${operator('=')} ${createBaseExponentPair(base, 0)}`);
+                addStep('4. முடிவு:', `<p class="font-mono text-4xl">${createBaseExponentPair(base, 0)} = <span class="font-bold text-5xl text-green-700">1</span></p>`);
+            }
+        }
+
+        function moveBlock(id, rule) {
+            const block = document.getElementById(id);
+            if (!block || block.classList.contains('moved')) return;
+
+            const base = parseInt(document.getElementById('exp-base').value);
+            const m = parseInt(document.getElementById('exp-m').value);
+            const n = parseInt(document.getElementById('exp-n').value);
+
+            block.classList.add('moved');
+            const destContainer = document.getElementById('dest-container');
+            const newBlock = block.cloneNode(true);
+            newBlock.classList.remove('moved');
+            newBlock.onclick = null;
+            newBlock.style.cursor = 'default';
+            destContainer.appendChild(newBlock);
+
+            movedBlocks++;
+            let totalBlocks = 0;
+            if (rule === 'product') totalBlocks = m + n;
+            if (rule === 'power') totalBlocks = m * n;
+            
+            document.getElementById('block-counter').textContent = `${movedBlocks} / ${totalBlocks}`;
+
+            if (movedBlocks === totalBlocks) {
+                const stepsContainer = document.getElementById('exponent-simulation-steps');
+                const addStep = (title, content) => {
+                    const el = document.createElement('div');
+                    el.className = 'p-3 bg-gray-50 rounded-lg mb-2 animate-fade-in';
+                    el.innerHTML = `<p class="font-bold text-gray-600">${title}</p><div class="text-blue-800 flex flex-wrap items-baseline gap-2 mt-2 justify-center">${content}</div>`;
+                    stepsContainer.appendChild(el);
+                };
+                
+                let finalExp, finalSum;
+                if(rule === 'product') {
+                    finalExp = `${m} + ${n}`;
+                    finalSum = m + n;
+                } else if (rule === 'power') {
+                    finalExp = `${m} &times; ${n}`;
+                    finalSum = m * n;
+                }
+
+                addStep('4. அருமை! நீங்கள் அடுக்குகளைச் சரியாக இணைத்துள்ளீர்கள்:', `<p class="font-mono text-3xl">${finalExp} = ${finalSum}</p>`);
+                addStep('5. இறுதி விடை:', `<div class="text-4xl flex flex-wrap items-center justify-center">${createBaseExponentPair(base, finalSum)} ${operator('=')} <span class="font-bold text-5xl text-green-700">${Math.pow(base, finalSum)}</span></div>`);
+            }
+        }
+
+        function handleCancelClick() {
+            const n = parseInt(document.getElementById('exp-n').value);
+            if (cancelledPairCount >= n) return; // All pairs already cancelled
+
+            const numBlock = document.getElementById(`num-block-${cancelledPairCount}`);
+            const denBlock = document.getElementById(`den-block-${cancelledPairCount}`);
+
+            if (numBlock && denBlock && !numBlock.classList.contains('cancelled')) {
+                numBlock.classList.add('cancelled');
+                denBlock.classList.add('cancelled');
+                cancelledPairCount++;
+
+                if (cancelledPairCount === n) {
+                    setTimeout(() => {
+                        const stepsContainer = document.getElementById('exponent-simulation-steps');
+                        const addStep = (title, content) => {
+                            const el = document.createElement('div');
+                            el.className = 'p-3 bg-gray-50 rounded-lg mb-2 animate-fade-in';
+                            el.innerHTML = `<p class="font-bold text-gray-600">${title}</p><div class="text-blue-800 flex flex-wrap items-baseline gap-2 mt-2 justify-center">${content}</div>`;
+                            stepsContainer.appendChild(el);
+                        };
+                        const base = parseInt(document.getElementById('exp-base').value);
+                        const m = parseInt(document.getElementById('exp-m').value);
+
+                        addStep('4. மீதமுள்ள காரணிகள்:', `<div class="text-3xl">${createBaseExponentPair(base, m-n)}</div>`);
+                        addStep('5. இறுதி விடை:', `<div class="text-4xl flex flex-wrap items-center justify-center">${createBaseExponentPair(base, `${m}-${n}`)} ${operator('=')} ${createBaseExponentPair(base, m-n)} ${operator('=')} <span class="font-bold text-5xl text-green-700">${Math.pow(base, m-n)}</span></div>`);
+                    }, 500);
+                }
+            }
+        }
+
+        // --- Tab 2: ஆசிரியர் செயல்பாடு (Simulations) ---
+
+        // --- Database for Questions ---
+        const questionsDB = {
+            placeValue: Array.from({ length: 50 }, () => {
+                const digits = Math.floor(Math.random() * 4) + 5; // Generates a number between 5 and 8
+                const min = Math.pow(10, digits - 1);
+                const max = Math.pow(10, digits) - 1;
+                return (Math.floor(Math.random() * (max - min + 1)) + min).toString();
+            }),
+            algebraicExpressions: [
+                { statement: "y உடன் 5 ஐக் கூட்டுக", parts: ['y', '+', '5'], result: "y+5" },
+                { statement: "n இலிருந்து 10 ஐக் கழிக்க", parts: ['n', '-', '10'], result: "n-10" },
+                { statement: "x ஐ 7 ஆல் பெருக்க", parts: ['7', 'x'], result: "7x" },
+                { statement: "p ஐ 4 ஆல் வகுக்க", parts: ['p', {op: '÷'}, '4'], result: "p/4" },
+                { statement: "a இன் இருமடங்கு", parts: ['2', 'a'], result: "2a" },
+                { statement: "b இன் 3 மடங்கிலிருந்து 2 ஐக் கழிக்க", parts: ['3', 'b', '-', '2'], result: "3b-2" },
+                { statement: "x மற்றும் y இன் கூட்டுத்தொகை", parts: ['x', '+', 'y'], result: "x+y" },
+                { statement: "m இன் 5 மடங்கை 2 ஆல் வகுக்க", parts: ['5', 'm', {op: '÷'}, '2'], result: "5m/2" },
+                { statement: "q இன் வர்க்கம்", parts: ['q', '²'], result: "q²" },
+                { statement: "x இன் 4 மடங்குடன் 8 ஐக் கூட்டுக", parts: ['4', 'x', '+', '8'], result: "4x+8" },
+                 ...Array.from({length: 40}, (_, i) => { // Auto-generate more questions
+                    const a = Math.floor(Math.random() * 9) + 2;
+                    const b = Math.floor(Math.random() * 9) + 2;
+                    const v1 = ['x', 'y', 'z', 'a', 'b', 'm', 'n', 'p'][Math.floor(Math.random() * 8)];
+                    const type = Math.floor(Math.random() * 4);
+                    if (type === 0) return { statement: `${v1} உடன் ${a} ஐக் கூட்டுக`, parts: [v1, '+', a], result: `${v1}+${a}` };
+                    if (type === 1) return { statement: `${a} இலிருந்து ${v1} ஐக் கழிக்க`, parts: [a, '-', v1], result: `${a}-${v1}` };
+                    if (type === 2) return { statement: `${v1} ஐ ${a} ஆல் பெருக்க`, parts: [a, v1], result: `${a}${v1}` };
+                    return { statement: `${v1} ஐ ${a} ஆல் வகுக்க`, parts: [v1, {op: '÷'}, a], result: `${v1}/${a}` };
+                })
+            ],
+            termsOfExpression: [
+                { expression: "5x + 3y - 8", components: [ {value: "5x", type: "term"}, {value: "3y", type: "term"}, {value: "-8", type: "term"}, {value: "x", type: "variable"}, {value: "y", type: "variable"}, {value: "5", type: "coefficient"}, {value: "3", type: "coefficient"}, {value: "-8", type: "constant"} ] },
+                { expression: "a - 2b + 9", components: [ {value: "a", type: "term"}, {value: "-2b", type: "term"}, {value: "9", type: "term"}, {value: "a", type: "variable"}, {value: "b", type: "variable"}, {value: "1", type: "coefficient"}, {value: "-2", type: "coefficient"}, {value: "9", type: "constant"} ] },
+                { expression: "10 - y", components: [ {value: "10", type: "term"}, {value: "-y", type: "term"}, {value: "y", type: "variable"}, {value: "-1", type: "coefficient"}, {value: "10", type: "constant"} ] },
+                ...Array.from({ length: 47 }, () => {
+                    const vars = ['x', 'y', 'z', 'a', 'b', 'm', 'n'];
+                    let components = [];
+                    let expressionParts = [];
+                    let usedVars = new Set();
+                    const numTerms = Math.floor(Math.random() * 2) + 2;
+
+                    for (let i = 0; i < numTerms; i++) {
+                        if (Math.random() > 0.3 && usedVars.size < vars.length) {
+                            let coeff = Math.floor(Math.random() * 19) - 9;
+                            if (coeff === 0) coeff = 1;
+                            let newVar;
+                            do { newVar = vars[Math.floor(Math.random() * vars.length)]; } while (usedVars.has(newVar));
+                            usedVars.add(newVar);
+                            
+                            let fullTerm = (coeff === 1 ? "" : coeff === -1 ? "-" : "") + newVar;
+                            if(coeff !== 1 && coeff !== -1) fullTerm = coeff + newVar;
+
+                            expressionParts.push(fullTerm);
+                            
+                            components.push({value: fullTerm, type: 'term'});
+                            components.push({value: newVar, type: 'variable'});
+                            components.push({value: coeff.toString(), type: 'coefficient'});
+                        } else {
+                            let constant = Math.floor(Math.random() * 199) - 99;
+                            if (constant === 0) constant = 1;
+                            expressionParts.push(constant.toString());
+                            components.push({value: constant.toString(), type: 'term'});
+                            components.push({value: constant.toString(), type: 'constant'});
+                        }
+                    }
+                    const expression = expressionParts.join(' + ').replace(/\+ -/g, '- ');
+                    return { expression, components };
+                })
+            ],
+            addSubtractExpressions: Array.from({ length: 50 }, () => {
+                const vars = ['x', 'y', 'a', 'b', 'm', 'n'];
+                const v = vars[Math.floor(Math.random() * vars.length)];
+                const c1 = Math.floor(Math.random() * 20) - 9 || 1;
+                const n1 = Math.floor(Math.random() * 20) - 9 || 1;
+                const c2 = Math.floor(Math.random() * 20) - 9 || 1;
+                const n2 = Math.floor(Math.random() * 20) - 9 || 1;
+                const operation = Math.random() > 0.5 ? '+' : '-';
+
+                const expr1 = `(${c1}${v} ${n1 >= 0 ? '+': '-'} ${Math.abs(n1)})`;
+                const expr2 = `(${c2}${v} ${n2 >= 0 ? '+': '-'} ${Math.abs(n2)})`;
+                const problem = `${expr1} ${operation} ${expr2}`;
+
+                const final_c2 = operation === '+' ? c2 : -c2;
+                const final_n2 = operation === '+' ? n2 : -n2;
+                
+                const resultCoeff = c1 + final_c2;
+                const resultConst = n1 + final_n2;
+
+                let result = '';
+                if (resultCoeff !== 0) result += `${resultCoeff}${v}`;
+                if (resultConst !== 0) {
+                    if (result.length > 0 && resultConst > 0) result += ` + ${resultConst}`;
+                    else if (resultConst < 0) result += ` - ${Math.abs(resultConst)}`;
+                    else result = resultConst.toString();
+                }
+                if (result === '') result = '0';
+                
+                const clickableTerms = [
+                    { value: `${c1}${v}`, type: `var-${v}` },
+                    { value: n1 > 0 ? `+${n1}` : n1.toString(), type: 'const' },
+                    { value: `${final_c2 > 0 ? '+': ''}${final_c2}${v}`, type: `var-${v}` },
+                    { value: final_n2 > 0 ? `+${final_n2}` : final_n2.toString(), type: 'const' }
+                ];
+
+                const termTypes = { [`var-${v}`]: [c1, final_c2], 'const': [n1, final_n2] };
+
+                return { problem, result, clickableTerms, termTypes };
+            }),
+            perimeterArea: Array.from({ length: 50 }, () => {
+                const units = ['cm', 'm', 'அங்குலம்'];
+                const unit = units[Math.floor(Math.random() * units.length)];
+                const shapeType = Math.random();
+                if (shapeType < 0.33) { // Square
+                    return {
+                        shape: 'square',
+                        side: Math.floor(Math.random() * 10) + 3, // side from 3 to 12
+                        unit: unit
+                    };
+                } else if (shapeType < 0.66) { // Rectangle
+                    const length = Math.floor(Math.random() * 8) + 5; // length from 5 to 12
+                    const width = Math.floor(Math.random() * (length - 2)) + 2; // width from 2 to length-1
+                    return {
+                        shape: 'rectangle',
+                        length: length,
+                        width: width,
+                        unit: unit
+                    };
+                } else { // Circle
+                    return {
+                        shape: 'circle',
+                        radius: Math.floor(Math.random() * 5) + 2, // radius from 2 to 6
+                        unit: unit
+                    };
+                }
+            }),
+        };
+        let currentQuestionIndices = {
+            placeValue: 0,
+            algebraicExpressions: 0,
+            termsOfExpression: 0,
+            addSubtractExpressions: 0,
+            perimeterArea: 0,
+        };
+
+        function setupTopicSelector() {
+            const selector = document.getElementById('topic-selector');
+            const topics = [
+                { id: 'placeValue', title: '1. பெரிய எண்களின் இட மதிப்பு' },
+                { id: 'algebraicExpressions', title: '2. இயற்கணித கோவைகளை உருவாக்குதல்' },
+                { id: 'termsOfExpression', title: '3. கோவையின் உறுப்புகள்' },
+                { id: 'addSubtractExpressions', title: '4. கோவைகளில் கூட்டல், கழித்தல்' },
+                { id: 'perimeterArea', title: '5. சுற்றளவு மற்றும் பரப்பளவு' },
+            ];
+            selector.innerHTML = topics.map(topic => `<option value="${topic.id}">${topic.title}</option>`).join('');
+
+            selector.addEventListener('change', (e) => {
+                displayQuestion(e.target.value);
+            });
+            // Load the first topic by default
+            displayQuestion(topics[0].id);
+        }
+
+        function navigateQuestion(topicId, direction) {
+            const maxQuestions = questionsDB[topicId].length;
+            let currentIndex = currentQuestionIndices[topicId];
+            currentIndex += direction;
+
+            if (currentIndex < 0) {
+                currentIndex = maxQuestions - 1;
+            } else if (currentIndex >= maxQuestions) {
+                currentIndex = 0;
+            }
+            currentQuestionIndices[topicId] = currentIndex;
+            displayQuestion(topicId);
+        }
+
+        function resetSimulation(topicId) {
+            displayQuestion(topicId);
+        }
+
+        function displayQuestion(topicId) {
+            const index = currentQuestionIndices[topicId];
+            const simArea = document.getElementById('simulation-content-area');
+            simArea.innerHTML = `
+                <div class="flex flex-wrap justify-between items-center mb-4 bg-gray-100 p-2 rounded-lg gap-2">
+                    <button onclick="navigateQuestion('${topicId}', -1)" class="btn-primary nav-button">◀ முந்தைய</button>
+                    <div id="${topicId}-q-counter" class="font-bold">கேள்வி ${index + 1} / ${questionsDB[topicId].length}</div>
+                    <button onclick="navigateQuestion('${topicId}', 1)" class="btn-primary nav-button">அடுத்த ▶</button>
+                    <button onclick="resetSimulation('${topicId}')" class="btn-primary btn-secondary">மீட்டமை</button>
+                </div>
+                <div id="${topicId}-sim-container" class="simulation-container min-h-[300px]">
+                    <!-- Simulation content goes here -->
+                </div>
+            `;
+            const simContainer = document.getElementById(`${topicId}-sim-container`);
+            
+            switch (topicId) {
+                case 'placeValue':
+                    setupPlaceValueSim(simContainer, questionsDB.placeValue[index]);
+                    break;
+                case 'algebraicExpressions':
+                    setupAlgebraicExpressionsSim(simContainer, questionsDB.algebraicExpressions[index]);
+                    break;
+               case 'termsOfExpression':
+                    setupTermsOfExpressionSim(simContainer, questionsDB.termsOfExpression[index]);
+                    break;
+                case 'addSubtractExpressions':
+                    setupAddSubtractExpressionsSim(simContainer, questionsDB.addSubtractExpressions[index]);
+                    break;
+                case 'perimeterArea':
+                    setupPerimeterAreaSim(simContainer, questionsDB.perimeterArea[index]);
+                    break;
+                default:
+                    simContainer.innerHTML = `<p class="text-center p-8">இந்த தலைப்புக்கான ஊடாடும் பயிற்சி விரைவில் சேர்க்கப்படும்.</p>`;
+            }
+        }
+
+        // --- Simulation Setup Functions for Tab 2 ---
+
+        function setupPlaceValueSim(container, number) {
+            const formattedNumber = parseInt(number).toLocaleString('en-IN');
+            let numberHTML = '';
+            for(const char of formattedNumber) {
+                if(!isNaN(parseInt(char))) {
+                    numberHTML += `<span class="pv-digit">${char}</span>`;
+                } else {
+                    numberHTML += `<span>${char}</span>`;
+                }
+            }
+
+            container.innerHTML = `
+                <p class="text-center font-bold text-3xl mb-4" id="pv-number-display">${numberHTML}</p>
+                <p class="text-center mb-4">சரியான இடமதிப்பை அமைக்க கூட்டல் (+) பொத்தானைப் பயன்படுத்தவும். வலமிருந்து இடமாகத் தொடங்கவும்.</p>
+                <div id="pv-scales-container" class="flex flex-wrap justify-center items-end gap-4 p-4 rounded-lg">
+                </div>
+                <div id="pv-expanded-form" class="text-center text-lg md:text-xl font-bold text-blue-800 min-h-[2rem] my-4 flex flex-wrap justify-center items-center leading-loose"></div>
+                <p id="pv-feedback" class="text-center font-bold h-6 mt-4"></p>
+            `;
+            
+            const digits = number.split('').reverse();
+            const placeNames = ['ஒன்றுகள்', 'பத்துகள்', 'நூறுகள்', 'ஆயிரங்கள்', 'பத்தாயிரங்கள்', 'இலட்சங்கள்', 'பத்து இலட்சங்கள்', 'கோடிகள்'];
+            const scalesContainer = container.querySelector('#pv-scales-container');
+            let scaleHTML = '';
+            for (let i = 0; i < digits.length; i++) {
+                scaleHTML = `
+                    <div class="flex flex-col items-center">
+                        <div id="pv-scale-${i}" class="place-value-scale p-2 rounded-lg bg-gray-100 w-24 text-center border-2 border-transparent">
+                            <div id="pv-display-${i}" class="text-3xl font-bold h-10 flex items-center justify-center">0</div>
+                            <div class="flex justify-around mt-2">
+                                <button id="pv-minus-btn-${i}" class="px-3 py-1 bg-red-400 text-white rounded-full disabled:opacity-50" onclick="updatePlaceValue(${i}, -1)" disabled>-</button>
+                                <button id="pv-plus-btn-${i}" class="px-3 py-1 bg-green-500 text-white rounded-full disabled:opacity-50" onclick="updatePlaceValue(${i}, 1)" disabled>+</button>
+                            </div>
+                        </div>
+                        <p class="font-semibold mt-1">${placeNames[i]}</p>
+                    </div>
+                ` + scaleHTML;
+            }
+            scalesContainer.innerHTML = scaleHTML;
+
+            container.dataset.number = number;
+            container.dataset.correctDigits = JSON.stringify(digits);
+            container.dataset.currentValues = JSON.stringify(Array(digits.length).fill(0));
+            container.dataset.activePlace = 0;
+            activatePlaceValueScale(0);
+        }
+
+        function setupAlgebraicExpressionsSim(container, question) {
+            const shuffledParts = [...question.parts].sort(() => Math.random() - 0.5);
+            const renderPart = (part) => {
+                if (typeof part === 'object' && part.op) {
+                    return `<button class="clickable-part text-2xl" onclick="placePart('${part.op === '÷' ? '/' : part.op}')">${part.op}</button>`;
+                }
+                return `<button class="clickable-part text-2xl" onclick="placePart('${part}')">${part}</button>`;
+            };
+
+             container.innerHTML = `
+                <p class="text-center font-bold text-2xl mb-4 text-indigo-700">"${question.statement}"</p>
+                <p class="text-center mb-4">இந்த வாக்கியத்திற்கான இயற்கணிதக் கோவையை உருவாக்க, கீழே உள்ள பாகங்களை சரியான வரிசையில் கிளிக் செய்யவும்.</p>
+                <div class="flex flex-wrap justify-center items-center gap-4 p-4 bg-gray-100 rounded-lg mb-4">
+                    ${shuffledParts.map(renderPart).join('')}
+                </div>
+                <div id="placement-zone" class="placement-zone flex justify-center items-center gap-2 font-mono"></div>
+                <div class="flex justify-center gap-4 mt-4">
+                     <button class="btn-primary" onclick="checkAlgebraicExpression('${question.result}')">சரிபார்</button>
+                     <button class="btn-primary bg-red-500 hover:bg-red-600" onclick="clearPlacementZone()">அழி</button>
+                </div>
+                <p id="algebra-feedback" class="text-center font-bold h-6 mt-4"></p>
+            `;
+        }
+        
+        function setupTermsOfExpressionSim(container, question) {
+            const uniqueComponents = [...new Map(question.components.map(item => [item['value'], item])).values()];
+            const options = uniqueComponents.sort(() => Math.random() - 0.5);
+
+            container.innerHTML = `
+                <p class="text-center font-bold text-2xl mb-4 text-indigo-700">${question.expression}</p>
+                <p class="text-center mb-4">கீழே உள்ள விருப்பங்களிலிருந்து ஒரு பகுதியைத் தேர்ந்தெடுத்து, அதன் சரியான வகையை வகைப்படுத்தவும்.</p>
+                <div id="term-options" class="flex flex-wrap justify-center items-center gap-4 p-4 bg-gray-100 rounded-lg mb-4">
+                    ${options.map(opt => `<button class="option-part" data-value="${opt.value}">${opt.value}</button>`).join('')}
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div id="bucket-term" data-bucket-type="term" class="sort-bucket p-4 flex flex-col items-center">
+                        <h4 class="font-bold text-lg mb-2">உறுப்புகள் (Terms)</h4>
+                        <div class="flex flex-wrap gap-2 justify-center"></div>
+                    </div>
+                    <div id="bucket-variable" data-bucket-type="variable" class="sort-bucket p-4 flex flex-col items-center">
+                        <h4 class="font-bold text-lg mb-2">மாறிகள் (Variables)</h4>
+                        <div class="flex flex-wrap gap-2 justify-center"></div>
+                    </div>
+                    <div id="bucket-coefficient" data-bucket-type="coefficient" class="sort-bucket p-4 flex flex-col items-center">
+                        <h4 class="font-bold text-lg mb-2">கெழுக்கள் (Coefficients)</h4>
+                        <div class="flex flex-wrap gap-2 justify-center"></div>
+                    </div>
+                    <div id="bucket-constant" data-bucket-type="constant" class="sort-bucket p-4 flex flex-col items-center">
+                        <h4 class="font-bold text-lg mb-2">மாறிலிகள் (Constants)</h4>
+                        <div class="flex flex-wrap gap-2 justify-center"></div>
+                    </div>
+                </div>
+                 <p id="terms-feedback" class="text-center font-bold h-6 mt-4"></p>
+            `;
+            setupTermSorting(question);
+        }
+
+        function setupAddSubtractExpressionsSim(container, question) {
+            const { problem, result, clickableTerms, termTypes } = question;
+            let dropZonesHTML = '';
+            const zoneTypes = Object.keys(termTypes);
+
+            // Create drop zones
+            zoneTypes.forEach(type => {
+                const label = type === 'const' ? 'எண் உறுப்புகள்' : `${type.replace('var-','')} உறுப்புகள்`;
+                dropZonesHTML += `
+                    <div class="flex flex-col items-center">
+                        <h4 class="font-bold text-lg mb-2">${label}</h4>
+                        <div data-zone-type="${type}" class="drop-zone w-full flex flex-wrap justify-center items-center gap-2 font-mono text-xl p-2"></div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = `
+                <p class="text-center font-bold text-2xl mb-4 text-indigo-700">${problem}</p>
+                <p class="text-center mb-4">ஒத்த உறுப்புகளை ஒன்றாக இணைத்து கோவையைச் சுருக்கவும். ஒவ்வொரு உறுப்பையும் சரியான பெட்டியில் கிளிக் செய்து வைக்கவும்.</p>
+                <div id="source-terms" class="flex flex-wrap justify-center items-center gap-4 p-4 bg-gray-100 rounded-lg mb-4 min-h-[80px]">
+                    ${clickableTerms.sort(() => Math.random() - 0.5).map(term => {
+                        return `<div class="clickable-term" data-value="${term.value}" data-type="${term.type}">${term.value}</div>`
+                    }).join('')}
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-${zoneTypes.length} gap-4">
+                    ${dropZonesHTML}
+                </div>
+                <div id="simplified-expression" class="text-center font-bold text-3xl h-10 mt-4"></div>
+                <p id="add-subtract-feedback" class="text-center font-bold h-6 mt-4"></p>
+            `;
+            setupClickAndPlaceForExpressions(question);
+        }
+
+        function setupPerimeterAreaSim(container, question) {
+            const { shape } = question;
+            const shapeName = shape === 'square' ? 'சதுரம்' : (shape === 'rectangle' ? 'செவ்வகம்' : 'வட்டம்');
+            
+            container.innerHTML = `
+                <p class="text-center font-bold text-2xl mb-4 text-indigo-700">${shapeName}</p>
+                <div class="flex flex-col lg:flex-row justify-center items-center gap-6">
+                    <div class="flex flex-col items-center">
+                        <canvas id="shape-canvas" width="300" height="300"></canvas>
+                    </div>
+                    <div class="w-full lg:w-1/2">
+                        <div id="interaction-buttons" class="space-y-3"></div>
+                        <div id="explanation-box" class="explanation-box-rich mt-4 min-h-[150px] text-lg space-y-4">
+                             <p class="text-gray-500 text-center p-4">கீழே உள்ள பொத்தான்களைப் பயன்படுத்தி từng படியாகக் கற்றுக்கொள்ளுங்கள்.</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            const canvas = document.getElementById('shape-canvas');
+            const interactionButtons = document.getElementById('interaction-buttons');
+            
+            // Draw initial shape
+            drawShape(canvas, question);
+            
+            // Create interaction buttons
+            const buttons = [
+                { text: `1. ${shape === 'circle' ? 'ஆரம்' : 'பக்கங்கள்'} என்றால் என்ன?`, action: () => showDimensions(canvas, question) },
+                { text: `2. சுற்றளவு கணக்கிடு`, action: () => animatePerimeter(canvas, question) },
+                { text: `3. பரப்பளவு கணக்கிடு`, action: () => animateArea(canvas, question) }
+            ];
+
+            interactionButtons.innerHTML = buttons.map(btn => 
+                `<button class="btn-primary w-full text-left">${btn.text}</button>`
+            ).join('');
+            
+            interactionButtons.querySelectorAll('button').forEach((btn, index) => {
+                btn.onclick = buttons[index].action;
+            });
+        }
+
+        // --- Simulation Logic Functions for Tab 2 ---
+        
+        function getUnitNames(unit) {
+            switch(unit) {
+                case 'cm': return { singular: 'சென்டிமீட்டர்', plural: 'சதுர சென்டிமீட்டர்' };
+                case 'm': return { singular: 'மீட்டர்', plural: 'சதுர மீட்டர்' };
+                case 'அங்குலம்': return { singular: 'அங்குலம்', plural: 'சதுர அங்குலம்' };
+                default: return { singular: unit, plural: `சதுர ${unit}`};
+            }
+        }
+
+        function drawShape(canvas, question, fillStyle = '#bfdbfe') {
+            const ctx = canvas.getContext('2d');
+            const { shape } = question;
+            const { width, height } = canvas;
+            ctx.clearRect(0, 0, width, height);
+            ctx.strokeStyle = '#3b82f6';
+            ctx.fillStyle = fillStyle;
+            ctx.lineWidth = 3;
+            
+            if (shape === 'square' || shape === 'rectangle') {
+                const rectWidth = shape === 'square' ? 200 : 240;
+                const rectHeight = shape === 'square' ? 200 : 150;
+                const x = (width - rectWidth) / 2;
+                const y = (height - rectHeight) / 2;
+                ctx.beginPath();
+                ctx.rect(x, y, rectWidth, rectHeight);
+                ctx.fill();
+                ctx.stroke();
+            } else if (shape === 'circle') {
+                const radius = 100;
+                const x = width / 2;
+                const y = height / 2;
+                ctx.beginPath();
+                ctx.arc(x, y, radius, 0, 2 * Math.PI);
+                ctx.fill();
+                ctx.stroke();
+            }
+        }
+
+        function drawDimensions(canvas, question) {
+            const ctx = canvas.getContext('2d');
+            const { shape, unit } = question;
+            const { width, height } = canvas;
+            const unitNames = getUnitNames(unit);
+
+            ctx.font = "bold 16px Arima";
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillStyle = "#1e3a8a";
+            ctx.strokeStyle = "#1e3a8a";
+            ctx.lineWidth = 1.5;
+
+            if (shape === 'square' || shape === 'rectangle') {
+                const rectWidth = shape === 'square' ? 200 : 240;
+                const rectHeight = shape === 'square' ? 200 : 150;
+                const x = (width - rectWidth) / 2;
+                const y = (height - rectHeight) / 2;
+                const l = shape === 'square' ? question.side : question.length;
+                const w = shape === 'square' ? question.side : question.width;
+                
+                ctx.fillText(`${l} ${unitNames.singular}`, x + rectWidth / 2, y - 20);
+                ctx.save();
+                ctx.translate(x - 20, y + rectHeight / 2);
+                ctx.rotate(-Math.PI / 2);
+                ctx.fillText(`${w} ${unitNames.singular}`, 0, 0);
+                ctx.restore();
+            } else if (shape === 'circle') {
+                const radius = 100;
+                const x = width / 2;
+                const y = height / 2;
+                ctx.beginPath();
+                ctx.moveTo(x, y);
+                ctx.lineTo(x + radius, y);
+                ctx.stroke();
+                ctx.fillText(`ஆரம் = ${question.radius} ${unitNames.singular}`, x + radius / 2, y - 15);
+            }
+        }
+
+        function showDimensions(canvas, question) {
+            drawShape(canvas, question);
+            drawDimensions(canvas, question);
+        }
+
+        function animatePerimeter(canvas, question) {
+            const ctx = canvas.getContext('2d');
+            const { shape, unit } = question;
+            const { width, height } = canvas;
+            const unitNames = getUnitNames(unit);
+
+            let progress = 0;
+            const animationDuration = 1500;
+            let startTime = null;
+
+            const animate = (timestamp) => {
+                if (!startTime) startTime = timestamp;
+                const elapsed = timestamp - startTime;
+                progress = Math.min(elapsed / animationDuration, 1);
+                
+                drawShape(canvas, question);
+                
+                ctx.strokeStyle = '#ef4444';
+                ctx.lineWidth = 5;
+
+                if (shape === 'square' || shape === 'rectangle') {
+                    const rectWidth = shape === 'square' ? 200 : 240;
+                    const rectHeight = shape === 'square' ? 200 : 150;
+                    const x = (width - rectWidth) / 2;
+                    const y = (height - rectHeight) / 2;
+                    const totalLength = 2 * (rectWidth + rectHeight);
+                    const currentLength = totalLength * progress;
+
+                    ctx.beginPath();
+                    ctx.moveTo(x, y);
+                    if (currentLength > 0) ctx.lineTo(Math.min(x + currentLength, x + rectWidth), y);
+                    if (currentLength > rectWidth) ctx.lineTo(x + rectWidth, Math.min(y + (currentLength - rectWidth), y + rectHeight));
+                    if (currentLength > rectWidth + rectHeight) ctx.lineTo(Math.max(x + rectWidth - (currentLength - rectWidth - rectHeight), x), y + rectHeight);
+                    if (currentLength > 2 * rectWidth + rectHeight) ctx.lineTo(x, Math.max(y + rectHeight - (currentLength - 2 * rectWidth - rectHeight), y));
+                    ctx.stroke();
+                } else if (shape === 'circle') {
+                    const radius = 100;
+                    const x = width / 2;
+                    const y = height / 2;
+                    ctx.beginPath();
+                    ctx.arc(x, y, radius, -Math.PI / 2, -Math.PI / 2 + (2 * Math.PI * progress));
+                    ctx.stroke();
+                }
+                
+                drawDimensions(canvas, question);
+
+                if (progress < 1) {
+                    requestAnimationFrame(animate);
+                }
+            };
+            requestAnimationFrame(animate);
+
+            const explanationBox = document.getElementById('explanation-box');
+            const perimeter = shape === 'square' ? 4 * question.side : (shape === 'rectangle' ? 2 * (question.length + question.width) : (2 * 3.14 * question.radius).toFixed(2));
+            const formulaText = shape === 'square' ? '4 &times; பக்கம்' : (shape === 'rectangle' ? '2 &times; (நீளம் + அகலம்)' : '2 &times; &pi; &times; ஆரம்');
+            const calculation = shape === 'square' ? `4 &times; ${question.side} = ${perimeter}`
+                                     : (shape === 'rectangle' ? `2 &times; (${question.length} + ${question.width}) = 2 &times; ${question.length + question.width} = ${perimeter}`
+                                     : `2 &times; 3.14 &times; ${question.radius} = ${perimeter}`);
+
+            explanationBox.innerHTML = `
+                <div class="explanation-item">
+                    <div class="flex items-center gap-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 1v4m0 0h-4m4 0l-5-5" /></svg>
+                        <h4 class="font-bold text-xl text-red-700">சுற்றளவு</h4>
+                    </div>
+                    <p class="mt-1"><b>சூத்திரம்:</b> ${formulaText}</p>
+                    <p><b>கணக்கீடு:</b> ${calculation} ${unitNames.singular}</p>
+                </div>`;
+        }
+        
+        function animateArea(canvas, question) {
+            const ctx = canvas.getContext('2d');
+            const { shape, unit } = question;
+            const { width, height } = canvas;
+            const unitNames = getUnitNames(unit);
+
+            let progress = 0;
+            const animationDuration = 1500;
+            let startTime = null;
+
+            const animate = (timestamp) => {
+                if (!startTime) startTime = timestamp;
+                const elapsed = timestamp - startTime;
+                progress = Math.min(elapsed / animationDuration, 1);
+
+                drawShape(canvas, question);
+                
+                ctx.fillStyle = `rgba(96, 165, 250, 0.7)`;
+
+                if (shape === 'square' || shape === 'rectangle') {
+                    const rectWidth = shape === 'square' ? 200 : 240;
+                    const rectHeight = shape === 'square' ? 200 : 150;
+                    const x = (width - rectWidth) / 2;
+                    const y = (height - rectHeight) / 2;
+                    ctx.beginPath();
+                    ctx.rect(x, y, rectWidth, rectHeight * progress);
+                    ctx.fill();
+                } else if (shape === 'circle') {
+                    const radius = 100;
+                    const x = width / 2;
+                    const y = height / 2;
+                    ctx.beginPath();
+                    ctx.moveTo(x, y);
+                    ctx.arc(x, y, radius, -Math.PI / 2, -Math.PI / 2 + (2 * Math.PI * progress));
+                    ctx.closePath();
+                    ctx.fill();
+                }
+
+                drawDimensions(canvas, question);
+
+                if (progress < 1) {
+                    requestAnimationFrame(animate);
+                }
+            };
+            requestAnimationFrame(animate);
+            
+            const explanationBox = document.getElementById('explanation-box');
+            const area = shape === 'square' ? question.side * question.side : (shape === 'rectangle' ? question.length * question.width : (3.14 * question.radius * question.radius).toFixed(2));
+            const formulaText = shape === 'square' ? 'பக்கம் &times; பக்கம்' : (shape === 'rectangle' ? 'நீளம் &times; அகலம்' : '&pi; &times; ஆரம்&sup2;');
+            const calculation = shape === 'square' ? `${question.side} &times; ${question.side} = ${area}`
+                                     : (shape === 'rectangle' ? `${question.length} &times; ${question.width} = ${area}`
+                                     : `3.14 &times; ${question.radius}&sup2; = ${area}`);
+
+            explanationBox.innerHTML = `
+                <div class="explanation-item">
+                     <div class="flex items-center gap-3">
+                         <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                         <h4 class="font-bold text-xl text-blue-700">பரப்பளவு</h4>
+                     </div>
+                    <p class="mt-1"><b>சூத்திரம்:</b> ${formulaText}</p>
+                    <p><b>கணக்கீடு:</b> ${calculation} ${unitNames.plural}</p>
+                </div>`;
+        }
+
+
+        function activatePlaceValueScale(index) {
+            const allDigits = document.querySelectorAll('#pv-number-display .pv-digit');
+            allDigits.forEach(d => d.classList.remove('active'));
+            if(allDigits[allDigits.length - 1 - index]) {
+                allDigits[allDigits.length - 1 - index].classList.add('active');
+            }
+
+            const plusBtn = document.getElementById(`pv-plus-btn-${index}`);
+            const minusBtn = document.getElementById(`pv-minus-btn-${index}`);
+            if(plusBtn && minusBtn) {
+                plusBtn.disabled = false;
+                minusBtn.disabled = false;
+                document.getElementById(`pv-scale-${index}`).classList.add('active');
+            }
+        }
+
+        function updatePlaceValue(index, change) {
+            const container = document.getElementById('placeValue-sim-container');
+            const correctDigits = JSON.parse(container.dataset.correctDigits);
+            let currentValues = JSON.parse(container.dataset.currentValues);
+            const activePlace = parseInt(container.dataset.activePlace);
+            const placeNames = ['ஒன்றுகள்', 'பத்துகள்', 'நூறுகள்', 'ஆயிரங்கள்', 'பத்தாயிரங்கள்', 'இலட்சங்கள்', 'பத்து இலட்சங்கள்', 'கோடிகள்'];
+
+            if (index !== activePlace) return;
+
+            let currentValue = currentValues[index];
+            currentValue += change;
+
+            if (currentValue < 0) currentValue = 0;
+            if (currentValue > 9) currentValue = 9;
+
+            currentValues[index] = currentValue;
+            document.getElementById(`pv-display-${index}`).textContent = currentValue;
+            container.dataset.currentValues = JSON.stringify(currentValues);
+
+            const feedback = document.getElementById('pv-feedback');
+            const correctDigit = parseInt(correctDigits[index]);
+            
+            if (currentValue === correctDigit) {
+                feedback.textContent = `${placeNames[index]} இடம் சரி! 👍`;
+                feedback.className = 'text-center font-bold h-6 mt-4 text-green-600';
+                
+                document.getElementById(`pv-plus-btn-${index}`).disabled = true;
+                document.getElementById(`pv-minus-btn-${index}`).disabled = true;
+                document.getElementById(`pv-scale-${index}`).classList.remove('active');
+                document.getElementById(`pv-scale-${index}`).classList.add('border-green-400');
+
+                updateExpandedForm(container, activePlace);
+
+                const nextPlace = activePlace + 1;
+                if (nextPlace < correctDigits.length) {
+                    container.dataset.activePlace = nextPlace;
+                    activatePlaceValueScale(nextPlace);
+                } else {
+                    feedback.textContent = 'அருமை! முழு எண்ணையும் சரியாக அமைத்துவிட்டீர்கள். 🎉';
+                    document.querySelectorAll('#pv-number-display .pv-digit').forEach(d => d.classList.remove('active'));
+                }
+            } else {
+                feedback.textContent = '';
+            }
+        }
+
+        function updateExpandedForm(container, lastCompletedIndex) {
+            const correctDigits = JSON.parse(container.dataset.correctDigits);
+            const expandedFormDiv = document.getElementById('pv-expanded-form');
+            let parts = [];
+            let total = 0;
+
+            for (let i = 0; i <= lastCompletedIndex; i++) {
+                const digit = parseInt(correctDigits[i]);
+                const placeValue = Math.pow(10, i);
+                total += digit * placeValue;
+                if (digit > 0 || (correctDigits.length === 1 && digit === 0)) {
+                   parts.push(`<span class="whitespace-nowrap">${digit} &times; ${placeValue.toLocaleString('en-IN')}</span>`);
+                }
+            }
+            
+            expandedFormDiv.innerHTML = `${parts.reverse().join(' <span class="mx-1 md:mx-2">+</span> ')} = <span class="text-green-600 ml-2">${total.toLocaleString('en-IN')}</span>`;
+        }
+        
+        function placePart(part) {
+            const placementZone = document.getElementById('placement-zone');
+            placementZone.textContent += part;
+        }
+
+        function clearPlacementZone() {
+            document.getElementById('placement-zone').textContent = '';
+            document.getElementById('algebra-feedback').textContent = '';
+        }
+
+        function checkAlgebraicExpression(correctResult) {
+            const placementZone = document.getElementById('placement-zone');
+            const userAnswer = placementZone.textContent.replace(/\s/g, '');
+            const feedback = document.getElementById('algebra-feedback');
+            
+            if (userAnswer === correctResult) {
+                feedback.textContent = 'சரியான விடை! 👍';
+                feedback.className = 'text-center font-bold h-6 mt-4 text-green-600';
+            } else {
+                feedback.textContent = 'மீண்டும் முயற்சிக்கவும். 🤔';
+                feedback.className = 'text-center font-bold h-6 mt-4 text-red-600';
+            }
+        }
+        
+        function setupTermSorting(question) {
+            let selectedOption = null;
+            const feedbackEl = document.getElementById('terms-feedback');
+            const placedItems = new Set();
+            const allOptions = document.querySelectorAll('.option-part');
+
+            document.querySelectorAll('.option-part').forEach(optionEl => {
+                optionEl.addEventListener('click', () => {
+                    if(optionEl.classList.contains('sorted')) return;
+                    document.querySelectorAll('.option-part.selected').forEach(el => el.classList.remove('selected'));
+                    optionEl.classList.add('selected');
+                    selectedOption = optionEl;
+                });
+            });
+
+            document.querySelectorAll('.sort-bucket').forEach(bucketEl => {
+                bucketEl.addEventListener('click', () => {
+                    if (!selectedOption) {
+                        feedbackEl.textContent = 'முதலில் கீழே உள்ள விருப்பங்களிலிருந்து ஒரு பகுதியைத் தேர்ந்தெடுக்கவும்.';
+                        feedbackEl.className = 'text-center font-bold h-6 mt-4 text-orange-500';
+                        return;
+                    }
+                    
+                    const optionValue = selectedOption.dataset.value;
+                    const bucketType = bucketEl.dataset.bucketType;
+                    
+                    const correctComponents = question.components.filter(c => c.value === optionValue);
+                    const isCorrect = correctComponents.some(c => c.type === bucketType);
+                    const placementId = `${optionValue}-${bucketType}`;
+
+                    if (isCorrect && !placedItems.has(placementId)) {
+                        const newElement = document.createElement('div');
+                        newElement.textContent = optionValue;
+                        newElement.className = 'sorted-item bg-green-200 text-green-800 animate-pop-in';
+                        bucketEl.querySelector('div').appendChild(newElement);
+                        placedItems.add(placementId);
+
+                        const allTypesForThisValue = question.components.filter(c => c.value === optionValue).map(c => c.type);
+                        const placedTypesForThisValue = Array.from(placedItems)
+                            .filter(p => p.startsWith(optionValue + '-'))
+                            .map(p => p.split('-')[1]);
+                        
+                        if(allTypesForThisValue.length === placedTypesForThisValue.length) {
+                             selectedOption.classList.add('sorted');
+                        }
+
+                        selectedOption.classList.remove('selected');
+                        feedbackEl.textContent = 'சரியாக வரிசைப்படுத்தப்பட்டது! ✅';
+                        feedbackEl.className = 'text-center font-bold h-6 mt-4 text-green-600';
+                        selectedOption = null;
+
+                        const totalOptions = allOptions.length;
+                        const sortedOptions = document.querySelectorAll('.option-part.sorted').length;
+                        if (totalOptions === sortedOptions) {
+                            feedbackEl.textContent = 'அருமை! அனைத்தையும் சரியாக வரிசைப்படுத்திவிட்டீர்கள். 🎉';
+                            feedbackEl.classList.add('animate-pop-in');
+                        }
+
+                    } else if (placedItems.has(placementId)) {
+                         feedbackEl.textContent = 'இந்த உருப்படி ஏற்கனவே இந்த பெட்டியில் வைக்கப்பட்டுள்ளது.';
+                         feedbackEl.className = 'text-center font-bold h-6 mt-4 text-blue-600';
+                    } else {
+                        feedbackEl.textContent = 'தவறான வகை. மீண்டும் முயற்சிக்கவும். 🤔';
+                        feedbackEl.className = 'text-center font-bold h-6 mt-4 text-red-600';
+                    }
+                });
+            });
+        }
+
+        function setupClickAndPlaceForExpressions(question) {
+            let selectedTerm = null;
+            const feedbackEl = document.getElementById('add-subtract-feedback');
+            const resultEl = document.getElementById('simplified-expression');
+
+            document.querySelectorAll('.clickable-term').forEach(termEl => {
+                termEl.addEventListener('click', () => {
+                    if (termEl.classList.contains('placed')) return;
+
+                    document.querySelectorAll('.clickable-term.selected').forEach(el => el.classList.remove('selected'));
+                    termEl.classList.add('selected');
+                    selectedTerm = termEl;
+                    feedbackEl.textContent = 'இப்போது சரியான பெட்டியைக் கிளிக் செய்யவும்.';
+                    feedbackEl.className = 'text-center font-bold h-6 mt-4 text-blue-600';
+                });
+            });
+
+            document.querySelectorAll('.drop-zone').forEach(zoneEl => {
+                zoneEl.addEventListener('click', () => {
+                    if (!selectedTerm) {
+                        feedbackEl.textContent = 'முதலில் ஒரு உறுப்பைத் தேர்ந்தெடுக்கவும்.';
+                        feedbackEl.className = 'text-center font-bold h-6 mt-4 text-orange-500';
+                        return;
+                    }
+
+                    const termType = selectedTerm.dataset.type;
+                    const zoneType = zoneEl.dataset.zoneType;
+                    
+                    if (termType === zoneType) {
+                        selectedTerm.classList.remove('selected');
+                        selectedTerm.classList.add('placed');
+                        zoneEl.appendChild(selectedTerm);
+                        selectedTerm = null;
+                        feedbackEl.textContent = 'சரியாக வைக்கப்பட்டது! ✅';
+                        feedbackEl.className = 'text-center font-bold h-6 mt-4 text-green-600';
+
+                        // Check if all terms are placed
+                        if (document.querySelectorAll('.clickable-term:not(.placed)').length === 0) {
+                             setTimeout(() => {
+                                 feedbackEl.textContent = 'அருமை! இப்போது கணக்கிடுங்கள்.';
+                                 resultEl.innerHTML = `<span class="animate-pop-in">விடை: ${question.result}</span>`;
+                             }, 500);
+                        }
+
+                    } else {
+                        feedbackEl.textContent = 'தவறான பெட்டி. இது ஒரு ஒத்த உறுப்பு அல்ல. 🤔';
+                        feedbackEl.className = 'text-center font-bold h-6 mt-4 text-red-600';
+                    }
+                });
+            });
+        }
+
+        // --- Tab 3: கல்விசார் செயல்பாடுகள் (NEW & UPDATED) ---
+
+        const questionsDB_Tab3 = {
+            lifeProblems: Array.from({ length: 50 }, (_, i) => {
+                const items = ['பேனா', 'ஆப்பிள்', 'புத்தகம்', 'சாக்லேட்', 'பென்சில்'];
+                const item = items[i % items.length];
+                const emoji = {'பேனா': '🖊️', 'ஆப்பிள்': '🍎', 'புத்தகம்': '📖', 'சாக்லேட்': '🍫', 'பென்சில்': '✏️'}[item];
+                const opType = i % 4; // 0: mul, 1: add, 2: sub, 3: div
+
+                if (opType === 0) { // Multiplication
+                    const count = Math.floor(Math.random() * 5) + 2;
+                    const price = Math.floor(Math.random() * 10) + 5;
+                    return {
+                        op: 'mul',
+                        text: `ஒரு ${item} விலை ரூ. ${price}. ராமு ${count} ${item}கள் வாங்கினால், அவன் எவ்வளவு பணம் கொடுக்க வேண்டும்?`,
+                        val1: count, val2: price, emoji, answer: count * price
+                    };
+                } else if (opType === 1) { // Addition
+                    const val1 = Math.floor(Math.random() * 20) + 5;
+                    const val2 = Math.floor(Math.random() * 20) + 5;
+                    return {
+                        op: 'add',
+                        text: `ஒரு கூடையில் ${val1} ${item}கள் உள்ளன. மற்றொரு கூடையில் ${val2} ${item}கள் உள்ளன. மொத்தமாக எத்தனை ${item}கள் உள்ளன?`,
+                        val1, val2, emoji, answer: val1 + val2
+                    };
+                } else if (opType === 2) { // Subtraction
+                    const val1 = Math.floor(Math.random() * 20) + 10;
+                    const val2 = Math.floor(Math.random() * 9) + 1;
+                    return {
+                        op: 'sub',
+                        text: `கீதாவிடம் ${val1} ${item}கள் இருந்தன. அவள் ${val2} ${item}களை தன் நண்பனுக்குக் கொடுத்தாள். அவளிடம் மீதம் எத்தனை ${item}கள் இருக்கும்?`,
+                        val1, val2, emoji, answer: val1 - val2
+                    };
+                } else { // Division
+                    const val2 = Math.floor(Math.random() * 5) + 2;
+                    const answer = Math.floor(Math.random() * 5) + 2;
+                    const val1 = val2 * answer;
+                    return {
+                        op: 'div',
+                        text: `${val1} ${item}களை ${val2} நண்பர்களுக்கு சமமாகப் பிரித்துக் கொடுத்தால், ஒவ்வொருவருக்கும் எத்தனை ${item}கள் கிடைக்கும்?`,
+                        val1, val2, emoji, answer
+                    };
+                }
+            }),
+            geometry: {
+                bisector: {
+                    title: 'செங்குத்து இருசமவெட்டி',
+                    steps: [
+                        "1. AB என்ற கோட்டுத்துண்டு வரைக.",
+                        "2. A-ஐ மையமாகக் கொண்டு, AB-யின் பாதிக்கு மேல் ஆரத்துடன், கோட்டின் மேலும் கீழும் வில்களை வரைக.",
+                        "3. அதே ஆரத்துடன், B-ஐ மையமாகக் கொண்டு, முந்தைய வில்களை வெட்டுமாறு புதிய வில்களை வரைக.",
+                        "4. வெட்டும் புள்ளிகளை P மற்றும் Q என பெயரிடுக.",
+                        "5. P மற்றும் Q-ஐ இணைத்து ஒரு கோடு வரைக. இதுவே AB-யின் செங்குத்து இருசமவெட்டி ஆகும்."
+                    ]
+                }
+            },
+            graphing: Array.from({ length: 50 }, () => ({
+                x: Math.floor(Math.random() * 11) - 5, // -5 to 5 for better visibility on smaller grid
+                y: Math.floor(Math.random() * 11) - 5  // -5 to 5
+            })),
+            mentalMath: Array.from({ length: 50 }, (_, i) => {
+                const vars = ['x', 'y', 'a', 'b'];
+                const v = vars[i % vars.length];
+                const opType = i % 4; // 0: add, 1: sub, 2: mul, 3: div
+                
+                if (opType === 0) { // Addition
+                    const c1 = Math.floor(Math.random() * 10) + 1;
+                    const c2 = Math.floor(Math.random() * 10) + 1;
+                    return { op: 'add', problem: `${c1}${v} + ${c2}${v} = ?`, c1, c2, v, answer: `${c1 + c2}${v}` };
+                } else if (opType === 1) { // Subtraction
+                    const c1 = Math.floor(Math.random() * 10) + 6;
+                    const c2 = Math.floor(Math.random() * 5) + 1;
+                    return { op: 'sub', problem: `${c1}${v} - ${c2}${v} = ?`, c1, c2, v, answer: `${c1 - c2}${v}` };
+                } else if (opType === 2) { // Multiplication
+                    const c1 = Math.floor(Math.random() * 5) + 2;
+                    const c2 = Math.floor(Math.random() * 5) + 2;
+                    return { op: 'mul', problem: `${c1} × ${c2}${v} = ?`, c1, c2, v, answer: `${c1 * c2}${v}` };
+                } else { // Division
+                    const c2 = Math.floor(Math.random() * 5) + 2;
+                    const ans = Math.floor(Math.random() * 5) + 2;
+                    const c1 = c2 * ans;
+                    return { op: 'div', problem: `${c1}${v} ÷ ${c2} = ?`, c1, c2, v, answer: `${ans}${v}` };
+                }
+            })
+        };
+
+        let currentQuestionIndices_Tab3 = {
+            lifeProblems: 0,
+            geometry: 0,
+            graphing: 0,
+            mentalMath: 0,
+        };
+
+        function navigateTab3Question(activityId, direction) {
+            const maxQuestions = questionsDB_Tab3[activityId].length;
+            currentQuestionIndices_Tab3[activityId] += direction;
+            if (currentQuestionIndices_Tab3[activityId] < 0) {
+                currentQuestionIndices_Tab3[activityId] = maxQuestions - 1;
+            } else if (currentQuestionIndices_Tab3[activityId] >= maxQuestions) {
+                currentQuestionIndices_Tab3[activityId] = 0;
+            }
+            setupTab3Activity(activityId);
+        }
+        
+        function setupTab3Activity(activityId) {
+            switch(activityId) {
+                case 'lifeProblems': setupLifeProblemSim(); break;
+                case 'geometry': setupGeometrySim(); break;
+                case 'graphing': setupGraphingSim(); break;
+                case 'mentalMath': setupMentalMathSim(); break;
+            }
+        }
+
+        // 1. Life Problems Simulation
+        function setupLifeProblemSim() {
+            const index = currentQuestionIndices_Tab3.lifeProblems;
+            const question = questionsDB_Tab3.lifeProblems[index];
+            const area = document.getElementById('life-problem-sim-area');
+            area.innerHTML = `
+                <div class="flex justify-between items-center mb-4">
+                    <button class="btn-primary nav-button" onclick="navigateTab3Question('lifeProblems', -1)">◀</button>
+                    <span class="font-bold">கேள்வி ${index + 1}/${questionsDB_Tab3.lifeProblems.length}</span>
+                    <button class="btn-primary nav-button" onclick="navigateTab3Question('lifeProblems', 1)">▶</button>
+                    <button class="btn-primary btn-secondary" onclick="setupLifeProblemSim()">மீட்டமை</button>
+                </div>
+                <p class="text-lg text-center mb-4">${question.text}</p>
+                <div class="flex justify-center items-center gap-2 mt-4">
+                    <input id="lp-answer-input" type="number" class="input-field text-lg" placeholder="விடை">
+                    <button id="lp-check-btn" class="btn-primary" onclick="checkLifeProblemAnswer()">சரிபார்</button>
+                    <button id="lp-help-btn" class="btn-primary btn-secondary">உதவி</button>
+                </div>
+                <p id="lp-feedback" class="text-center font-bold h-6 mt-2"></p>
+                <div id="lp-explanation-area" class="hidden mt-4">
+                    <div id="lp-visual-area" class="flex flex-wrap justify-center items-center gap-4 p-4 min-h-[100px] bg-white rounded-lg"></div>
+                    <div id="lp-calc-area" class="text-center font-bold text-2xl my-4 min-h-[3rem]"></div>
+                </div>
+            `;
+            document.getElementById('lp-help-btn').addEventListener('click', showLifeProblemHelp);
+        }
+
+        function checkLifeProblemAnswer() {
+            const index = currentQuestionIndices_Tab3.lifeProblems;
+            const question = questionsDB_Tab3.lifeProblems[index];
+            const input = document.getElementById('lp-answer-input');
+            const feedback = document.getElementById('lp-feedback');
+            
+            if (input.value === '') {
+                feedback.textContent = 'தயவுசெய்து ஒரு விடையை உள்ளிடவும்.';
+                feedback.className = 'text-center font-bold h-6 mt-2 text-orange-500';
+                return;
+            }
+
+            const userAnswer = parseInt(input.value);
+            if (userAnswer === question.answer) {
+                feedback.textContent = 'சரியான விடை! 👍';
+                feedback.className = 'text-center font-bold h-6 mt-2 text-green-600';
+                document.getElementById('lp-check-btn').disabled = true;
+                document.getElementById('lp-help-btn').disabled = true;
+            } else {
+                feedback.textContent = 'மீண்டும் முயற்சிக்கவும். 🤔';
+                feedback.className = 'text-center font-bold h-6 mt-2 text-red-600';
+            }
+        }
+
+        function showLifeProblemHelp() {
+            const explanationArea = document.getElementById('lp-explanation-area');
+            explanationArea.classList.remove('hidden');
+            
+            const visualArea = document.getElementById('lp-visual-area');
+            const calcArea = document.getElementById('lp-calc-area');
+            
+            const index = currentQuestionIndices_Tab3.lifeProblems;
+            const q = questionsDB_Tab3.lifeProblems[index];
+            visualArea.innerHTML = '';
+            
+            if (q.op === 'add') {
+                visualArea.innerHTML = `<div class="flex items-center gap-4"><div class="flex gap-1">${Array(q.val1).fill(`<span class="text-4xl">${q.emoji}</span>`).join('')}</div> <span class="text-4xl font-bold">+</span> <div class="flex gap-1">${Array(q.val2).fill(`<span class="text-4xl">${q.emoji}</span>`).join('')}</div></div>`;
+                calcArea.innerHTML = `${q.val1} + ${q.val2} = <span class="text-green-600">${q.answer}</span>`;
+            } else if (q.op === 'sub') {
+                let itemsHTML = '';
+                for(let i=0; i<q.val1; i++) {
+                    itemsHTML += `<span class="text-4xl lp-item ${i >= q.answer ? 'cancelled' : ''}">${q.emoji}</span>`;
+                }
+                visualArea.innerHTML = `<div class="flex flex-wrap gap-1">${itemsHTML}</div>`;
+                calcArea.innerHTML = `${q.val1} - ${q.val2} = <span class="text-green-600">${q.answer}</span>`;
+            } else if (q.op === 'mul') {
+                 let groupsHTML = '';
+                 for(let i=0; i<q.val1; i++) {
+                     groupsHTML += `<div class="p-2 border border-gray-300 rounded flex gap-1">${Array(q.val2).fill(`<span class="text-2xl">${q.emoji}</span>`).join('')}</div>`;
+                 }
+                 visualArea.innerHTML = `<div class="flex flex-wrap gap-2">${groupsHTML}</div>`;
+                 calcArea.innerHTML = `${q.val1} &times; ${q.val2} = <span class="text-green-600">${q.answer}</span>`;
+            } else if (q.op === 'div') {
+                 let groupsHTML = '';
+                 for(let i=0; i<q.val2; i++) {
+                     groupsHTML += `<div class="p-2 border-2 border-dashed border-blue-400 rounded flex flex-wrap gap-1">${Array(q.answer).fill(`<span class="text-2xl">${q.emoji}</span>`).join('')}</div>`;
+                 }
+                 visualArea.innerHTML = `<div class="flex flex-col gap-4 items-center"><div class="flex flex-wrap gap-1">${Array(q.val1).fill(`<span class="text-3xl">${q.emoji}</span>`).join('')}</div><svg class="w-8 h-8 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path></svg><div class="flex flex-wrap gap-2">${groupsHTML}</div></div>`;
+                 calcArea.innerHTML = `${q.val1} &divide; ${q.val2} = <span class="text-green-600">${q.answer}</span>`;
+            }
+            document.getElementById('lp-help-btn').disabled = true;
+        }
+
+        // 2. Geometry Simulation
+        function setupGeometrySim() {
+            const area = document.getElementById('geometry-sim-area');
+            const geoData = questionsDB_Tab3.geometry.bisector;
+            area.innerHTML = `
+                <div class="flex flex-col md:flex-row gap-4">
+                    <div class="w-full md:w-1/2 flex items-center justify-center">
+                        <canvas id="geometry-canvas-interactive" width="350" height="300" class="bg-white border rounded-lg"></canvas>
+                    </div>
+                    <div class="w-full md:w-1/2">
+                        <h4 class="font-bold text-lg mb-2">வழிமுறைகள்:</h4>
+                        <div id="geo-steps-container" class="space-y-2">
+                            ${geoData.steps.map((s, i) => `<div id="geo-step-${i}" class="geo-step" onclick="executeGeometryStep(${i})">${s}</div>`).join('')}
+                        </div>
+                        <button class="btn-primary btn-secondary mt-4 w-full" onclick="setupGeometrySim()">மீட்டமை</button>
+                    </div>
+                </div>
+            `;
+            area.dataset.currentStep = 0;
+            const canvas = document.getElementById('geometry-canvas-interactive');
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.font = '16px Arima';
+            ctx.fillStyle = '#6b7280';
+            ctx.textAlign = 'center';
+            ctx.fillText("வழிமுறைகளைக் கிளிக் செய்யவும்.", canvas.width / 2, canvas.height / 2);
+            updateGeoStepUI();
+        }
+        
+        function updateGeoStepUI() {
+            const area = document.getElementById('geometry-sim-area');
+            const currentStep = parseInt(area.dataset.currentStep);
+            const allSteps = document.querySelectorAll('.geo-step');
+            allSteps.forEach((step, index) => {
+                step.classList.remove('active', 'disabled', 'completed');
+                if (index < currentStep) {
+                    step.classList.add('completed');
+                } else if (index === currentStep) {
+                    step.classList.add('active');
+                } else {
+                    step.classList.add('disabled');
+                }
+            });
+        }
+
+        function executeGeometryStep(stepIndex) {
+            const area = document.getElementById('geometry-sim-area');
+            const currentStep = parseInt(area.dataset.currentStep);
+            if (stepIndex !== currentStep) return;
+
+            const canvas = document.getElementById('geometry-canvas-interactive');
+            const ctx = canvas.getContext('2d');
+            const w = canvas.width;
+            const h = canvas.height;
+            const p1 = { x: 50, y: h / 2 };
+            const p2 = { x: w - 50, y: h / 2 };
+            const radius = (p2.x - p1.x) * 0.7;
+
+            ctx.lineWidth = 2;
+            ctx.font = "bold 14px Arima";
+
+            switch(stepIndex) {
+                case 0: 
+                    ctx.clearRect(0, 0, w, h);
+                    ctx.strokeStyle = "#000";
+                    ctx.beginPath(); ctx.moveTo(p1.x, p1.y); ctx.lineTo(p2.x, p2.y); ctx.stroke();
+                    ctx.fillText("A", p1.x - 15, p1.y); ctx.fillText("B", p2.x + 15, p2.y);
+                    break;
+                case 1: 
+                    ctx.strokeStyle = "#3b82f6";
+                    ctx.beginPath(); ctx.arc(p1.x, p1.y, radius, -Math.PI / 3, Math.PI / 3); ctx.stroke();
+                    break;
+                case 2: 
+                    ctx.strokeStyle = "#ef4444";
+                    ctx.beginPath(); ctx.arc(p2.x, p2.y, radius, Math.PI - Math.PI / 3, Math.PI + Math.PI / 3); ctx.stroke();
+                    break;
+                case 3: 
+                    ctx.fillStyle = "#16a34a";
+                    ctx.fillText("P", w / 2, h / 2 - radius * Math.sin(Math.PI / 4) - 5);
+                    ctx.fillText("Q", w / 2, h / 2 + radius * Math.sin(Math.PI / 4) + 15);
+                    break;
+                case 4: 
+                    ctx.strokeStyle = "#16a34a";
+                    ctx.setLineDash([5, 5]);
+                    ctx.beginPath(); ctx.moveTo(w / 2, 20); ctx.lineTo(w / 2, h - 20); ctx.stroke();
+                    ctx.setLineDash([]);
+                    break;
+            }
+            area.dataset.currentStep = currentStep + 1;
+            updateGeoStepUI();
+        }
+
+        // 3. Graphing Simulation
+        function setupGraphingSim() {
+            const index = currentQuestionIndices_Tab3.graphing;
+            const question = questionsDB_Tab3.graphing[index];
+            const area = document.getElementById('graphing-sim-area');
+            area.innerHTML = `
+                <div class="flex justify-between items-center mb-4">
+                    <button class="btn-primary nav-button" onclick="navigateTab3Question('graphing', -1)">◀</button>
+                    <span class="font-bold">கேள்வி ${index + 1}/${questionsDB_Tab3.graphing.length}</span>
+                    <button class="btn-primary nav-button" onclick="navigateTab3Question('graphing', 1)">▶</button>
+                    <button class="btn-primary btn-secondary" onclick="setupGraphingSim()">மீட்டமை</button>
+                </div>
+                <div class="flex flex-col items-center gap-4">
+                    <p class="text-xl text-center">வரைபடத்தில் <b id="target-point" class="text-2xl text-indigo-600">P(${question.x}, ${question.y})</b> என்ற புள்ளியைக் கண்டுபிடித்து கிளிக் செய்யவும்.</p>
+                    <div id="live-coords" class="font-mono text-3xl font-bold h-10 transition-colors duration-200"></div>
+                    <canvas id="graph-canvas-interactive" width="600" height="600"></canvas>
+                    <p id="graph-feedback" class="font-bold h-6"></p>
+                </div>
+            `;
+            
+            const canvas = document.getElementById('graph-canvas-interactive');
+            const liveCoordsEl = document.getElementById('live-coords');
+            const feedbackEl = document.getElementById('graph-feedback');
+            const gridSize = 28; 
+            const originX = canvas.width / 2;
+            const originY = canvas.height / 2;
+            let isDone = false;
+
+            const drawGrid = (hoverPoint = null) => {
+                const ctx = canvas.getContext('2d');
+                const w = canvas.width;
+                const h = canvas.height;
+                ctx.clearRect(0, 0, w, h);
+                ctx.strokeStyle = '#e5e7eb';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                for (let x = 0; x <= w; x += gridSize) { ctx.moveTo(x, 0); ctx.lineTo(x, h); }
+                for (let y = 0; y <= h; y += gridSize) { ctx.moveTo(0, y); ctx.lineTo(w, y); }
+                ctx.stroke();
+                
+                ctx.strokeStyle = '#374151';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(0, h / 2); ctx.lineTo(w, h / 2); // X-Axis
+                ctx.moveTo(w / 2, 0); ctx.lineTo(w / 2, h); // Y-Axis
+                ctx.stroke();
+                
+                ctx.font = 'bold 16px Arima'; 
+                ctx.fillStyle = '#374151';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                // Draw number labels
+                for (let i = -10; i <= 10; i++) {
+                    if (i === 0) continue;
+                    ctx.fillText(i, w / 2 + i * gridSize, h / 2 + 18);
+                    ctx.fillText(i, w / 2 - 18, h / 2 - i * gridSize);
+                }
+                // Draw Axis labels
+                ctx.font = 'bold 22px Arima';
+                ctx.fillText('X', w - 20, h / 2 - 20);
+                ctx.fillText('Y', w / 2 + 20, 20);
+
+                if (hoverPoint) {
+                    ctx.fillStyle = hoverPoint.isCorrect ? 'rgba(34, 197, 94, 0.5)' : 'rgba(239, 68, 68, 0.5)';
+                    ctx.beginPath();
+                    ctx.arc(hoverPoint.px, hoverPoint.py, 10, 0, 2 * Math.PI);
+                    ctx.fill();
+                }
+            };
+            
+            drawGrid();
+
+            const mouseMoveHandler = (e) => {
+                if (isDone) return;
+                const rect = canvas.getBoundingClientRect();
+                const mouseX = e.clientX - rect.left;
+                const mouseY = e.clientY - rect.top;
+                const hoverGridX = Math.round((mouseX - originX) / gridSize);
+                const hoverGridY = Math.round((originY - mouseY) / gridSize);
+                
+                liveCoordsEl.textContent = `(${hoverGridX}, ${hoverGridY})`;
+                
+                const isCorrect = hoverGridX === question.x && hoverGridY === question.y;
+                liveCoordsEl.style.color = isCorrect ? '#16a34a' : '#374151';
+
+                drawGrid({ 
+                    px: originX + hoverGridX * gridSize, 
+                    py: originY - hoverGridY * gridSize,
+                    isCorrect: isCorrect
+                });
+            };
+
+            const clickHandler = (e) => {
+                if (isDone) return;
+                const rect = canvas.getBoundingClientRect();
+                const mouseX = e.clientX - rect.left;
+                const mouseY = e.clientY - rect.top;
+                const clickedGridX = Math.round((mouseX - originX) / gridSize);
+                const clickedGridY = Math.round((originY - mouseY) / gridSize);
+
+                if (clickedGridX === question.x && clickedGridY === question.y) {
+                    isDone = true;
+                    feedbackEl.textContent = 'சரியாகக் குறித்தீர்கள்! 🎉';
+                    feedbackEl.className = 'font-bold h-6 text-green-600';
+                    
+                    const finalX = originX + question.x * gridSize;
+                    const finalY = originY - question.y * gridSize;
+                    drawGrid(); // Clear hover points
+                    
+                    const ctx = canvas.getContext('2d');
+                    ctx.fillStyle = '#16a34a';
+                    ctx.beginPath();
+                    ctx.arc(finalX, finalY, 10, 0, 2 * Math.PI);
+                    ctx.fill();
+                    ctx.fillStyle = '#052e16';
+                    ctx.font = 'bold 18px Arima';
+                    ctx.fillText(`P(${question.x}, ${question.y})`, finalX + 10, finalY - 20);
+                    
+                    canvas.removeEventListener('mousemove', mouseMoveHandler);
+                    canvas.removeEventListener('click', clickHandler);
+                } else {
+                    feedbackEl.textContent = `நீங்கள் (${clickedGridX}, ${clickedGridY}) என்ற புள்ளியைக் கிளிக் செய்துள்ளீர்கள். மீண்டும் முயற்சிக்கவும்.`;
+                    feedbackEl.className = 'font-bold h-6 text-red-600';
+                }
+            };
+            
+            canvas.addEventListener('mousemove', mouseMoveHandler);
+            canvas.addEventListener('click', clickHandler);
+        }
+
+        // 4. Mental Math Simulation
+        function setupMentalMathSim() {
+            const index = currentQuestionIndices_Tab3.mentalMath;
+            const q = questionsDB_Tab3.mentalMath[index];
+            const area = document.getElementById('mental-math-sim-area');
+            
+            area.innerHTML = `
+                <div class="flex justify-between items-center mb-4">
+                    <button class="btn-primary nav-button" onclick="navigateTab3Question('mentalMath', -1)">◀</button>
+                    <span class="font-bold">கேள்வி ${index + 1}/${questionsDB_Tab3.mentalMath.length}</span>
+                    <button class="btn-primary nav-button" onclick="navigateTab3Question('mentalMath', 1)">▶</button>
+                    <button class="btn-primary btn-secondary" onclick="setupMentalMathSim()">மீட்டமை</button>
+                </div>
+                <p class="text-2xl text-center mb-4">${q.problem}</p>
+                <div id="mm-visual-start" class="flex justify-center items-center gap-2 p-4 min-h-[60px] bg-gray-100 rounded-lg"></div>
+                <div class="text-center my-4">
+                    <button id="mm-combine-btn" class="btn-primary" onclick="combineMentalMath()">விளக்கத்தைக் காட்டு</button>
+                </div>
+                <div id="mm-visual-end" class="flex flex-wrap justify-center items-center gap-2 p-4 min-h-[60px] bg-green-100 rounded-lg"></div>
+                <div class="flex justify-center items-center gap-2 mt-4">
+                    <input id="mental-math-answer" type="text" class="input-field text-lg" placeholder="விடை">
+                    <button class="btn-primary" onclick="checkMentalMath('${q.answer}')">சரிபார்</button>
+                </div>
+                <p id="mental-math-result" class="text-center mt-2 font-bold h-6"></p>
+            `;
+            
+            const startArea = document.getElementById('mm-visual-start');
+            if (q.op === 'add') {
+                startArea.innerHTML = `<div class="p-2 border border-blue-300 rounded">${Array(q.c1).fill(`<div class="math-block bg-blue-500">${q.v}</div>`).join('')}</div> <span class="text-2xl font-bold mx-2">+</span> <div class="p-2 border border-pink-300 rounded">${Array(q.c2).fill(`<div class="math-block bg-pink-500">${q.v}</div>`).join('')}</div>`;
+            } else if (q.op === 'sub') {
+                 startArea.innerHTML = `<div class="p-2 border border-blue-300 rounded">${Array(q.c1).fill(`<div class="math-block bg-blue-500">${q.v}</div>`).join('')}</div> <span class="text-2xl font-bold mx-2">-</span> <div class="p-2 border border-pink-300 rounded">${Array(q.c2).fill(`<div class="math-block bg-pink-500">${q.v}</div>`).join('')}</div>`;
+            } else if (q.op === 'mul') {
+                 startArea.innerHTML = `<span class="text-3xl font-bold">${q.c1}</span> <span class="text-2xl font-bold mx-2">&times;</span> <div class="p-2 border border-pink-300 rounded">${Array(q.c2).fill(`<div class="math-block bg-pink-500">${q.v}</div>`).join('')}</div>`;
+            } else if (q.op === 'div') {
+                 startArea.innerHTML = `<div class="p-2 border border-blue-300 rounded">${Array(q.c1).fill(`<div class="math-block bg-blue-500">${q.v}</div>`).join('')}</div> <span class="text-2xl font-bold mx-2">&divide;</span> <span class="text-3xl font-bold">${q.c2}</span>`;
+            }
+        }
+        
+        function combineMentalMath() {
+            const index = currentQuestionIndices_Tab3.mentalMath;
+            const q = questionsDB_Tab3.mentalMath[index];
+            const endArea = document.getElementById('mm-visual-end');
+            endArea.innerHTML = '';
+            
+            if (q.op === 'add') {
+                const total = q.c1 + q.c2;
+                for(let i=0; i<total; i++) {
+                    const block = document.createElement('div');
+                    block.className = 'math-block bg-green-600 animate-pop-in';
+                    block.textContent = q.v;
+                    block.style.animationDelay = `${i * 50}ms`;
+                    endArea.appendChild(block);
+                }
+            } else if (q.op === 'sub') {
+                let blocksHTML = '';
+                for(let i=0; i<q.c1; i++) {
+                     blocksHTML += `<div class="math-block bg-blue-500 ${i >= (q.c1 - q.c2) ? 'cancelled' : ''}">${q.v}</div>`;
+                }
+                endArea.innerHTML = blocksHTML;
+            } else if (q.op === 'mul') {
+                let groupsHTML = '';
+                for(let i=0; i<q.c1; i++) {
+                    groupsHTML += `<div class="p-2 border border-gray-300 rounded flex gap-1">${Array(q.c2).fill(`<div class="math-block bg-green-500">${q.v}</div>`).join('')}</div>`;
+                }
+                endArea.innerHTML = `<div class="flex flex-wrap gap-2">${groupsHTML}</div>`;
+            } else if (q.op === 'div') {
+                let groupsHTML = '';
+                const ans = q.c1 / q.c2;
+                for(let i=0; i<q.c2; i++) {
+                    groupsHTML += `<div class="p-2 border-2 border-dashed border-green-500 rounded flex flex-wrap gap-1">${Array(ans).fill(`<div class="math-block bg-green-500">${q.v}</div>`).join('')}</div>`;
+                }
+                endArea.innerHTML = `<div class="flex flex-wrap gap-2">${groupsHTML}</div>`;
+            }
+            document.getElementById('mm-combine-btn').disabled = true;
+        }
+
+        function checkMentalMath(correctAnswer) {
+            const userAnswer = document.getElementById('mental-math-answer').value.trim().toLowerCase().replace(/\s/g, '');
+            const result = document.getElementById('mental-math-result');
+            if (userAnswer === correctAnswer) {
+                result.textContent = 'சரியான விடை! 👍';
+                result.className = 'text-center mt-2 font-bold h-6 text-green-600';
+            } else {
+                result.textContent = 'மீண்டும் முயற்சிக்கவும். 🤔';
+                result.className = 'text-center mt-2 font-bold h-6 text-red-600';
+            }
+        }
+
+
+        // --- Tab 4: சொற்களஞ்சியம் ---
+        function showTerm(term, clickedButton) {
+            const display = document.getElementById('term-explanation');
+            
+            // Handle active button state
+            document.querySelectorAll('.vocab-btn').forEach(btn => btn.classList.remove('active'));
+            clickedButton.classList.add('active');
+
+            let content = '';
+            const definitions = {
+                'மாறி': { title: 'மாறி (Variable)', desc: 'மதிப்பு மாறக்கூடிய ஒரு குறியீடு. பொதுவாக x, y, a, b போன்ற எழுத்துக்களால் குறிக்கப்படும்.', viz: '<div class="mt-4 text-6xl p-4 border-4 border-dashed border-purple-400 rounded-lg inline-block bg-purple-100">x</div>', example: 'x-ன் மதிப்பு 5, -10, அல்லது 1/2 என எதுவாகவும் இருக்கலாம்.' },
+                'மாறிலி': { title: 'மாறிலி (Constant)', desc: 'மதிப்பு மாறாத ஒரு குறிப்பிட்ட எண்.', viz: '<div class="mt-4 text-6xl p-4 border-4 border-solid border-teal-400 rounded-lg inline-block bg-teal-100">7</div>', example: '7-ன் மதிப்பு எப்போதும் 7 தான்.' },
+                'கெழுக்கள்': { title: 'கெழு (Coefficient)', desc: 'ஒரு மாறியுடன் பெருக்கப்படும் எண்.', viz: '<div class="mt-4 text-5xl p-4"><span class="p-2 bg-red-200 text-red-700 rounded-lg">5</span><span class="text-gray-800">x</span></div>', example: '5x-ல், x-ன் கெழு 5 ஆகும்.' },
+                'ஒத்த உறுப்புகள்': { title: 'ஒத்த உறுப்புகள் (Like Terms)', desc: 'ஒரே மாறியையும், ஒரே அடுக்கையும் கொண்ட உறுப்புகள்.', viz: '<div class="mt-4 text-3xl flex justify-center items-center gap-4"><div class="p-2 bg-green-100 border-2 border-green-400 rounded">3x</div><div class="p-2 bg-blue-100 rounded">2y</div><div class="p-2 bg-green-100 border-2 border-green-400 rounded">-5x</div></div>', example: '3x மற்றும் -5x ஆகியவை ஒத்த உறுப்புகள். அவற்றை கூட்டவோ கழிக்கவோ முடியும்.' },
+                'அமைப்புகள்': { title: 'அமைப்புகள் (Patterns)', desc: 'ஒரு குறிப்பிட்ட விதியின்படி தொடரும் எண்கள், வடிவங்கள் அல்லது பொருள்கள்.', viz: '<div class="mt-4 text-3xl font-bold">2, 4, 6, 8, ...</div>', example: 'இந்த எண் அமைப்பில், ஒவ்வொரு எண்ணும் முந்தைய எண்ணை விட 2 அதிகம்.' },
+                'உறுப்புகள்': { title: 'உறுப்புகள் (Terms)', desc: 'ஒரு இயற்கணிதக் கோவையில் கூட்டல் (+) அல்லது கழித்தல் (-) குறியீடுகளால் பிரிக்கப்பட்ட பகுதிகள்.', viz: '<div class="mt-4 text-3xl"><span class="p-2 bg-yellow-200 rounded">3x</span> + <span class="p-2 bg-yellow-200 rounded">5y</span> - <span class="p-2 bg-yellow-200 rounded">7</span></div>', example: 'மேலே உள்ள கோவையில் மூன்று உறுப்புகள் உள்ளன.' },
+                'மாறுபட்ட உறுப்புகள்': { title: 'மாறுபட்ட உறுப்புகள் (Unlike Terms)', desc: 'வெவ்வேறு மாறிகள் அல்லது வெவ்வேறு அடுக்குகளைக் கொண்ட உறுப்புகள்.', viz: '<div class="mt-4 text-3xl flex justify-center items-center gap-4"><div class="p-2 bg-red-100 border-2 border-red-400 rounded">4x²</div><div class="p-2 bg-blue-100 border-2 border-blue-400 rounded">7y</div></div>', example: '4x² மற்றும் 7y ஆகியவை மாறுபட்ட உறுப்புகள். அவற்றை கூட்டவோ கழிக்கவோ முடியாது.' },
+                'கோவைகள்': { title: 'கோவைகள் (Expressions)', desc: 'எண்கள், மாறிகள் மற்றும் கணிதச் செயல்பாடுகளைக் கொண்ட ஒரு தொகுப்பு.', viz: '<div class="mt-4 text-4xl p-2 bg-gray-200 rounded">2x + 3</div>', example: 'இது ஒரு கோவை; இதற்கு சமக்குறி (=) இருக்காது.' },
+                'வாய்மொழி கோவை': { title: 'வாய்மொழி கோவை (Verbal Expression)', desc: 'வார்த்தைகளால் விவரிக்கப்படும் ஒரு கணித கோவை.', viz: '<div class="mt-4 text-xl p-3 bg-gray-100 rounded">"ஒரு எண்ணின் இரு மடங்குடன் 5-ஐக் கூட்டுக"</div>', example: 'இது 2x + 5 என்ற இயற்கணிதக் கோவையின் வாய்மொழி வடிவம்.' },
+                'இயற்கணித கோவை': { title: 'இயற்கணித கோவை (Algebraic Expression)', desc: 'எண்கள், மாறிகள் மற்றும் செயல்பாட்டுக் குறிகளைக் கொண்ட கோவை.', viz: '<div class="mt-4 text-4xl font-mono p-3 bg-gray-100 rounded">2x + 5</div>', example: 'இது "ஒரு எண்ணின் இரு மடங்குடன் 5-ஐக் கூட்டுக" என்பதன் இயற்கணித வடிவம்.' },
+                'படி': { title: 'படி (Degree)', desc: 'ஒரு பல்லுறுப்புக்கோவையில், மாறியின் மிக உயர்ந்த அடுக்கு.', viz: '<div class="mt-4 text-4xl font-mono p-3 bg-gray-100 rounded">x<sup class="text-red-500 font-bold">3</sup> + 2x² - 5</div>', example: 'இந்தக் கோவையின் படி 3 ஆகும்.' },
+                'ஓருறுப்புக்கோவை': { title: 'ஓருறுப்புக்கோவை (Monomial)', desc: 'ஒரே ஒரு உறுப்பை மட்டுமே கொண்ட இயற்கணிதக் கோவை.', viz: '<div class="mt-4 text-4xl font-mono p-3 bg-indigo-100 rounded">7xy</div>', example: 'இது ஒரு ஓருறுப்புக்கோவை.' },
+                'ஈருறுப்புக்கோவை': { title: 'ஈருறுப்புக்கோவை (Binomial)', desc: 'இரண்டு உறுப்புகளைக் கொண்ட இயற்கணிதக் கோவை.', viz: '<div class="mt-4 text-4xl font-mono p-3 bg-indigo-100 rounded">a + 2b</div>', example: 'இது ஒரு ஈருறுப்புக்கோவை.' },
+                'மூவுறுப்புக்கோவை': { title: 'மூவுறுப்புக்கோவை (Trinomial)', desc: 'மூன்று உறுப்புகளைக் கொண்ட இயற்கணிதக் கோவை.', viz: '<div class="mt-4 text-4xl font-mono p-3 bg-indigo-100 rounded">x² + 2x + 1</div>', example: 'இது ஒரு மூவுறுப்புக்கோவை.' },
+                'பல்லுறுப்புக்கோவை': { title: 'பல்லுறுப்புக்கோவை (Polynomial)', desc: 'ஒன்று அல்லது அதற்கு மேற்பட்ட உறுப்புகளைக் கொண்ட கோவை.', viz: '<div class="mt-4 text-3xl font-mono p-3 bg-indigo-100 rounded">5x³ - 2x² + x - 9</div>', example: 'ஓருறுப்பு, ஈருறுப்பு, மூவுறுப்புக்கோவை அனைத்தும் பல்லுறுப்புக்கோவைகளே.' },
+                'முற்றொருமைகள்': { title: 'முற்றொருமைகள் (Identities)', desc: 'மாறிகளின் அனைத்து மதிப்புகளுக்கும் உண்மையாக இருக்கும் ஒரு சமன்பாடு.', viz: '<div class="mt-4 text-3xl font-mono p-3 bg-green-100 rounded">(a+b)² = a² + 2ab + b²</div>', example: 'a, b-க்கு எந்த எண்ணை பிரதியிட்டாலும் இந்த சமன்பாடு உண்மையாக இருக்கும்.' },
+                'வர்க்க முற்றொருமைகள்': { title: 'வர்க்க முற்றொருமைகள் (Square Identities)', desc: 'வர்க்கங்களை (square) உள்ளடக்கிய அடிப்படை முற்றொருமைகள்.', viz: '<div class="mt-2 text-2xl font-mono p-2 bg-green-100 rounded">(a-b)² = a² - 2ab + b²</div>', example: 'இது ஒரு முக்கியமான வர்க்க முற்றொருமை.' },
+                'கன முற்றொருமைகள்': { title: 'கன முற்றொருமைகள் (Cube Identities)', desc: 'கனங்களை (cube) உள்ளடக்கிய அடிப்படை முற்றொருமைகள்.', viz: '<div class="mt-2 text-2xl font-mono p-2 bg-green-100 rounded">(a+b)³ = a³ + 3a²b + 3ab² + b³</div>', example: 'இது ஒரு முக்கியமான கன முற்றொருமை.' },
+                'சமன்பாடுகள்': { title: 'சமன்பாடுகள் (Equations)', desc: 'இரண்டு கோவைகள் சமம் என்பதைக் குறிக்கும் ஒரு கணித வாக்கியம். இதில் சமக்குறி (=) இருக்கும்.', viz: '<div class="mt-4 text-4xl font-mono p-3 bg-orange-100 rounded">2x + 1 = 9</div>', example: 'இங்கே, x-ன் ஒரு குறிப்பிட்ட மதிப்பிற்கு மட்டுமே சமன்பாடு உண்மையாக இருக்கும்.' },
+                'எளிய நேரிய சமன்பாடுகள்': { title: 'எளிய நேரிய சமன்பாடுகள் (Simple Linear Equations)', desc: 'மாறியின் படி 1 ஆக உள்ள சமன்பாடுகள்.', viz: '<div class="mt-4 text-4xl font-mono p-3 bg-orange-100 rounded">x - 5 = 10</div>', example: 'இதை தீர்க்கும்போது x = 15 என ஒரு தீர்வு கிடைக்கும்.' }
+            };
+
+            const termData = definitions[term];
+            if (termData) {
+                content = `
+                    <div class="text-center animate-fade-in">
+                        <h3 class="text-xl font-bold mb-2">${termData.title}</h3>
+                        <p>${termData.desc}</p>
+                        ${termData.viz}
+                        <p class="mt-2 text-gray-700"><b>எடுத்துக்காட்டு:</b> ${termData.example}</p>
+                    </div>`;
+            } else {
+                content = `
+                    <div class="text-center">
+                        <h3 class="text-xl font-bold mb-2">${term}</h3>
+                        <p>இந்தச் சொல்லுக்கான விளக்கம் விரைவில் சேர்க்கப்படும்.</p>
+                    </div>`;
+            }
+            display.innerHTML = content;
+        }
+
+        // --- Initial Setup on Page Load ---
+        window.onload = () => {
+             // Initialize Multiplication Table buttons
+             const multiplicationButtonsContainer = document.getElementById('multiplication-buttons');
+             if(multiplicationButtonsContainer) {
+                 multiplicationButtonsContainer.innerHTML = [...Array(10).keys()].map(i => `<button class="btn-primary w-12 h-12" onclick="generateTable(${i + 1})">${i + 1}</button>`).join('');
+             }
+             
+             // Initialize Vocabulary buttons
+             const vocabularyTerms = ['மாறி', 'மாறிலி', 'கெழுக்கள்', 'ஒத்த உறுப்புகள்', 'அமைப்புகள்', 'உறுப்புகள்', 'மாறுபட்ட உறுப்புகள்', 'கோவைகள்', 'வாய்மொழி கோவை', 'இயற்கணித கோவை', 'படி', 'ஓருறுப்புக்கோவை', 'ஈருறுப்புக்கோவை', 'மூவுறுப்புக்கோவை', 'பல்லுறுப்புக்கோவை', 'முற்றொருமைகள்', 'வர்க்க முற்றொருமைகள்', 'கன முற்றொருமைகள்', 'சமன்பாடுகள்', 'எளிய நேரிய சமன்பாடுகள்'];
+             const vocabularyButtonsContainer = document.getElementById('vocabulary-buttons');
+             if(vocabularyButtonsContainer) {
+                 vocabularyButtonsContainer.innerHTML = vocabularyTerms.map(term => `<button class="vocab-btn" onclick="showTerm('${term}', this)">${term}</button>`).join('');
+             }
+             
+             // Set a default rule to be displayed on load in Tab 1
+             showExponentRule('product');
+
+             // Setup Tab 2 Dropdown
+             setupTopicSelector();
+
+             // Setup Tab 3 initial activities
+             setupTab3Activity('lifeProblems');
+             setupTab3Activity('geometry');
+             setupTab3Activity('graphing');
+             setupTab3Activity('mentalMath');
+        };
+    </script>
+</body>
+</html>
