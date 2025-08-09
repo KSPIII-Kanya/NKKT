@@ -313,11 +313,14 @@
             color: #9ca3af;
             cursor: not-allowed;
         }
-        #graph-canvas-interactive {
+        #graph-canvas-interactive, #geometry-canvas-interactive {
             background-color: #fff;
             border: 2px solid #9ca3af;
             border-radius: 8px;
             cursor: crosshair;
+            width: 100%;
+            height: auto;
+            max-width: 600px;
         }
         .math-block {
             display: inline-flex;
@@ -1217,7 +1220,7 @@
                     <div class="w-full lg:w-1/2">
                         <div id="interaction-buttons" class="space-y-3"></div>
                         <div id="explanation-box" class="explanation-box-rich mt-4 min-h-[150px] text-lg space-y-4">
-                             <p class="text-gray-500 text-center p-4">கீழே உள்ள பொத்தான்களைப் பயன்படுத்தி từng படியாகக் கற்றுக்கொள்ளுங்கள்.</p>
+                             <p class="text-gray-500 text-center p-4">மேலே உள்ள பொத்தான்களைப் பயன்படுத்தி படி படியாகக் கற்றுக்கொள்ளுங்கள்.</p>
                         </div>
                     </div>
                 </div>
@@ -1630,7 +1633,7 @@
                          feedbackEl.textContent = 'இந்த உருப்படி ஏற்கனவே இந்த பெட்டியில் வைக்கப்பட்டுள்ளது.';
                          feedbackEl.className = 'text-center font-bold h-6 mt-4 text-blue-600';
                     } else {
-                        feedbackEl.textContent = 'தவறான வகை. மீண்டும் முயற்சிக்கவும். 🤔';
+                        feedbackEl.textContent = 'தவறான வகை. மீண்டும் முயற்சிக்கவும். �';
                         feedbackEl.className = 'text-center font-bold h-6 mt-4 text-red-600';
                     }
                 });
@@ -1899,7 +1902,7 @@
             area.innerHTML = `
                 <div class="flex flex-col md:flex-row gap-4">
                     <div class="w-full md:w-1/2 flex items-center justify-center">
-                        <canvas id="geometry-canvas-interactive" width="350" height="300" class="bg-white border rounded-lg"></canvas>
+                        <canvas id="geometry-canvas-interactive" width="350" height="300"></canvas>
                     </div>
                     <div class="w-full md:w-1/2">
                         <h4 class="font-bold text-lg mb-2">வழிமுறைகள்:</h4>
@@ -2280,7 +2283,14 @@
              setupTab3Activity('geometry');
              setupTab3Activity('graphing');
              setupTab3Activity('mentalMath');
+
+             // Add resize listener for canvases
+            window.addEventListener('resize', () => {
+                setupTab3Activity('geometry');
+                setupTab3Activity('graphing');
+            });
         };
     </script>
 </body>
 </html>
+�
