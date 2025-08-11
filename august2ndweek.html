@@ -9,21 +9,24 @@
     <!-- Google Fonts for the 'Arima' typeface -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Arima:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Arima:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         /* Custom styles to complement Tailwind CSS and apply the Arima font */
         body {
             font-family: 'Arima', sans-serif;
             background-color: #f0f7ff;
+            font-weight: 500; /* Bolder base font */
+            color: #1f2937; /* Darker base text color for contrast */
         }
         .tab-btn {
             transition: all 0.3s ease;
             border-bottom: 4px solid transparent;
+            font-weight: 600;
         }
         .tab-btn.active {
             border-bottom-color: #3b82f6;
-            color: #1e40af;
-            font-weight: bold;
+            color: #1e3a8a;
+            font-weight: 700;
         }
         .content-box {
             background-color: white;
@@ -44,7 +47,7 @@
             color: white;
             padding: 0.5rem 1rem;
             border-radius: 8px;
-            font-weight: bold;
+            font-weight: 700; /* Bolder buttons */
             transition: background-color 0.3s;
             border: none;
             cursor: pointer;
@@ -69,6 +72,7 @@
             padding: 0.5rem;
             width: 100px;
             text-align: center;
+            font-weight: 700;
         }
         .custom-select {
             appearance: none;
@@ -77,12 +81,18 @@
             padding: 0.75rem 2.5rem 0.75rem 1rem;
             border-radius: 8px;
             color: #3730a3;
-            font-weight: bold;
+            font-weight: 700;
             cursor: pointer;
             background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
             background-position: right 0.5rem center;
             background-repeat: no-repeat;
             background-size: 1.5em 1.5em;
+        }
+        p {
+             color: #111827; /* Darker paragraph text */
+        }
+        h1, h2, h3, h4 {
+            font-weight: 700; /* Bold headings */
         }
         .pv-digit {
             transition: all 0.3s ease;
@@ -96,8 +106,6 @@
             box-shadow: 0 0 0 3px #d946ef;
             border: 2px solid #d946ef;
         }
-
-        /* Styles for Click and Place Simulation */
         .clickable-part {
             padding: 0.5rem 1rem;
             background-color: #60a5fa;
@@ -125,8 +133,6 @@
             font-weight: bold;
             color: #1e3a8a;
         }
-
-        /* Styles for Term Sorting & Click-and-Place Simulations */
         .option-part, .clickable-term {
             padding: 0.5rem 1rem;
             background-color: #a5b4fc;
@@ -365,20 +371,20 @@
     <div class="max-w-7xl mx-auto">
         <!-- Header -->
         <header class="text-center p-4 rounded-lg bg-white shadow-md mb-4">
-            <h1 class="text-2xl sm:text-3xl font-bold text-blue-800">கன்ய சம்பூர்ணா திட்டம் / கன்யா பெண்கள் கல்வி திட்டம்</h1>
-            <p class="text-sm sm:text-base text-blue-600">இத்திட்டம் TITAN மற்றும் KALIKE நிறுவனங்களின் பங்களிப்புடன் செயல்படுத்தப்படுகிறது</p>
-            <h2 class="text-xl sm:text-2xl font-bold text-orange-500 mt-2">நடுவுல கொஞ்சம் கற்றலைத் தேடி</h2>
-            <h3 class="text-lg sm:text-xl text-green-600 font-semibold">கணிதம்</h3>
-            <p class="text-md text-gray-500">ஆகஸ்ட் - 2வது வாரம்</p>
+            <h1 class="text-3xl sm:text-4xl font-bold text-blue-900">கன்ய சம்பூர்ணா திட்டம் / கன்யா பெண்கள் கல்வி திட்டம்</h1>
+            <p class="text-base sm:text-lg text-blue-700 font-semibold">இத்திட்டம் TITAN மற்றும் KALIKE நிறுவனங்களின் பங்களிப்புடன் செயல்படுத்தப்படுகிறது</p>
+            <h2 class="text-2xl sm:text-3xl font-bold text-orange-600 mt-2">நடுவுல கொஞ்சம் கற்றலைத் தேடி</h2>
+            <h3 class="text-xl sm:text-2xl text-green-700 font-bold">கணிதம்</h3>
+            <p class="text-lg text-gray-600 font-semibold">ஆகஸ்ட் - 2வது வாரம்</p>
         </header>
 
         <!-- Tabs -->
         <div class="mb-4 bg-white rounded-lg shadow-sm">
             <div id="tabs" class="flex flex-wrap justify-center border-b-2 border-gray-200">
-                <button onclick="changeTab(0)" class="tab-btn active text-sm sm:text-lg p-3 sm:p-4">வாய்மொழி பயிற்சி (15 நிமிடங்கள்)</button>
-                <button onclick="changeTab(1)" class="tab-btn text-sm sm:text-lg p-3 sm:p-4">ஆசிரியர் செயல்பாடு (45 நிமிடங்கள்)</button>
-                <button onclick="changeTab(2)" class="tab-btn text-sm sm:text-lg p-3 sm:p-4">கல்விசார் செயல்பாடுகள் (15 நிமிடங்கள்)</button>
-                <button onclick="changeTab(3)" class="tab-btn text-sm sm:text-lg p-3 sm:p-4">சொற்களஞ்சியப் பெருக்கம் (10 நிமிடங்கள்)</button>
+                <button onclick="changeTab(0)" class="tab-btn active text-base sm:text-lg p-3 sm:p-4">வாய்மொழி பயிற்சி (15 நிமிடங்கள்)</button>
+                <button onclick="changeTab(1)" class="tab-btn text-base sm:text-lg p-3 sm:p-4">ஆசிரியர் செயல்பாடு (45 நிமிடங்கள்)</button>
+                <button onclick="changeTab(2)" class="tab-btn text-base sm:text-lg p-3 sm:p-4">கல்விசார் செயல்பாடுகள் (15 நிமிடங்கள்)</button>
+                <button onclick="changeTab(3)" class="tab-btn text-base sm:text-lg p-3 sm:p-4">சொற்களஞ்சியப் பெருக்கம் (10 நிமிடங்கள்)</button>
             </div>
         </div>
 
@@ -387,32 +393,32 @@
             <!-- Tab 1: வாய்மொழி பயிற்சி -->
             <div class="tab-content">
                 <div class="content-box">
-                    <h2 class="text-2xl font-bold text-blue-700 mb-4">வாய்மொழி பயிற்சி</h2>
+                    <h2 class="text-2xl font-bold text-blue-800 mb-4">வாய்மொழி பயிற்சி</h2>
                     
                     <!-- Multiplication Tables -->
                     <div class="simulation-container mb-6">
-                        <h3 class="text-xl font-semibold mb-2">பெருக்கல் வாய்ப்பாடு விளையாட்டு</h3>
-                        <p class="mb-4">ஒரு எண்ணைத் தேர்ந்தெடுத்து, அதன் பெருக்கல் வாய்ப்பாட்டை விளையாட்டு மூலம் கற்கலாம்.</p>
+                        <h3 class="text-xl font-bold mb-2">பெருக்கல் வாய்ப்பாடு விளையாட்டு</h3>
+                        <p class="mb-4 font-semibold">ஒரு எண்ணைத் தேர்ந்தெடுத்து, அதன் பெருக்கல் வாய்ப்பாட்டை விளையாட்டு மூலம் கற்கலாம்.</p>
                         <div id="multiplication-buttons" class="flex flex-wrap gap-2 mb-4">
                             <!-- Buttons are dynamically generated by JavaScript -->
                         </div>
                         <div id="table-display" class="mt-4 p-4 bg-white rounded-lg min-h-[300px] flex items-start justify-center">
-                            <p>தொடங்க ஒரு எண்ணை அழுத்தவும்.</p>
+                            <p class="font-semibold">தொடங்க ஒரு எண்ணை அழுத்தவும்.</p>
                         </div>
                     </div>
 
                     <!-- Exponents -->
                     <div class="simulation-container">
-                        <h3 class="text-xl font-semibold mb-2">அடுக்குக் குறியீடுகள் விதி</h3>
-                        <p class="mb-4">ஒரு விதியைத் தேர்ந்தெடுத்து, உங்கள் எண்களை உள்ளிட்டு அது எப்படி வேலை செய்கிறது என்பதைப் பாருங்கள்.</p>
+                        <h3 class="text-xl font-bold mb-2">அடுக்குக் குறியீடுகள் விதி</h3>
+                        <p class="mb-4 font-semibold">ஒரு விதியைத் தேர்ந்தெடுத்து, உங்கள் எண்களை உள்ளிட்டு அது எப்படி வேலை செய்கிறது என்பதைப் பாருங்கள்.</p>
                         <div id="exponent-rule-buttons" class="flex flex-wrap gap-2 mb-4">
-                            <button class="rule-btn p-2 rounded-lg font-semibold" onclick="showExponentRule('product')">பெருக்கல் விதி</button>
-                            <button class="rule-btn p-2 rounded-lg font-semibold" onclick="showExponentRule('quotient')">வகுத்தல் விதி</button>
-                            <button class="rule-btn p-2 rounded-lg font-semibold" onclick="showExponentRule('power')">அடுக்கிற்கு அடுக்கு விதி</button>
-                            <button class="rule-btn p-2 rounded-lg font-semibold" onclick="showExponentRule('zero')">பூஜ்ய அடுக்கு விதி</button>
+                            <button class="rule-btn p-2 rounded-lg font-bold" onclick="showExponentRule('product')">பெருக்கல் விதி</button>
+                            <button class="rule-btn p-2 rounded-lg font-bold" onclick="showExponentRule('quotient')">வகுத்தல் விதி</button>
+                            <button class="rule-btn p-2 rounded-lg font-bold" onclick="showExponentRule('power')">அடுக்கிற்கு அடுக்கு விதி</button>
+                            <button class="rule-btn p-2 rounded-lg font-bold" onclick="showExponentRule('zero')">பூஜ்ய அடுக்கு விதி</button>
                         </div>
                         <div id="exponent-display" class="mt-4 p-4 bg-white rounded-lg min-h-[300px]">
-                             <p>ஒரு விதியைத் தேர்ந்தெடுக்கவும்.</p>
+                             <p class="font-semibold">ஒரு விதியைத் தேர்ந்தெடுக்கவும்.</p>
                         </div>
                     </div>
                 </div>
@@ -421,9 +427,9 @@
             <!-- Tab 2: ஆசிரியர் செயல்பாடு -->
             <div class="tab-content hidden">
                 <div class="content-box">
-                    <h2 class="text-2xl font-bold text-blue-700 mb-4">ஆசிரியர் செயல்பாடு மற்றும் வலுப்படுத்துதல்</h2>
+                    <h2 class="text-2xl font-bold text-blue-800 mb-4">ஆசிரியர் செயல்பாடு மற்றும் வலுப்படுத்துதல்</h2>
                     <div class="mb-4">
-                        <p class="text-center text-gray-600 mb-2">கீழே உள்ள பட்டியலில் இருந்து ஒரு தலைப்பைத் தேர்ந்தெடுக்கவும்</p>
+                        <p class="text-center text-gray-700 font-semibold mb-2">கீழே உள்ள பட்டியலில் இருந்து ஒரு தலைப்பைத் தேர்ந்தெடுக்கவும்</p>
                         <select id="topic-selector" class="custom-select w-full text-lg">
                             <!-- Options will be generated by JS -->
                         </select>
@@ -437,26 +443,26 @@
             <!-- Tab 3: கல்விசார் செயல்பாடுகள் -->
             <div class="tab-content hidden">
                 <div class="content-box">
-                    <h2 class="text-2xl font-bold text-blue-700 mb-4">கல்விசார் செயல்பாடுகள்</h2>
+                    <h2 class="text-2xl font-bold text-blue-800 mb-4">கல்விசார் செயல்பாடுகள்</h2>
                     <div class="space-y-6">
                         <!-- Activity 1: வாழ்க்கை கணக்குகள் -->
                         <div class="simulation-container">
-                             <h3 class="text-xl font-semibold mb-2">1. வாழ்க்கை கணக்குகள்</h3>
+                             <h3 class="text-xl font-bold mb-2">1. வாழ்க்கை கணக்குகள்</h3>
                              <div id="life-problem-sim-area"></div>
                         </div>
                         <!-- Activity 2: வடிவியல் பயிற்சி -->
                         <div class="simulation-container">
-                             <h3 class="text-xl font-semibold mb-2">2. வடிவியல் பயிற்சி: செங்குத்து இருசமவெட்டி</h3>
+                             <h3 class="text-xl font-bold mb-2">2. வடிவியல் பயிற்சி: செங்குத்து இருசமவெட்டி</h3>
                              <div id="geometry-sim-area"></div>
                         </div>
                          <!-- Activity 3: வரைபட பயிற்சி -->
                         <div class="simulation-container">
-                             <h3 class="text-xl font-semibold mb-2">3. வரைபட பயிற்சி: புள்ளிகள் குறித்தல்</h3>
+                             <h3 class="text-xl font-bold mb-2">3. வரைபட பயிற்சி: புள்ளிகள் குறித்தல்</h3>
                              <div id="graphing-sim-area"></div>
                         </div>
                          <!-- Activity 4: மனக் கணக்கு -->
                         <div class="simulation-container">
-                             <h3 class="text-xl font-semibold mb-2">4. மனக் கணக்கு</h3>
+                             <h3 class="text-xl font-bold mb-2">4. மனக் கணக்கு</h3>
                              <div id="mental-math-sim-area"></div>
                         </div>
                     </div>
@@ -466,7 +472,7 @@
             <!-- Tab 4: சொற்களஞ்சியப் பெருக்கம் -->
             <div class="tab-content hidden">
                 <div class="content-box">
-                    <h2 class="text-2xl font-bold text-blue-700 mb-4">இயற்கணிதம் தொடர்பான சொற்கள்</h2>
+                    <h2 class="text-2xl font-bold text-blue-800 mb-4">இயற்கணிதம் தொடர்பான சொற்கள்</h2>
                     <div class="flex flex-col md:flex-row gap-4">
                         <div class="w-full md:w-1/3">
                             <div id="vocabulary-buttons" class="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -474,7 +480,7 @@
                             </div>
                         </div>
                         <div id="term-explanation" class="w-full md:w-2/3 p-4 bg-blue-50 rounded-lg flex items-center justify-center min-h-[300px]">
-                            <p>விளக்கத்தைக் காண ஒரு சொல்லைத் தேர்ந்தெடுக்கவும்.</p>
+                            <p class="font-semibold">விளக்கத்தைக் காண ஒரு சொல்லைத் தேர்ந்தெடுக்கவும்.</p>
                         </div>
                     </div>
                 </div>
@@ -1633,7 +1639,7 @@
                          feedbackEl.textContent = 'இந்த உருப்படி ஏற்கனவே இந்த பெட்டியில் வைக்கப்பட்டுள்ளது.';
                          feedbackEl.className = 'text-center font-bold h-6 mt-4 text-blue-600';
                     } else {
-                        feedbackEl.textContent = 'தவறான வகை. மீண்டும் முயற்சிக்கவும். �';
+                        feedbackEl.textContent = 'தவறான வகை. மீண்டும் முயற்சிக்கவும். 🤔';
                         feedbackEl.className = 'text-center font-bold h-6 mt-4 text-red-600';
                     }
                 });
@@ -2200,7 +2206,7 @@
                 result.textContent = 'சரியான விடை! 👍';
                 result.className = 'text-center mt-2 font-bold h-6 text-green-600';
             } else {
-                result.textContent = 'மீண்டும் முயற்சிக்கவும். 🤔';
+                result.textContent = 'மீண்டும் முயற்சிக்கவும். �';
                 result.className = 'text-center mt-2 font-bold h-6 text-red-600';
             }
         }
