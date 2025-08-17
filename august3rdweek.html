@@ -1,0 +1,1664 @@
+<!DOCTYPE html>
+<html lang="ta">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>கணித சிமுலேஷன்</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Tamil:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans Tamil', sans-serif;
+            touch-action: manipulation;
+        }
+        .tab-btn {
+            transition: all 0.3s ease;
+            border-bottom: 4px solid transparent;
+        }
+        .tab-btn.active {
+            border-bottom-color: #f59e0b;
+            color: #1e3a8a;
+            font-weight: bold;
+        }
+        .simulation-card {
+            background-color: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(10px);
+            border-radius: 1rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease;
+        }
+        .simulation-card:hover {
+            transform: translateY(-5px);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+        .balance-scale { 
+            display: flex; 
+            justify-content: center; 
+            align-items: flex-end; 
+            position: relative; 
+            height: 250px; 
+            margin: 80px auto 40px; /* Increased top and bottom margin significantly */
+        }
+        .balance-beam { width: 90%; max-width: 400px; height: 10px; background: #8B4513; border-radius: 5px; position: absolute; top: 50%; left: 50%; transform: translateX(-50%) translateY(-50%); transition: transform 0.5s ease-in-out; transform-origin: center; }
+        .fulcrum { width: 0; height: 0; border-left: 40px solid transparent; border-right: 40px solid transparent; border-bottom: 80px solid #8B4513; position: absolute; top: 50%; left: 50%; transform: translateX(-50%); }
+        .pan { 
+            width: 200px;
+            height: 220px;
+            position: absolute; 
+            bottom: 0; 
+            display: flex; 
+            flex-wrap: wrap; 
+            align-content: flex-start; 
+            justify-content: center; 
+            padding: 5px; 
+            background-color: #f3f4f6; 
+            border: 2px solid #d1d5db; 
+            border-radius: 5px; 
+            transition: all 0.5s ease; 
+        }
+        .pan-left { left: -20px; }
+        .pan-right { right: -20px; }
+        .weight { width: 22px; height: 22px; border-radius: 50%; margin: 2px; display: flex; justify-content: center; align-items: center; font-size: 14px; font-weight: bold; color: white; transition: all 0.5s ease; }
+        .x-weight { background-color: #ef4444; }
+        .unit-weight { background-color: #3b82f6; }
+        .formula-step-btn {
+            border: 2px solid transparent;
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .formula-step-btn:disabled {
+             background-color: #f3f4f6;
+        }
+        .formula-step-btn.unlocked {
+            opacity: 1;
+            cursor: pointer;
+        }
+        .formula-step-btn.active {
+            border-color: #22c55e;
+            background-color: #dcfce7;
+        }
+        #formula-canvas {
+            background-color: #f8fafc;
+            border-radius: 0.5rem;
+            border: 1px solid #e2e8f0;
+        }
+        .clickable-emoji {
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+        .clickable-emoji:hover {
+            transform: scale(1.2);
+        }
+        .algebra-tile {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            border: 1px solid #9ca3af;
+            transition: background-color 0.5s;
+            font-size: 1.5rem; /* Increased font size */
+        }
+        .algebra-label {
+             display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            font-size: 1.5rem; /* Increased font size */
+            color: #1e3a8a;
+        }
+        #graph-highlight {
+            position: absolute;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 0, 0.5);
+            border: 2px solid yellow;
+            pointer-events: none;
+            transition: all 0.3s;
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 0.5; }
+            50% { transform: scale(1.5); opacity: 0.8; }
+            100% { transform: scale(1); opacity: 0.5; }
+        }
+        .geo-step-btn {
+            border: 2px solid transparent;
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        .geo-step-btn.active {
+            opacity: 1;
+            cursor: pointer;
+            border-color: #2563eb;
+            background-color: #dbeafe;
+        }
+        .vocab-btn.selected {
+            background-color: #dbeafe;
+            font-weight: bold;
+            color: #1e3a8a;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-100 to-purple-200 min-h-screen">
+
+    <div class="container mx-auto p-2 sm:p-4">
+        <header class="text-center p-4 bg-white/70 backdrop-blur-sm rounded-xl shadow-lg mb-4">
+            <h1 class="text-xl sm:text-2xl md:text-3xl font-bold text-blue-900">கன்ய சம்பூர்ணா திட்டம்/கன்யா பெண்கள் கல்வி திட்டம்</h1>
+            <p class="text-sm sm:text-base text-gray-700 mt-1">இத்திட்டம் TITAN மற்றும் KALIKE நிறுவனங்களின் பங்களிப்புடன் செயல்படுத்தப்படுகிறது</p>
+            <h2 class="text-lg sm:text-xl md:text-2xl font-bold text-orange-600 mt-2">நடுவுல கொஞ்சம் கற்றலைத் தேடி</h2>
+            <p class="text-2xl sm:text-3xl font-bold text-gray-800 mt-2">கணிதம்</p>
+            <p class="text-md sm:text-lg text-gray-600 mt-1">ஆகஸ்ட் - 3வது வாரம்</p>
+        </header>
+
+        <div class="flex flex-wrap justify-center border-b-2 border-gray-300 mb-4 bg-white/50 rounded-lg p-1">
+            <button class="tab-btn flex-grow text-sm sm:text-lg p-2 sm:p-4 text-gray-600 active" onclick="openTab(event, 'tab1')">வாய்மொழி பயிற்சி (15நி)</button>
+            <button class="tab-btn flex-grow text-sm sm:text-lg p-2 sm:p-4 text-gray-600" onclick="openTab(event, 'tab2')">ஆசிரியர் செயல்பாடு (45நி)</button>
+            <button class="tab-btn flex-grow text-sm sm:text-lg p-2 sm:p-4 text-gray-600" onclick="openTab(event, 'tab3')">கல்விசார் செயல்பாடுகள் (15நி)</button>
+            <button class="tab-btn flex-grow text-sm sm:text-lg p-2 sm:p-4 text-gray-600" onclick="openTab(event, 'tab4')">சொற்களஞ்சியப் பெருக்கம் (10நி)</button>
+        </div>
+
+        <main id="tab-content">
+            <div id="tab1" class="tab-panel p-4">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="simulation-card p-4">
+                        <h3 class="text-xl font-bold text-blue-800 mb-4 text-center">பெருக்கல் வாய்ப்பாடு பயிற்சி</h3>
+                        <p class="text-center text-gray-600 mb-4">ஒரு எண்ணைத் தேர்ந்தெடுத்து, படங்களை எண்ணி பதிலளித்து வாய்ப்பாட்டை கற்கவும்.</p>
+                        <div id="table-buttons-container" class="flex flex-wrap justify-center gap-2 mb-4"></div>
+                        <div class="flex flex-col md:flex-row gap-4 mt-4">
+                            <div id="completed-table-area" class="w-full md:w-1/3 bg-white p-2 rounded-lg shadow-inner min-h-[300px]"></div>
+                            <div id="table-quiz-area" class="w-full md:w-2/3 flex flex-col items-center justify-center min-h-[300px] bg-blue-50 rounded-lg p-4">
+                               <p>பயிற்சியைத் தொடங்க ஒரு எண்ணைத் தேர்ந்தெடுக்கவும்.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="simulation-card p-4">
+                        <h3 class="text-xl font-bold text-blue-800 mb-4 text-center">இயற்கணித சூத்திர விளக்கம்</h3>
+                        <div class="flex justify-center mb-4">
+                            <select id="formula-selector" class="p-2 rounded-md border-2 border-blue-300 font-bold" onchange="setupFormulaSteps()">
+                                <option value="a_plus_b">(a + b)² = a² + 2ab + b²</option>
+                                <option value="a_minus_b">(a - b)² = a² - 2ab + b²</option>
+                            </select>
+                        </div>
+                        <div class="flex flex-col-reverse md:flex-col gap-4">
+                             <div class="flex-grow flex justify-center items-center p-2 rounded-lg min-h-[300px] md:min-h-[350px]">
+                                <canvas id="formula-canvas" width="350" height="350"></canvas>
+                            </div>
+                            <div id="formula-steps" class="flex md:flex-col flex-wrap justify-center gap-2"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="tab2" class="tab-panel p-4 hidden">
+                 <div class="grid grid-cols-1 lg:grid-cols-1 gap-8">
+                    <!-- Simulation 1: Ratios Explanation -->
+                    <div class="simulation-card p-4">
+                        <h3 class="text-xl font-bold text-blue-800 mb-4 text-center">விகிதம் மற்றும் விகித சமம் (விளக்கம்)</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+                            <div>
+                                <label for="ratio-exp-1a" class="font-semibold">விகிதம் 1: <span class="text-2xl">🍎</span> <span id="ratio-exp-1a-val">3</span></label>
+                                <input type="range" id="ratio-exp-1a" min="1" max="10" value="3" class="w-full" oninput="updateRatioExplanationVisuals()">
+                                <label for="ratio-exp-1b" class="font-semibold">விகிதம் 1: <span class="text-2xl">🥭</span> <span id="ratio-exp-1b-val">4</span></label>
+                                <input type="range" id="ratio-exp-1b" min="1" max="10" value="4" class="w-full" oninput="updateRatioExplanationVisuals()">
+                            </div>
+                            <div>
+                                <label for="ratio-exp-2a" class="font-semibold">விகிதம் 2: <span class="text-2xl">🍎</span> <span id="ratio-exp-2a-val">2</span></label>
+                                <input type="range" id="ratio-exp-2a" min="1" max="10" value="2" class="w-full" oninput="updateRatioExplanationVisuals()">
+                                <label for="ratio-exp-2b" class="font-semibold">விகிதம் 2: <span class="text-2xl">🥭</span> <span id="ratio-exp-2b-val">5</span></label>
+                                <input type="range" id="ratio-exp-2b" min="1" max="10" value="5" class="w-full" oninput="updateRatioExplanationVisuals()">
+                            </div>
+                        </div>
+                        <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+                            <div class="text-center">
+                                <p class="font-bold text-lg" id="ratio-exp-1-text"></p>
+                                <div id="ratio-exp-1-viz" class="p-2 bg-gray-100 rounded-lg min-h-[120px]"></div>
+                            </div>
+                             <div class="text-center">
+                                <p class="font-bold text-lg" id="ratio-exp-2-text"></p>
+                                <div id="ratio-exp-2-viz" class="p-2 bg-gray-100 rounded-lg min-h-[120px]"></div>
+                            </div>
+                        </div>
+                         <div id="ratio-exp-comparison-result" class="text-center font-bold text-2xl mt-4 p-2 bg-yellow-100 rounded-lg"></div>
+                    </div>
+
+                    <!-- Simulation 2: Ratios and Proportions Question Bank -->
+                    <div class="simulation-card p-4">
+                        <h3 class="text-xl font-bold text-blue-800 mb-4 text-center">விகிதம் மற்றும் விகித சமம் (பயிற்சி)</h3>
+                        <div class="bg-blue-100 p-4 rounded-lg">
+                            <p id="ratio-question-text" class="text-lg font-semibold text-center h-24"></p>
+                        </div>
+                        <div id="ratio-simulation-area" class="my-4 p-2 bg-gray-100 rounded-lg min-h-[200px] flex justify-center items-center"></div>
+                        <div id="ratio-answer-area" class="my-4 flex justify-center items-center gap-4"></div>
+                        <div id="ratio-feedback" class="text-center font-bold text-xl h-8"></div>
+                        <div class="flex justify-between items-center mt-4">
+                            <button id="ratio-prev-btn" onclick="navigateRatioQuestion(-1)" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">முந்தையது</button>
+                            <span id="ratio-question-counter" class="font-bold"></span>
+                            <button id="ratio-next-btn" onclick="navigateRatioQuestion(1)" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">அடுத்தது</button>
+                        </div>
+                        <div class="flex justify-center gap-4 mt-4">
+                             <button onclick="checkRatioAnswer()" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-6 rounded-lg">சரிபார்</button>
+                             <button onclick="resetRatioSimulation()" class="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-6 rounded-lg">மீட்டமை</button>
+                        </div>
+                    </div>
+
+                    <!-- Simulation 3: Linear Equations -->
+                    <div class="simulation-card p-4">
+                        <h3 class="text-xl font-bold text-blue-800 mb-4 text-center">எளிய நேரிய சமன்பாடுகளை தீர்த்தல்</h3>
+                        
+                        <div id="eq-nav-controls" class="flex justify-between items-center mb-4">
+                            <button id="eq-prev-btn" onclick="navigateEquation(-1)" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">முந்தையது</button>
+                            <span id="eq-question-counter" class="font-bold text-lg"></span>
+                            <button id="eq-next-btn" onclick="navigateEquation(1)" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">அடுத்தது</button>
+                        </div>
+
+                        <div id="eq-problem" class="text-center text-3xl font-bold my-4 p-3 bg-yellow-100 rounded-lg"></div>
+                        <div class="balance-scale hidden">
+                            <div class="fulcrum"></div>
+                            <div id="eq-balance-beam" class="balance-beam">
+                                <div class="pan pan-left" id="eq-pan-left"></div>
+                                <div class="pan pan-right" id="eq-pan-right"></div>
+                            </div>
+                        </div>
+                        <div id="eq-steps-log" class="space-y-2 min-h-[120px] mt-4 text-xl font-bold"></div>
+                        <div class="flex justify-center items-center gap-4 mt-4">
+                            <button id="eq-solve-step-btn" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg text-lg" onclick="solveEquationStepByStep()">தீர்வைத் தொடங்கு</button>
+                            <button id="eq-reset-btn" class="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-3 px-6 rounded-lg text-lg" onclick="resetCurrentEquation()">மீட்டமை</button>
+                        </div>
+                        <p id="eq-feedback" class="text-center font-bold mt-2 text-2xl h-10"></p>
+                    </div>
+
+                    <!-- Simulation 4: Algebraic Multiplication -->
+                    <div class="simulation-card p-4">
+                        <h3 class="text-xl font-bold text-blue-800 mb-4 text-center">இயற்கணித கோவைகளின் பெருக்கல்</h3>
+                        <div id="algebra-nav-controls" class="flex justify-between items-center mb-4">
+                            <button id="algebra-prev-btn" onclick="navigateAlgebraProblem(-1)" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">முந்தையது</button>
+                            <span id="algebra-question-counter" class="font-bold text-lg"></span>
+                            <button id="algebra-next-btn-nav" onclick="navigateAlgebraProblem(1)" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">அடுத்தது</button>
+                        </div>
+                        <div id="algebra-problem" class="text-center text-2xl font-bold my-4 p-2 bg-yellow-100 rounded-lg"></div>
+                        <div class="flex justify-center items-center">
+                             <div id="algebra-container" class="grid" style="width: 400px; height: 400px;"></div>
+                        </div>
+                        <div id="algebra-explanation" class="text-center font-semibold text-lg mt-4 h-12"></div>
+                        <div id="algebra-answer" class="text-center font-bold text-xl mt-2 h-8"></div>
+                         <div class="text-center mt-4">
+                            <button id="algebra-step-btn" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" onclick="revealAlgebraStep()">தொடங்கு</button>
+                        </div>
+                    </div>
+                 </div>
+            </div>
+
+            <div id="tab3" class="tab-panel p-4 hidden">
+                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="simulation-card p-4">
+                        <h3 class="text-xl font-bold text-blue-800 mb-4 text-center">வாழ்க்கை கணக்குகள் (இலாபம்/நட்டம்)</h3>
+                        <div id="life-sums-nav-controls" class="flex justify-between items-center mb-4">
+                            <button id="life-sums-prev-btn" onclick="navigateLifeSumsProblem(-1)" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">முந்தையது</button>
+                            <span id="life-sums-question-counter" class="font-bold text-lg"></span>
+                            <button id="life-sums-next-btn" onclick="navigateLifeSumsProblem(1)" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">அடுத்தது</button>
+                        </div>
+                        <div id="life-sums-problem" class="p-4 bg-yellow-100 rounded-lg text-lg font-semibold"></div>
+                        <div class="flex flex-col md:flex-row gap-4 mt-4 items-center">
+                            <canvas id="profit-loss-canvas" width="250" height="250"></canvas>
+                            <div id="profit-loss-details" class="flex-grow text-lg font-semibold"></div>
+                        </div>
+                        <div class="mt-4 space-y-2">
+                            <div>
+                                <label for="life-sums-answer" class="font-semibold">உங்கள் விடை (%):</label>
+                                <input type="number" id="life-sums-answer" class="w-full p-2 border-2 rounded">
+                            </div>
+                            <div class="flex gap-4">
+                                <button onclick="checkLifeSumsAnswer()" class="w-full bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">சரிபார்</button>
+                                <button onclick="resetLifeSumsProblem()" class="w-full bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded">மீட்டமை</button>
+                            </div>
+                        </div>
+                        <div id="life-sums-feedback" class="mt-2 text-center font-bold text-xl h-8"></div>
+                    </div>
+                    <div class="simulation-card p-4">
+                        <h3 class="text-xl font-bold text-blue-800 mb-4 text-center">வரைபட பயிற்சி (நேர்க்கோடு வரைதல்)</h3>
+                        <div id="graph-nav-controls" class="flex justify-between items-center mb-4">
+                            <button id="graph-prev-btn" onclick="navigateGraphProblem(-1)" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">முந்தையது</button>
+                            <span id="graph-question-counter" class="font-bold text-lg"></span>
+                            <button id="graph-next-btn" onclick="navigateGraphProblem(1)" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">அடுத்தது</button>
+                        </div>
+                        <div id="graph-equation" class="text-center text-2xl font-bold my-2 p-2 bg-indigo-100 rounded-lg"></div>
+                        <div class="relative mx-auto" style="width: 400px; height: 400px;">
+                            <canvas id="graph-canvas" class="bg-white rounded-lg border-2 border-gray-300 cursor-crosshair" width="400" height="400"></canvas>
+                            <div id="graph-highlight" class="hidden"></div>
+                            <div id="graph-coords" class="absolute bottom-2 right-2 bg-black/50 text-white p-2 rounded-md font-bold text-xl"></div>
+                        </div>
+                        <div class="mt-4">
+                             <table class="w-full text-center border-collapse">
+                                <thead>
+                                    <tr class="bg-gray-200">
+                                        <th class="p-2 border font-bold text-lg">x</th>
+                                        <th class="p-2 border font-bold text-lg">y = mx + c</th>
+                                        <th class="p-2 border font-bold text-lg">y</th>
+                                        <th class="p-2 border font-bold text-lg">(x, y)</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="graph-table-body">
+                                </tbody>
+                            </table>
+                            <p id="graph-instruction" class="text-center font-semibold mt-2 text-blue-700 h-6"></p>
+                        </div>
+                        <div class="flex justify-center gap-4 mt-4">
+                             <button id="graph-find-point-btn" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" onclick="guideGraphPoint()">புள்ளியைக் கண்டுபிடி</button>
+                            <button class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded" onclick="displayGraphProblem(currentGraphProblemIndex)">மீட்டமை</button>
+                        </div>
+                    </div>
+                    <div class="simulation-card p-4">
+                        <h3 class="text-xl font-bold text-blue-800 mb-4 text-center">கோண இரு சமவெட்டி வரைதல்</h3>
+                        <canvas id="geometry-canvas" class="w-full bg-white rounded-lg border-2 border-gray-300" width="500" height="400"></canvas>
+                        <p id="geo-instruction" class="text-center font-semibold mt-2 text-blue-700 h-6"></p>
+                        <div id="geo-steps-container" class="mt-4 space-y-2"></div>
+                         <div class="flex justify-center mt-4">
+                            <button class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded" onclick="setupGeoSimulation()">மீட்டமை</button>
+                        </div>
+                    </div>
+                    <div class="simulation-card p-4">
+                        <h3 class="text-xl font-bold text-blue-800 mb-4 text-center">மனக் கணக்கு</h3>
+                        <div id="mental-math-nav-controls" class="flex justify-between items-center mb-4">
+                            <button id="mental-math-prev-btn" onclick="navigateMentalMathProblem(-1)" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">முந்தையது</button>
+                            <span id="mental-math-question-counter" class="font-bold text-lg"></span>
+                            <button id="mental-math-next-btn" onclick="navigateMentalMathProblem(1)" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">அடுத்தது</button>
+                        </div>
+                        <div id="mental-math-quiz" class="text-center p-4 bg-purple-50 rounded-lg min-h-[300px] flex flex-col justify-center"></div>
+                         <div class="flex justify-center mt-4">
+                            <button class="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded" onclick="resetMentalMathProblem()">மீட்டமை</button>
+                        </div>
+                    </div>
+                 </div>
+            </div>
+
+            <div id="tab4" class="tab-panel p-4 hidden">
+                <div class="flex flex-col md:flex-row gap-6">
+                    <div class="md:w-1/3"><h3 class="text-xl font-bold text-blue-800 mb-4">சொற்கள்</h3><div id="vocab-list" class="flex flex-col space-y-2"></div></div>
+                    <div class="md:w-2/3 simulation-card p-4"><div id="vocab-display" class="flex flex-col items-center justify-center min-h-[300px]"><p class="text-gray-500">விளக்கத்தைக் காண ஒரு சொல்லைத் தேர்ந்தெடுக்கவும்.</p></div></div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+<script>
+    // --- Tab Switching Logic ---
+    function openTab(evt, tabName) {
+        const tabPanels = document.getElementsByClassName("tab-panel");
+        for (let i = 0; i < tabPanels.length; i++) { tabPanels[i].classList.add("hidden"); }
+        const tabBtns = document.getElementsByClassName("tab-btn");
+        for (let i = 0; i < tabBtns.length; i++) { tabBtns[i].classList.remove("active"); }
+        document.getElementById(tabName).classList.remove("hidden");
+        evt.currentTarget.classList.add("active");
+    }
+
+    // --- Tab 1: வாய்மொழி பயிற்சி ---
+
+    // Interactive Multiplication Table Quiz
+    let currentMultiplier = 1;
+    let tableNumber = 0;
+    let clickCount = 0;
+
+    function startTableQuiz(num) {
+        tableNumber = num;
+        currentMultiplier = 1;
+        document.getElementById('completed-table-area').innerHTML = `<h4 class="text-lg font-bold text-center text-blue-800 mb-2">${num} ஆம் வாய்ப்பாடு</h4>`;
+        displayTableQuestion();
+    }
+
+    function displayTableQuestion() {
+        const quizArea = document.getElementById('table-quiz-area');
+        quizArea.innerHTML = '';
+        clickCount = 0;
+
+        if (currentMultiplier > 10) {
+            quizArea.innerHTML = `<div class="text-center"><h4 class="text-2xl font-bold text-green-600 mb-2">வாழ்த்துக்கள்!</h4><p class="text-lg">${tableNumber} ஆம் வாய்ப்பாட்டை வெற்றிகரமாக முடித்துவிட்டீர்கள்.</p><button class="mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" onclick="startTableQuiz(${tableNumber})">மீண்டும் முயற்சிக்க</button></div>`;
+            return;
+        }
+
+        const questionText = `${tableNumber} x ${currentMultiplier} = ?`;
+        const question = document.createElement('h4');
+        question.className = 'text-2xl font-bold mb-2';
+        question.textContent = questionText;
+
+        const counterDisplay = document.createElement('div');
+        counterDisplay.id = 'counter-display';
+        counterDisplay.className = 'text-2xl font-bold text-orange-500 mb-2 h-8';
+        
+        const visual = document.createElement('div');
+        visual.id = 'visual-container';
+        visual.className = 'flex flex-col items-center gap-1 mb-4 p-2 bg-white rounded-lg';
+        const itemEmoji = ['🍎', '⚽️', '⭐', '🚗', '🎈', '📦', '📚', '🍌', '🍪', '💡'][tableNumber - 1];
+        
+        for (let i = 0; i < currentMultiplier; i++) {
+            const row = document.createElement('div');
+            row.className = 'flex justify-center gap-1';
+            for(let j = 0; j < tableNumber; j++) {
+                const item = document.createElement('span');
+                item.textContent = itemEmoji;
+                item.className = 'text-2xl clickable-emoji';
+                item.onclick = () => incrementCount(item);
+                row.appendChild(item);
+            }
+            visual.appendChild(row);
+        }
+
+        const correctAnswer = currentMultiplier * tableNumber;
+        const options = generateOptions(correctAnswer);
+        const optionsContainer = document.createElement('div');
+        optionsContainer.className = 'flex flex-wrap justify-center gap-3';
+        options.forEach(opt => {
+            const btn = document.createElement('button');
+            btn.className = 'bg-white hover:bg-blue-200 text-blue-800 font-bold py-3 px-5 rounded-lg shadow-md text-xl';
+            btn.textContent = opt;
+            btn.onclick = () => checkTableAnswer(opt, correctAnswer, btn);
+            optionsContainer.appendChild(btn);
+        });
+        
+        const feedback = document.createElement('p');
+        feedback.id = 'table-feedback';
+        feedback.className = 'mt-4 font-bold text-lg h-6';
+
+        quizArea.appendChild(question);
+        quizArea.appendChild(counterDisplay);
+        quizArea.appendChild(visual);
+        quizArea.appendChild(optionsContainer);
+        quizArea.appendChild(feedback);
+    }
+
+    function incrementCount(item) {
+        if (!item.classList.contains('counted')) {
+            clickCount++;
+            document.getElementById('counter-display').textContent = `எண்ணிக்கை: ${clickCount}`;
+            item.classList.add('counted');
+            item.style.opacity = '0.3';
+            item.onclick = null;
+        }
+    }
+
+    function generateOptions(correctAnswer) {
+        let options = [correctAnswer];
+        while (options.length < 3) {
+            let wrongOption = correctAnswer + Math.floor(Math.random() * 5) - 2;
+            if (wrongOption <= 0 || options.includes(wrongOption)) {
+                wrongOption = Math.floor(Math.random() * 10) + 1 + correctAnswer;
+            }
+            if (!options.includes(wrongOption)) { options.push(wrongOption); }
+        }
+        return options.sort(() => Math.random() - 0.5);
+    }
+
+    function checkTableAnswer(selected, correct, btn) {
+        const feedback = document.getElementById('table-feedback');
+        const buttons = btn.parentElement.children;
+        for(let button of buttons) { button.disabled = true; }
+        document.getElementById('visual-container').style.pointerEvents = 'none';
+
+        if (selected === correct) {
+            feedback.textContent = 'சரியான விடை! 🎉';
+            feedback.className = 'mt-4 font-bold text-lg h-6 text-green-600';
+            btn.classList.add('bg-green-300');
+            
+            const completedArea = document.getElementById('completed-table-area');
+            const entry = document.createElement('p');
+            entry.className = 'text-md font-semibold p-1 bg-green-100 rounded text-center fade-in';
+            entry.textContent = `${tableNumber} x ${currentMultiplier} = ${correct}`;
+            completedArea.appendChild(entry);
+
+            currentMultiplier++;
+            setTimeout(displayTableQuestion, 1500);
+        } else {
+            feedback.textContent = 'மீண்டும் முயற்சிக்கவும்.';
+            feedback.className = 'mt-4 font-bold text-lg h-6 text-red-600';
+            btn.classList.add('bg-red-300');
+             setTimeout(() => {
+                 for(let button of buttons) { button.disabled = false; }
+                 btn.classList.remove('bg-red-300');
+                 feedback.textContent = '';
+                 document.getElementById('visual-container').style.pointerEvents = 'auto';
+                }, 1500);
+        }
+    }
+
+    // Algebraic Formula Visualization
+    let unlockedFormulaStep = 1;
+    const formulaSteps_a_plus_b = [ { title: 'படி 1', desc: '(a+b) பக்கமுள்ள சதுரம்.' }, { title: 'படி 2', desc: 'பக்கங்களை a, b என பிரிக்கவும்.' }, { title: 'படி 3', desc: 'a² பகுதியைக் காண்க.' }, { title: 'படி 4', desc: 'இரண்டு ab பகுதிகளைக் காண்க.' }, { title: 'படி 5', desc: 'b² பகுதியைக் காண்க.' }, { title: 'படி 6', desc: 'மொத்தம்: a² + 2ab + b².' } ];
+    const formulaSteps_a_minus_b = [ { title: 'படி 1', desc: 'a பக்கமுள்ள சதுரம் (a²).' }, { title: 'படி 2', desc: 'பக்கங்களில் b அளவைக் குறிக்கவும்.' }, { title: 'படி 3', desc: 'செவ்வகம் ab ஐ கழிக்கவும்.' }, { title: 'படி 4', desc: 'மற்றொரு ab ஐ கழிக்கவும்.' }, { title: 'படி 5', desc: 'b² இருமுறை கழிபட்டதால் சேர்க்கவும்.' }, { title: 'படி 6', desc: 'மீதம்: (a-b)² = a² - 2ab + b².' } ];
+    
+    function setupFormulaSteps() {
+        unlockedFormulaStep = 1;
+        const selector = document.getElementById('formula-selector');
+        const steps = selector.value === 'a_plus_b' ? formulaSteps_a_plus_b : formulaSteps_a_minus_b;
+        const stepsContainer = document.getElementById('formula-steps');
+        stepsContainer.innerHTML = '';
+        steps.forEach((step, index) => {
+            const btn = document.createElement('button');
+            btn.className = 'formula-step-btn p-3 rounded-lg bg-white shadow text-left w-full text-lg';
+            btn.innerHTML = `<span class="font-bold">${step.title}:</span> ${step.desc}`;
+            btn.onclick = () => selectFormulaStep(index);
+            btn.disabled = true;
+            stepsContainer.appendChild(btn);
+        });
+        
+        const firstButton = stepsContainer.children[0];
+        if(firstButton) {
+            firstButton.disabled = false;
+            firstButton.classList.add('unlocked');
+        }
+        
+        selectFormulaStep(0);
+    }
+
+    function selectFormulaStep(selectedIndex) {
+        const stepNumber = selectedIndex + 1;
+        if (stepNumber > unlockedFormulaStep) return;
+
+        updateFormulaCanvas(stepNumber);
+        
+        const buttons = document.querySelectorAll('.formula-step-btn');
+        buttons.forEach((btn, index) => {
+            btn.classList.remove('active');
+            if (index < selectedIndex) {
+                 btn.classList.add('active');
+            }
+        });
+        buttons[selectedIndex].classList.add('active');
+
+
+        if (stepNumber === unlockedFormulaStep && unlockedFormulaStep < buttons.length) {
+            unlockedFormulaStep++;
+            const nextButton = buttons[unlockedFormulaStep - 1];
+            nextButton.disabled = false;
+            nextButton.classList.add('unlocked');
+        }
+    }
+
+    function updateFormulaCanvas(step) {
+        const selector = document.getElementById('formula-selector');
+        if (selector.value === 'a_plus_b') {
+            showFormula_a_plus_b(step);
+        } else {
+            showFormula_a_minus_b(step);
+        }
+    }
+
+    function showFormula_a_plus_b(step) {
+        const canvas = document.getElementById('formula-canvas'); const ctx = canvas.getContext('2d');
+        const w = canvas.width, h = canvas.height, padding = 50, size = w - 2 * padding;
+        const a = size * 0.6, b = size * 0.4;
+        ctx.clearRect(0, 0, w, h);
+        const drawText = (text, x, y, size = 24, color = '#334155') => { ctx.fillStyle = color; ctx.font = `bold ${size}px 'Noto Sans Tamil'`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(text, x, y); };
+        
+        if (step >= 2) { drawText('a', padding + a / 2, padding - 20, 20); drawText('b', padding + a + b / 2, padding - 20, 20); drawText('a', padding - 20, padding + a / 2, 20); drawText('b', padding - 20, padding + a + b / 2, 20); }
+        if (step === 1) { ctx.strokeStyle = '#9ca3af'; ctx.lineWidth = 2; ctx.strokeRect(padding, padding, size, size); drawText('(a+b)²', w / 2, h / 2); }
+        if (step === 2) { ctx.strokeStyle = '#9ca3af'; ctx.lineWidth = 2; ctx.strokeRect(padding, padding, size, size); ctx.setLineDash([5, 5]); ctx.beginPath(); ctx.moveTo(padding + a, padding); ctx.lineTo(padding + a, padding + size); ctx.moveTo(padding, padding + a); ctx.lineTo(padding + size, padding + a); ctx.stroke(); ctx.setLineDash([]); }
+        if (step >= 3) { ctx.fillStyle = '#e0f2fe'; ctx.fillRect(padding, padding, a, a); drawText('a²', padding + a / 2, padding + a / 2); }
+        if (step >= 4) { 
+            ctx.fillStyle = '#fecdd3'; // Light Pink for 'ab' sections
+            ctx.fillRect(padding + a, padding, b, a); 
+            drawText('ab', padding + a + b / 2, padding + a / 2); 
+            ctx.fillRect(padding, padding + a, a, b); 
+            drawText('ab', padding + a / 2, padding + a + b / 2); 
+        }
+        if (step >= 5) { ctx.fillStyle = '#d1fae5'; ctx.fillRect(padding + a, padding + a, b, b); drawText('b²', padding + a + b / 2, padding + a + b / 2); }
+        if (step === 6) { ctx.fillStyle = 'rgba(51, 65, 85, 0.7)'; ctx.fillRect(padding, padding, size, size); drawText('a² + 2ab + b²', w / 2, h / 2, 24, 'white'); }
+    }
+
+    function showFormula_a_minus_b(step) {
+        const canvas = document.getElementById('formula-canvas'); const ctx = canvas.getContext('2d');
+        const w = canvas.width, h = canvas.height, padding = 50, size = w - 2 * padding;
+        const a = size, b = size * 0.4;
+        ctx.clearRect(0, 0, w, h);
+        const drawText = (text, x, y, size = 24, color = '#334155') => { ctx.fillStyle = color; ctx.font = `bold ${size}px 'Noto Sans Tamil'`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(text, x, y); };
+        
+        ctx.fillStyle = '#e0f2fe'; ctx.fillRect(padding, padding, a, a);
+        drawText('a', padding + a / 2, padding - 20, 20); drawText('a', padding - 20, padding + a / 2, 20);
+
+        if (step >= 2) {
+            drawText('b', padding + a - b / 2, padding - 20, 20); drawText('b', padding - 20, padding + a - b / 2, 20);
+            ctx.strokeStyle = '#9ca3af'; ctx.setLineDash([5, 5]);
+            ctx.beginPath(); ctx.moveTo(padding + a - b, padding); ctx.lineTo(padding + a - b, padding + a);
+            ctx.moveTo(padding, padding + a - b); ctx.lineTo(padding + a, padding + a - b); ctx.stroke();
+            ctx.setLineDash([]);
+        }
+        if (step === 1) { drawText('a²', w / 2, h / 2); }
+        if (step >= 3) { ctx.fillStyle = 'rgba(254, 226, 226, 0.8)'; ctx.fillRect(padding + a - b, padding, b, a); drawText('-ab', padding + a - b/2, padding + a/2); }
+        if (step >= 4) { ctx.fillStyle = 'rgba(254, 226, 226, 0.8)'; ctx.fillRect(padding, padding + a - b, a - b, b); drawText('-ab', padding + (a-b)/2, padding + a - b/2); }
+        if (step >= 5) { ctx.fillStyle = '#d1fae5'; ctx.fillRect(padding + a - b, padding + a - b, b, b); drawText('+b²', padding + a - b/2, padding + a - b/2); }
+        if (step === 6) { ctx.strokeStyle = '#f59e0b'; ctx.lineWidth=4; ctx.strokeRect(padding, padding, a - b, a - b); drawText('(a-b)²', padding+(a-b)/2, padding+(a-b)/2); }
+    }
+
+    // --- Tab 2: ஆசிரியர் செயல்பாடு ---
+    
+    // Simulation 1: Ratio Explanation
+    function updateRatioExplanationVisuals() {
+        const r1a = parseInt(document.getElementById('ratio-exp-1a').value);
+        const r1b = parseInt(document.getElementById('ratio-exp-1b').value);
+        const r2a = parseInt(document.getElementById('ratio-exp-2a').value);
+        const r2b = parseInt(document.getElementById('ratio-exp-2b').value);
+
+        document.getElementById('ratio-exp-1a-val').textContent = r1a;
+        document.getElementById('ratio-exp-1b-val').textContent = r1b;
+        document.getElementById('ratio-exp-2a-val').textContent = r2a;
+        document.getElementById('ratio-exp-2b-val').textContent = r2b;
+
+        document.getElementById('ratio-exp-1-text').textContent = `விகிதம் 1 = ${r1a} : ${r1b}`;
+        document.getElementById('ratio-exp-2-text').textContent = `விகிதம் 2 = ${r2a} : ${r2b}`;
+
+        const viz1 = document.getElementById('ratio-exp-1-viz');
+        viz1.innerHTML = `<div class="flex justify-center items-center flex-wrap text-3xl">${'🍎'.repeat(r1a)}</div><div class="flex justify-center items-center flex-wrap text-3xl">${'🥭'.repeat(r1b)}</div>`;
+        const viz2 = document.getElementById('ratio-exp-2-viz');
+        viz2.innerHTML = `<div class="flex justify-center items-center flex-wrap text-3xl">${'🍎'.repeat(r2a)}</div><div class="flex justify-center items-center flex-wrap text-3xl">${'🥭'.repeat(r2b)}</div>`;
+
+        const val1 = r1a / r1b;
+        const val2 = r2a / r2b;
+        const resultDiv = document.getElementById('ratio-exp-comparison-result');
+        if (val1 > val2) {
+            resultDiv.textContent = `விகிதம் 1 > விகிதம் 2`;
+        } else if (val2 > val1) {
+            resultDiv.textContent = `விகிதம் 2 > விகிதம் 1`;
+        } else {
+            resultDiv.textContent = `விகிதம் 1 = விகிதம் 2 (விகித சமம்)`;
+        }
+    }
+
+    // Simulation 2: Ratio and Proportion Questions
+    let currentRatioQuestionIndex = 0;
+    const ratioQuestions = [
+        { q: "ஒரு கூையில் 4 ஆப்பிள்கள் மற்றும் 6 மாம்பழங்கள் உள்ளன. ஆப்பிள்களுக்கும் மாம்பழங்களுக்கும் உள்ள விகிதம் என்ன?", type: 'simple_ratio', params: {a: 4, b: 6, itemA: '🍎', itemB: '🥭'}, ans: ['4:6', '2:3'] },
+        { q: "ஒரு வகுப்பில் 15 சிறுவர்களும் 10 சிறுமிகளும் உள்ளனர். சிறுமிகளுக்கும் சிறுவர்களுக்கும் உள்ள விகிதம் என்ன?", type: 'simple_ratio', params: {a: 10, b: 15, itemA: '👧', itemB: '👦'}, ans: ['10:15', '2:3'] },
+        { q: "2 பேனாக்களின் விலை ரூ. 20 என்றால், 5 பேனாக்களின் விலை என்ன?", type: 'proportion', params: {a1: 2, b1: 20, a2: 5, itemA: '🖊️', itemB: '🪙'}, ans: ['50'] },
+        { q: "ஒரு மகிழுந்து 3 மணி நேரத்தில் 180 கி.மீ தூரம் பயணிக்கிறது. அதே வேகத்தில் 5 மணி நேரத்தில் எவ்வளவு தூரம் பயணிக்கும்?", type: 'proportion', params: {a1: 3, b1: 180, a2: 5, itemA: '🕒', itemB: '↔️'}, ans: ['300'] },
+        { q: "ரூ. 50-ஐ ராமுவிற்கும் சோமுவிற்கும் 2:3 என்ற விகிதத்தில் பிரித்தால், சோமுவிற்கு கிடைக்கும் தொகை எவ்வளவு?", type: 'sharing', params: {total: 50, r1: 2, r2: 3, item: '🪙'}, ans: ['30'] },
+        { q: "20 இனிப்புகளை கமலாவுக்கும் விமலாவுக்கும் 1:4 என்ற விகிதத்தில் பிரித்தால், கமலாவுக்கு எத்தனை இனிப்புகள் கிடைக்கும்?", type: 'sharing', params: {total: 20, r1: 1, r2: 4, item: '🍬'}, ans: ['4'] },
+        { q: "ஒரு வரைபடத்தில் 1 செ.மீ என்பது 10 கி.மீ-ஐக் குறிக்கிறது. வரைபடத்தில் இரண்டு நகரங்களுக்கு இடையே 5 செ.மீ தூரம் இருந்தால், உண்மையான தூரம் என்ன?", type: 'proportion', params: {a1: 1, b1: 10, a2: 5, itemA: '📏', itemB: '↔️'}, ans: ['50'] },
+        { q: "ஒரு பள்ளியில் மாணவர்களுக்கும் ஆசிரியர்களுக்கும் உள்ள விகிதம் 20:1. பள்ளியில் 400 மாணவர்கள் இருந்தால், எத்தனை ஆசிரியர்கள் உள்ளனர்?", type: 'grouping', params: {groupSize: 20, total: 400, itemA: '🧑‍🎓', itemB: '🧑‍🏫'}, ans: ['20'] },
+        { q: "ஒரு தேநீர் தயாரிக்க 2 பங்கு பாலும் 1 பங்கு தண்ணீரும் தேவை. 6 கப் தேநீர் தயாரிக்க எவ்வளவு பால் தேவை?", type: 'direct_ratio_total', params: {r1: 2, r2: 1, total: 6, itemA: '🥛', itemB: '💧'}, ans: ['4'] },
+        { q: "ஒரு தோட்டத்தில் 8 தென்னை மரங்களும் 12 மாமரங்களும் உள்ளன. மாமரங்களுக்கும் தென்னை மரங்களுக்கும் உள்ள விகிதம் என்ன?", type: 'simple_ratio', params: {a: 12, b: 8, itemA: '🌳', itemB: '🌴'}, ans: ['12:8', '3:2'] },
+        ...Array.from({length: 40}, (_, i) => {
+            const r1 = Math.floor(Math.random() * 5) + 1;
+            const r2 = Math.floor(Math.random() * 5) + 1;
+            const total = (r1 + r2) * (Math.floor(Math.random() * 4) + 2);
+            return { q: `ரூ. ${total}-ஐ A மற்றும் B க்கு ${r1}:${r2} என்ற விகிதத்தில் பிரித்தால், A க்கு கிடைக்கும் தொகை என்ன?`, type: 'sharing', params: {total: total, r1: r1, r2: r2, item: '🪙'}, ans: [String(total / (r1+r2) * r1)] };
+        })
+    ];
+
+    function displayRatioQuestion(index) {
+        if (index < 0 || index >= ratioQuestions.length) return;
+        currentRatioQuestionIndex = index;
+        
+        const q = ratioQuestions[index];
+        document.getElementById('ratio-question-text').textContent = q.q;
+        document.getElementById('ratio-question-counter').textContent = `கேள்வி ${index + 1} / ${ratioQuestions.length}`;
+        document.getElementById('ratio-feedback').textContent = '';
+
+        const simArea = document.getElementById('ratio-simulation-area');
+        const ansArea = document.getElementById('ratio-answer-area');
+        simArea.innerHTML = '';
+        ansArea.innerHTML = '';
+
+        if (q.type === 'simple_ratio') {
+            simArea.innerHTML = `<div class="flex flex-col gap-2"><div class="text-5xl">${q.params.itemA.repeat(q.params.a)}</div><div class="text-5xl">${q.params.itemB.repeat(q.params.b)}</div></div>`;
+            ansArea.innerHTML = `<input id="ans-a" type="number" class="w-20 p-2 border-2 rounded text-center text-xl"> : <input id="ans-b" type="number" class="w-20 p-2 border-2 rounded text-center text-xl">`;
+        } else if (q.type === 'proportion') {
+            simArea.innerHTML = `<div class="flex flex-col gap-4 text-center">
+                <div><span class="text-5xl">${q.params.itemA.repeat(q.params.a1)}</span> ➔ <span class="text-4xl font-bold">${q.params.b1} ${q.params.itemB}</span></div>
+                <div><span class="text-5xl">${q.params.itemA.repeat(q.params.a2)}</span> ➔ <span class="text-4xl font-bold">? ${q.params.itemB}</span></div>
+            </div>`;
+            ansArea.innerHTML = `<input id="ans-a" type="number" class="w-28 p-2 border-2 rounded text-center text-xl">`;
+        } else if (q.type === 'sharing') {
+             const totalParts = q.params.r1 + q.params.r2;
+             const valuePerPart = q.params.total / totalParts;
+             simArea.innerHTML = `<div class="flex flex-col gap-4 items-center w-full text-2xl font-bold">
+                 <p>மொத்தம்: ${q.params.total} ${q.params.item}</p>
+                 <p>பிரிக்கும் விகிதம்: ${q.params.r1} : ${q.params.r2}  (மொத்தம் ${totalParts} பங்குகள்)</p>
+                 <div class="flex flex-wrap gap-2 p-2 border-2 rounded-lg justify-center text-5xl">${'🟪'.repeat(totalParts)}</div>
+                 <p class="text-blue-700">ஒரு பங்கின் மதிப்பு = ${q.params.total} ÷ ${totalParts} = ${valuePerPart} ${q.params.item}</p>
+             </div>`;
+             ansArea.innerHTML = `<input id="ans-a" type="number" class="w-28 p-2 border-2 rounded text-center text-xl">`;
+        } else if (q.type === 'grouping') {
+            const numGroups = q.params.total / q.params.groupSize;
+            simArea.innerHTML = `<div class="flex flex-col gap-4 items-center w-full text-2xl font-bold">
+                <p>ஒரு குழு = <span class="text-4xl">${q.params.itemA.repeat(q.params.groupSize)} ➔ ${q.params.itemB}</span></p>
+                <p>மொத்த மாணவர்கள்: ${q.params.total} ${q.params.itemA}</p>
+                <p class="text-blue-700">குழுக்களின் எண்ணிக்கை = ${q.params.total} ÷ ${q.params.groupSize} = ${numGroups} குழுக்கள்</p>
+            </div>`;
+            ansArea.innerHTML = `<input id="ans-a" type="number" class="w-28 p-2 border-2 rounded text-center text-xl">`;
+        } else if (q.type === 'direct_ratio_total') {
+            simArea.innerHTML = `<div class="flex flex-col gap-2 items-center text-2xl font-bold">
+                <p>ஒரு குழு: <span class="text-4xl">${q.params.itemA.repeat(q.params.r1)}${q.params.itemB.repeat(q.params.r2)}</span></p>
+                <p>மொத்தம்: ${q.params.total} கப்</p>
+            </div>`;
+            ansArea.innerHTML = `<input id="ans-a" type="number" class="w-28 p-2 border-2 rounded text-center text-xl">`;
+        }
+        
+        document.getElementById('ratio-prev-btn').disabled = index === 0;
+        document.getElementById('ratio-next-btn').disabled = index === ratioQuestions.length - 1;
+    }
+
+    function navigateRatioQuestion(direction) {
+        displayRatioQuestion(currentRatioQuestionIndex + direction);
+    }
+    
+    function resetRatioSimulation() {
+        displayRatioQuestion(currentRatioQuestionIndex);
+    }
+
+    function checkRatioAnswer() {
+        const q = ratioQuestions[currentRatioQuestionIndex];
+        let userAnswer;
+        if (q.type === 'simple_ratio') {
+            const a = document.getElementById('ans-a').value;
+            const b = document.getElementById('ans-b').value;
+            userAnswer = `${a}:${b}`;
+        } else {
+            userAnswer = document.getElementById('ans-a').value;
+        }
+
+        const feedback = document.getElementById('ratio-feedback');
+        if (q.ans.includes(userAnswer)) {
+            feedback.textContent = 'சரியான விடை! 🎉';
+            feedback.className = 'text-center font-bold text-xl h-8 text-green-600';
+        } else {
+            feedback.textContent = 'தவறு, மீண்டும் முயற்சிக்கவும்.';
+            feedback.className = 'text-center font-bold text-xl h-8 text-red-600';
+        }
+    }
+
+
+    // Simulation 3: Linear Equations
+    const linearEquations = [];
+    let currentEquationIndex = 0;
+    let currentSolveStep = 0;
+
+    function displayEquation(index) {
+        if (index < 0 || index >= linearEquations.length) return;
+        
+        currentEquationIndex = index;
+        currentSolveStep = 1; // Reset to the first step
+        const eq = linearEquations[index];
+
+        document.getElementById('eq-question-counter').textContent = `கேள்வி ${index + 1} / ${linearEquations.length}`;
+        document.getElementById('eq-problem').textContent = eq.text;
+        document.getElementById('eq-steps-log').innerHTML = '';
+        document.getElementById('eq-feedback').textContent = '';
+        
+        // Hide the scale and clear its contents
+        const balanceScale = document.querySelector('.balance-scale');
+        balanceScale.classList.add('hidden');
+        document.getElementById('eq-pan-left').innerHTML = '';
+        document.getElementById('eq-pan-right').innerHTML = '';
+
+        const solveBtn = document.getElementById('eq-solve-step-btn');
+        solveBtn.textContent = 'தீர்வைத் தொடங்கு';
+        solveBtn.disabled = false;
+
+        document.getElementById('eq-prev-btn').disabled = index === 0;
+        document.getElementById('eq-next-btn').disabled = index === linearEquations.length - 1;
+    }
+    
+    function navigateEquation(direction) {
+        displayEquation(currentEquationIndex + direction);
+    }
+    
+    function resetCurrentEquation() {
+        displayEquation(currentEquationIndex);
+    }
+
+    function drawBalanceScale(xCount, cCount, ansCount) {
+        const panLeft = document.getElementById('eq-pan-left');
+        const panRight = document.getElementById('eq-pan-right');
+        panLeft.innerHTML = '';
+        panRight.innerHTML = '';
+        for(let i=0; i<xCount; i++) panLeft.innerHTML += `<div class="weight x-weight">x</div>`;
+        for(let i=0; i<cCount; i++) panLeft.innerHTML += `<div class="weight unit-weight" data-id="c${i}">1</div>`;
+        for(let i=0; i<ansCount; i++) panRight.innerHTML += `<div class="weight unit-weight" data-id="a${i}">1</div>`;
+    }
+
+    function solveEquationStepByStep() {
+        const eq = linearEquations[currentEquationIndex];
+        const { x, c, ans, solution } = eq;
+        const stepsLog = document.getElementById('eq-steps-log');
+        const feedback = document.getElementById('eq-feedback');
+        const solveBtn = document.getElementById('eq-solve-step-btn');
+        const balanceScale = document.querySelector('.balance-scale');
+
+        if(currentSolveStep === 1) { // First click: "Start Solution"
+            stepsLog.innerHTML = '';
+            feedback.textContent = '';
+            balanceScale.classList.remove('hidden');
+            drawBalanceScale(eq.x, eq.c, eq.ans);
+            solveBtn.textContent = 'படி 1: சமன்பாட்டை எளிதாக்கு';
+            currentSolveStep = 2;
+        } else if (currentSolveStep === 2) { // Second click: "Simplify Equation"
+            const step1 = document.createElement('div');
+            step1.className = 'p-2 bg-gray-100 rounded-lg fade-in';
+            step1.innerHTML = `<p class="font-bold">படி 1: x உடன் இருக்கும் எண்ணை (+${c}) நீக்க, இருபுறமும் ${c}-ஐக் கழிப்போம்.</p><p class="text-xl text-center font-bold text-blue-700">${x}x = ${ans - c}</p>`;
+            stepsLog.appendChild(step1);
+            
+            for(let i=0; i<c; i++) {
+                const cWeight = document.querySelector(`[data-id='c${i}']`);
+                const aWeight = document.querySelector(`[data-id='a${i}']`);
+                if (cWeight) cWeight.style.transform = 'scale(0)';
+                if (aWeight) aWeight.style.transform = 'scale(0)';
+            }
+            setTimeout(() => {
+                drawBalanceScale(x, 0, ans - c);
+            }, 500);
+            solveBtn.textContent = 'படி 2: x-ன் மதிப்பைக் காண்க';
+            currentSolveStep = 3;
+        } else if (currentSolveStep === 3) { // Third click: "Find x"
+            const step2 = document.createElement('div');
+            step2.className = 'p-2 bg-gray-100 rounded-lg fade-in';
+            step2.innerHTML = `<p class="font-bold">படி 2: ஒவ்வொரு x-ன் மதிப்பைக் கண்டுபிடிக்க, இருபுறமும் ${x}-ஆல் வகுப்போம்.</p><p class="text-xl text-center font-bold text-blue-700">x = ${solution}</p>`;
+            stepsLog.appendChild(step2);
+
+            setTimeout(() => {
+                drawBalanceScale(1, 0, solution);
+                feedback.textContent = `விடை: x = ${solution}`;
+            }, 500);
+            solveBtn.textContent = 'தீர்வை மீண்டும் பார்';
+            currentSolveStep = 4;
+        } else if (currentSolveStep === 4) { // Fourth click: "See again"
+            displayEquation(currentEquationIndex);
+        }
+    }
+
+    // --- Simulation 4: Algebraic Multiplication (GUIDED VERSION with NEGATIVES) ---
+    const algebraicProblems = [];
+    let currentAlgebraProblemIndex = 0;
+    let algP = {};
+    let algebraStep = 0;
+
+    function generateAllAlgebraProblems() {
+        algebraicProblems.length = 0; // Clear existing problems
+        // First 10 questions: POSITIVE ONLY
+        for (let i = 0; i < 10; i++) {
+            algebraicProblems.push({
+                c1: Math.floor(Math.random() * 4) + 1, // Always positive
+                c2: Math.floor(Math.random() * 4) + 1  // Always positive
+            });
+        }
+        // Remaining 40 questions: MIX OF POSITIVE AND NEGATIVE
+        for (let i = 0; i < 40; i++) {
+            let c1 = Math.floor(Math.random() * 4) + 1;
+            let c2 = Math.floor(Math.random() * 4) + 1;
+            if (Math.random() > 0.5) c1 *= -1;
+            if (Math.random() > 0.5) c2 *= -1;
+             // Ensure we don't have all positive numbers in this batch
+            if (c1 > 0 && c2 > 0) {
+                 c1 *= -1;
+            }
+            algebraicProblems.push({ c1, c2 });
+        }
+    }
+    
+    function navigateAlgebraProblem(direction) {
+        const newIndex = currentAlgebraProblemIndex + direction;
+        if (newIndex >= 0 && newIndex < algebraicProblems.length) {
+            currentAlgebraProblemIndex = newIndex;
+            displayAlgebraProblem(currentAlgebraProblemIndex);
+        }
+    }
+
+    function displayAlgebraProblem(index) {
+        algebraStep = 0;
+        algP = algebraicProblems[index];
+        const { c1, c2 } = algP;
+
+        const c1_text = c1 > 0 ? `+ ${c1}` : `- ${Math.abs(c1)}`;
+        const c2_text = c2 > 0 ? `+ ${c2}` : `- ${Math.abs(c2)}`;
+        
+        document.getElementById('algebra-question-counter').textContent = `கேள்வி ${index + 1} / ${algebraicProblems.length}`;
+        document.getElementById('algebra-problem').textContent = `(x ${c1_text}) (x ${c2_text}) = ?`;
+        document.getElementById('algebra-answer').textContent = '';
+        document.getElementById('algebra-explanation').textContent = 'பெருக்கலைத் தொடங்க, "தொடங்கு" பொத்தானை அழுத்தவும்.';
+        
+        const stepBtn = document.getElementById('algebra-step-btn');
+        stepBtn.textContent = 'தொடங்கு';
+        stepBtn.onclick = revealAlgebraStep;
+        stepBtn.disabled = false;
+
+        document.getElementById('algebra-prev-btn').disabled = index === 0;
+        document.getElementById('algebra-next-btn-nav').disabled = index === algebraicProblems.length - 1;
+
+        setupAlgebraGrid();
+    }
+
+    function setupAlgebraGrid() {
+        const container = document.getElementById('algebra-container');
+        container.innerHTML = '';
+        const { c1, c2 } = algP;
+        const abs_c1 = Math.abs(c1);
+        const abs_c2 = Math.abs(c2);
+
+        const totalRows = abs_c1 + 2;
+        const totalCols = abs_c2 + 2;
+
+        container.style.gridTemplateRows = `40px repeat(${abs_c1 + 1}, 1fr)`;
+        container.style.gridTemplateColumns = `40px repeat(${abs_c2 + 1}, 1fr)`;
+
+        for (let r = 0; r < totalRows; r++) {
+            for (let c = 0; c < totalCols; c++) {
+                const cell = document.createElement('div');
+                if (r === 0 && c === 0) {
+                    // Top-left corner, empty
+                } else if (r === 0) { // Top labels
+                    cell.className = 'algebra-label';
+                    cell.textContent = c === 1 ? 'x' : (c2 > 0 ? '1' : '-1');
+                } else if (c === 0) { // Side labels
+                    cell.className = 'algebra-label';
+                    cell.textContent = r === 1 ? 'x' : (c1 > 0 ? '1' : '-1');
+                } else { // Grid tiles
+                    cell.className = 'algebra-tile bg-gray-300';
+                    cell.id = `alg-tile-${r-1}-${c-1}`; // 0-indexed IDs for tiles
+                }
+                container.appendChild(cell);
+            }
+        }
+    }
+    
+    function revealAlgebraStep() {
+        const { c1, c2 } = algP;
+        const explanation = document.getElementById('algebra-explanation');
+        const stepBtn = document.getElementById('algebra-step-btn');
+        algebraStep++;
+        stepBtn.textContent = 'அடுத்த படி';
+
+        switch (algebraStep) {
+            case 1:
+                explanation.textContent = `படி 1: முதல் உறுப்புகளைப் பெருக்கவும் (x * x = x²).`;
+                const x2_tile = document.getElementById('alg-tile-0-0');
+                if(x2_tile) {
+                    x2_tile.textContent = 'x²';
+                    x2_tile.style.backgroundColor = '#e0f2fe'; // Light Blue for positive
+                }
+                break;
+            case 2:
+                explanation.textContent = `படி 2: வெளிப்புற உறுப்புகளைப் பெருக்கவும் (x * ${c2} = ${c2}x).`;
+                for(let i=0; i < Math.abs(c2); i++) {
+                    const tile = document.getElementById(`alg-tile-0-${i+1}`);
+                    if(tile) {
+                        tile.textContent = c2 > 0 ? 'x' : '-x';
+                        tile.style.backgroundColor = c2 > 0 ? '#e0e7ff' : '#fecdd3'; // Blue for pos, Red for neg
+                    }
+                }
+                break;
+            case 3:
+                explanation.textContent = `படி 3: உட்புற உறுப்புகளைப் பெருக்கவும் (${c1} * x = ${c1}x).`;
+                 for(let i=0; i < Math.abs(c1); i++) {
+                    const tile = document.getElementById(`alg-tile-${i+1}-0`);
+                    if(tile) {
+                        tile.textContent = c1 > 0 ? 'x' : '-x';
+                        tile.style.backgroundColor = c1 > 0 ? '#e0e7ff' : '#fecdd3'; // Blue for pos, Red for neg
+                    }
+                }
+                break;
+            case 4:
+                explanation.textContent = `படி 4: கடைசி உறுப்புகளைப் பெருக்கவும் (${c1} * ${c2} = ${c1*c2}).`;
+                for(let r=0; r < Math.abs(c1); r++) {
+                    for(let c=0; c < Math.abs(c2); c++) {
+                         const tile = document.getElementById(`alg-tile-${r+1}-${c+1}`);
+                         if(tile) {
+                            tile.textContent = (c1*c2) > 0 ? '1' : '-1';
+                            tile.style.backgroundColor = (c1*c2) > 0 ? '#d1fae5' : '#fecaca'; // Green for pos, Red for neg
+                         }
+                    }
+                }
+                break;
+            case 5:
+                const x_coeff = c1 + c2;
+                const c_const = c1 * c2;
+                const x_term_text = x_coeff !== 0 ? (x_coeff > 0 ? `+ ${x_coeff}x` : `- ${Math.abs(x_coeff)}x`) : '';
+                const c_term_text = c_const !== 0 ? (c_const > 0 ? `+ ${c_const}` : `- ${Math.abs(c_const)}`) : '';
+                
+                explanation.textContent = `படி 5: ஒத்த உறுப்புகளை இணைக்கவும்.`;
+                document.getElementById('algebra-answer').textContent = `விடை: x² ${x_term_text} ${c_term_text}`.replace('+ -', '- ');
+                stepBtn.textContent = 'மீண்டும் பார்';
+                break;
+            default:
+                displayAlgebraProblem(currentAlgebraProblemIndex);
+                break;
+        }
+    }
+
+
+    // --- Tab 3: கல்விசார் செயல்பாடுகள் ---
+    
+    // Life Sums (Profit/Loss)
+    const lifeSumsProblems = [];
+    let currentLifeSumsIndex = 0;
+
+    function generateAllLifeSumsProblems() {
+        for (let i = 0; i < 50; i++) {
+            const costPrice = (Math.floor(Math.random() * 40) + 10) * 10; // 100 to 500
+            const isProfit = Math.random() > 0.5;
+            const percentage = (Math.floor(Math.random() * 10) + 1) * 5; // 5% to 50%
+            let sellingPrice, difference;
+            if (isProfit) {
+                sellingPrice = costPrice * (1 + percentage / 100);
+                difference = sellingPrice - costPrice;
+            } else {
+                sellingPrice = costPrice * (1 - percentage / 100);
+                difference = costPrice - sellingPrice;
+            }
+            lifeSumsProblems.push({ costPrice, sellingPrice, difference, percentage, isProfit });
+        }
+    }
+
+    function navigateLifeSumsProblem(direction) {
+        const newIndex = currentLifeSumsIndex + direction;
+        if (newIndex >= 0 && newIndex < lifeSumsProblems.length) {
+            currentLifeSumsIndex = newIndex;
+            displayLifeSumsProblem(currentLifeSumsIndex);
+        }
+    }
+    
+    function resetLifeSumsProblem() {
+        displayLifeSumsProblem(currentLifeSumsIndex);
+    }
+
+    function displayLifeSumsProblem(index) {
+        const problem = lifeSumsProblems[index];
+        const problemText = `ஒரு பொருளின் அடக்க விலை ரூ. ${problem.costPrice}. அதை ரூ. ${problem.sellingPrice}-க்கு விற்றால், ${problem.isProfit ? 'இலாப' : 'நட்ட'} சதவீதம் என்ன?`;
+        
+        document.getElementById('life-sums-question-counter').textContent = `கேள்வி ${index + 1} / ${lifeSumsProblems.length}`;
+        document.getElementById('life-sums-problem').textContent = problemText;
+        document.getElementById('life-sums-answer').value = '';
+        document.getElementById('life-sums-feedback').textContent = '';
+
+        document.getElementById('life-sums-prev-btn').disabled = index === 0;
+        document.getElementById('life-sums-next-btn').disabled = index === lifeSumsProblems.length - 1;
+
+        drawProfitLossChart(problem.costPrice, problem.sellingPrice);
+        
+        const detailsDiv = document.getElementById('profit-loss-details');
+        detailsDiv.innerHTML = `
+            <p>அடக்க விலை: ரூ. ${problem.costPrice}</p>
+            <p>விற்பனை விலை: ரூ. ${problem.sellingPrice}</p>
+            <p class="mt-4 ${problem.isProfit ? 'text-green-600' : 'text-red-600'}">
+                வித்தியாசம் (${problem.isProfit ? 'இலாபம்' : 'நட்டம்'}): ரூ. ${problem.difference.toFixed(2)}
+            </p>
+        `;
+    }
+
+    function drawProfitLossChart(cost, selling) {
+        const canvas = document.getElementById('profit-loss-canvas');
+        const ctx = canvas.getContext('2d');
+        const w = canvas.width;
+        const h = canvas.height;
+        ctx.clearRect(0, 0, w, h);
+
+        const maxValue = Math.max(cost, selling) * 1.2;
+        const costHeight = (cost / maxValue) * (h - 40);
+        const sellingHeight = (selling / maxValue) * (h - 40);
+
+        // Cost Price Bar
+        ctx.fillStyle = '#60a5fa';
+        ctx.fillRect(50, h - 30 - costHeight, 75, costHeight);
+        ctx.fillStyle = '#1e3a8a';
+        ctx.font = 'bold 14px "Noto Sans Tamil"';
+        ctx.textAlign = 'center';
+        ctx.fillText('அடக்க விலை', 87.5, h - 10);
+        
+        // Selling Price Bar
+        ctx.fillStyle = '#34d399';
+        ctx.fillRect(150, h - 30 - sellingHeight, 75, sellingHeight);
+        ctx.fillStyle = '#065f46';
+        ctx.fillText('விற்பனை விலை', 187.5, h - 10);
+    }
+
+    function checkLifeSumsAnswer() {
+        const userAnswer = parseFloat(document.getElementById('life-sums-answer').value);
+        const feedback = document.getElementById('life-sums-feedback');
+        const correctAnswer = lifeSumsProblems[currentLifeSumsIndex].percentage;
+
+        if (userAnswer === correctAnswer) {
+            feedback.textContent = 'சரியான விடை! 🎉';
+            feedback.className = 'mt-2 text-center font-bold text-xl h-8 text-green-600';
+        } else {
+            feedback.textContent = 'தவறு, மீண்டும் முயற்சிக்கவும்.';
+            feedback.className = 'mt-2 text-center font-bold text-xl h-8 text-red-600';
+        }
+    }
+
+
+    // Graphing
+    const graphCanvas = document.getElementById('graph-canvas');
+    const graphCtx = graphCanvas.getContext('2d');
+    const graphProblems = [];
+    let currentGraphProblemIndex = 0;
+    let graphPoints = [];
+    let currentGraphEq = {m: 1, c: 2};
+    let graphStep = 0;
+    
+    function generateAllGraphProblems() {
+        for (let i = 0; i < 50; i++) {
+            graphProblems.push({
+                m: Math.floor(Math.random() * 3) + 1,
+                c: Math.floor(Math.random() * 5) - 2
+            });
+        }
+    }
+
+    function navigateGraphProblem(direction) {
+        const newIndex = currentGraphProblemIndex + direction;
+        if (newIndex >= 0 && newIndex < graphProblems.length) {
+            currentGraphProblemIndex = newIndex;
+            displayGraphProblem(currentGraphProblemIndex);
+        }
+    }
+
+    function displayGraphProblem(index) {
+        graphStep = 0;
+        currentGraphProblemIndex = index;
+        currentGraphEq = graphProblems[index];
+        const {m, c} = currentGraphEq;
+
+        document.getElementById('graph-question-counter').textContent = `கேள்வி ${index + 1} / ${graphProblems.length}`;
+        document.getElementById('graph-equation').textContent = `y = ${m}x ${c >= 0 ? '+': '-'} ${Math.abs(c)}`;
+        document.getElementById('graph-table-body').innerHTML = '';
+        document.getElementById('graph-instruction').textContent = 'புள்ளிகளைக் கண்டுபிடிக்க, "கண்டுபிடி" பொத்தானை அழுத்தவும்.';
+        document.getElementById('graph-find-point-btn').disabled = false;
+        
+        document.getElementById('graph-prev-btn').disabled = index === 0;
+        document.getElementById('graph-next-btn').disabled = index === graphProblems.length - 1;
+
+        resetGraph();
+    }
+    
+    function guideGraphPoint() {
+        graphStep++;
+        const {m, c} = currentGraphEq;
+        const tableBody = document.getElementById('graph-table-body');
+        const instruction = document.getElementById('graph-instruction');
+        const findBtn = document.getElementById('graph-find-point-btn');
+
+        let x_val = graphStep - 1;
+        let y_val = m * x_val + c;
+
+        if (graphStep === 1) { // First point
+            tableBody.innerHTML = `
+                <tr class="bg-white">
+                    <td class="p-2 border font-bold text-lg">${x_val}</td>
+                    <td class="p-2 border font-bold text-lg">y = ${m}(${x_val}) + ${c}</td>
+                    <td class="p-2 border font-bold text-lg">${y_val}</td>
+                    <td class="p-2 border font-bold text-lg">(${x_val}, ${y_val})</td>
+                </tr>
+            `;
+            instruction.textContent = `வரைபடத்தில் (${x_val}, ${y_val}) புள்ளியைக் கிளிக் செய்யவும்.`;
+            highlightGraphPoint(x_val, y_val);
+            findBtn.disabled = true;
+        } else if (graphStep === 2) { // Second point
+             const newRow = `
+                <tr class="bg-white">
+                    <td class="p-2 border font-bold text-lg">${x_val}</td>
+                    <td class="p-2 border font-bold text-lg">y = ${m}(${x_val}) + ${c}</td>
+                    <td class="p-2 border font-bold text-lg">${y_val}</td>
+                    <td class="p-2 border font-bold text-lg">(${x_val}, ${y_val})</td>
+                </tr>
+            `;
+            tableBody.innerHTML += newRow;
+            instruction.textContent = `வரைபடத்தில் (${x_val}, ${y_val}) புள்ளியைக் கிளிக் செய்யவும்.`;
+            highlightGraphPoint(x_val, y_val);
+            findBtn.disabled = true;
+        }
+    }
+
+    function highlightGraphPoint(x, y) {
+        const highlighter = document.getElementById('graph-highlight');
+        const canvasContainer = highlighter.parentElement;
+        const gridSize = 40;
+        const x_origin = graphCanvas.width / 2;
+        const y_origin = graphCanvas.height / 2;
+
+        const canvasX = x_origin + x * gridSize;
+        const canvasY = y_origin - y * gridSize;
+        
+        highlighter.style.left = `${canvasX - 15}px`;
+        highlighter.style.top = `${canvasY - 15}px`;
+        highlighter.style.width = '30px';
+        highlighter.style.height = '30px';
+        highlighter.classList.remove('hidden');
+    }
+
+    function drawGraph() {
+        const w = graphCanvas.width;
+        const h = graphCanvas.height;
+        const gridSize = 40;
+        const x_origin = w / 2;
+        const y_origin = h / 2;
+
+        graphCtx.clearRect(0, 0, w, h);
+        
+        // Draw grid
+        graphCtx.strokeStyle = '#e5e7eb';
+        graphCtx.lineWidth = 1;
+        for (let x = 0; x <= w; x += gridSize) { graphCtx.beginPath(); graphCtx.moveTo(x, 0); graphCtx.lineTo(x, h); graphCtx.stroke(); }
+        for (let y = 0; y <= h; y += gridSize) { graphCtx.beginPath(); graphCtx.moveTo(0, y); graphCtx.lineTo(w, y); graphCtx.stroke(); }
+
+        // Draw axes
+        graphCtx.strokeStyle = '#374151';
+        graphCtx.lineWidth = 2;
+        graphCtx.beginPath(); graphCtx.moveTo(x_origin, 0); graphCtx.lineTo(x_origin, h); graphCtx.stroke();
+        graphCtx.beginPath(); graphCtx.moveTo(0, y_origin); graphCtx.lineTo(w, y_origin); graphCtx.stroke();
+        
+        // Axis numbers
+        graphCtx.fillStyle = '#374151';
+        graphCtx.font = '12px sans-serif';
+        for (let i = 1; i*gridSize < w/2; i++) {
+            graphCtx.fillText(i, x_origin + i*gridSize - 5, y_origin + 15);
+            graphCtx.fillText(-i, x_origin - i*gridSize - 5, y_origin + 15);
+            graphCtx.fillText(i, x_origin - 15, y_origin - i*gridSize + 5);
+            graphCtx.fillText(-i, x_origin - 15, y_origin + i*gridSize + 5);
+        }
+
+        // Plot points
+        graphPoints.forEach(p => {
+            graphCtx.fillStyle = p.color;
+            const canvasX = x_origin + p.x * gridSize;
+            const canvasY = y_origin - p.y * gridSize;
+            graphCtx.beginPath();
+            graphCtx.arc(canvasX, canvasY, 7, 0, 2 * Math.PI);
+            graphCtx.fill();
+        });
+
+        // Draw line if two points are plotted
+        if (graphPoints.length >= 2) {
+            graphCtx.strokeStyle = '#3b82f6';
+            graphCtx.lineWidth = 3;
+            graphCtx.beginPath();
+            const p1_canvasX = x_origin + graphPoints[0].x * gridSize;
+            const p1_canvasY = y_origin - graphPoints[0].y * gridSize;
+            const p2_canvasX = x_origin + graphPoints[1].x * gridSize;
+            const p2_canvasY = y_origin - graphPoints[1].y * gridSize;
+            
+            // Extend the line
+            const dx = p2_canvasX - p1_canvasX;
+            const dy = p2_canvasY - p1_canvasY;
+            graphCtx.moveTo(p1_canvasX - dx * 5, p1_canvasY - dy * 5);
+            graphCtx.lineTo(p2_canvasX + dx * 5, p2_canvasY + dy * 5);
+            graphCtx.stroke();
+        }
+    }
+    function resetGraph() {
+        graphPoints = [];
+        document.getElementById('graph-highlight').classList.add('hidden');
+        drawGraph();
+    }
+    graphCanvas.addEventListener('mousemove', (e) => {
+        const rect = graphCanvas.getBoundingClientRect();
+        const gridSize = 40;
+        const x_origin = graphCanvas.width / 2;
+        const y_origin = graphCanvas.height / 2;
+        
+        const canvasX = e.clientX - rect.left;
+        const canvasY = e.clientY - rect.top;
+
+        const gridX = Math.round((canvasX - x_origin) / gridSize);
+        const gridY = Math.round((y_origin - canvasY) / gridSize);
+        document.getElementById('graph-coords').textContent = `(${gridX}, ${gridY})`;
+    });
+
+    graphCanvas.addEventListener('click', (e) => {
+        if (graphPoints.length >= 2 || graphStep === 0) return;
+        
+        const rect = graphCanvas.getBoundingClientRect();
+        const gridSize = 40;
+        const x_origin = graphCanvas.width / 2;
+        const y_origin = graphCanvas.height / 2;
+        
+        const canvasX = e.clientX - rect.left;
+        const canvasY = e.clientY - rect.top;
+
+        const gridX = Math.round((canvasX - x_origin) / gridSize);
+        const gridY = Math.round((y_origin - canvasY) / gridSize);
+        
+        const targetX = graphStep - 1;
+        const targetY = currentGraphEq.m * targetX + currentGraphEq.c;
+        
+        if (gridX === targetX && gridY === targetY) {
+            graphPoints.push({x: gridX, y: gridY, color: '#22c55e'});
+            document.getElementById('graph-highlight').classList.add('hidden');
+            document.getElementById('graph-instruction').textContent = 'சரியான புள்ளி! அடுத்த புள்ளியைக் கண்டறியவும்.';
+            document.getElementById('graph-find-point-btn').disabled = false;
+            if (graphPoints.length === 2) {
+                 document.getElementById('graph-instruction').textContent = 'வெற்றி! கோடு வரையப்பட்டது.';
+                 document.getElementById('graph-find-point-btn').disabled = true;
+            }
+            drawGraph();
+        }
+    });
+
+
+    // Geometry
+    const geoCanvas = document.getElementById('geometry-canvas'); 
+    const geoCtx = geoCanvas.getContext('2d'); 
+    let geoPoints = [];
+    let currentGeoStep = 0;
+    const geoSteps = [
+        { text: "படி 1: முதல் புள்ளியை (A) வைக்க, பொத்தானைக் கிளிக் செய்யவும்.", action: "draw_point" },
+        { text: "படி 2: இரண்டாவது புள்ளியை (B) வைக்க, பொத்தானைக் கிளிக் செய்யவும்.", action: "draw_point" },
+        { text: "படி 3: மூன்றாவது புள்ளியை (C) வைக்க, பொத்தானைக் கிளிக் செய்யவும்.", action: "draw_point" },
+        { text: "படி 4: முனையிலிருந்து ஒரு வில்லை வரையவும்.", action: "draw_arc_1" },
+        { text: "படி 5: வெட்டும் புள்ளிகளிலிருந்து விற்களை வரையவும்.", action: "draw_arc_2" },
+        { text: "படி 6: கோண இரு சமவெட்டியை வரையவும்.", action: "draw_bisector" },
+    ];
+
+    function setupGeoSimulation() {
+        currentGeoStep = 0;
+        geoPoints = [
+            { x: geoCanvas.width * 0.5, y: geoCanvas.height * 0.5 },
+            { x: geoCanvas.width * 0.9, y: geoCanvas.height * 0.3 },
+            { x: geoCanvas.width * 0.8, y: geoCanvas.height * 0.9 }
+        ];
+        geoCtx.clearRect(0, 0, geoCanvas.width, geoCanvas.height);
+        handleGeoStep();
+    }
+
+    function renderGeoSteps() {
+        const container = document.getElementById('geo-steps-container');
+        container.innerHTML = '';
+        geoSteps.forEach((step, index) => {
+            const btn = document.createElement('button');
+            btn.textContent = step.text;
+            btn.className = 'w-full p-2 rounded-lg text-left geo-step-btn bg-gray-100';
+            btn.onclick = () => executeGeoStep(index);
+            
+            if (index === currentGeoStep) {
+                btn.classList.add('active');
+                btn.disabled = false;
+            } else {
+                btn.disabled = true;
+            }
+            container.appendChild(btn);
+        });
+    }
+    
+    function handleGeoStep() {
+        const instruction = document.getElementById('geo-instruction');
+        if(currentGeoStep >= geoSteps.length) {
+            instruction.textContent = "வெற்றிகரமாக முடிந்தது!";
+            renderGeoSteps(); // To disable the last button
+            return;
+        }
+        const step = geoSteps[currentGeoStep];
+        instruction.textContent = step.text;
+        renderGeoSteps();
+    }
+
+    function executeGeoStep(index) {
+        if (index !== currentGeoStep) return;
+        
+        drawGeoCanvas(); // Redraw canvas based on current step
+        
+        const step = geoSteps[index];
+        const [pA, pB, pC] = geoPoints;
+
+        if (step.action === 'draw_arc_1') {
+            const radius = Math.min(dist(pA, pB), dist(pA, pC)) * 0.5;
+            geoCtx.strokeStyle = '#f59e0b';
+            geoCtx.lineWidth = 2;
+            geoCtx.beginPath();
+            const startAngle = Math.atan2(pB.y - pA.y, pB.x - pA.x);
+            const endAngle = Math.atan2(pC.y - pA.y, pC.x - pA.x);
+            geoCtx.arc(pA.x, pA.y, radius, startAngle, endAngle);
+            geoCtx.stroke();
+        } else if (step.action === 'draw_arc_2') {
+            const radius = Math.min(dist(pA, pB), dist(pA, pC)) * 0.5;
+            const int1 = getIntersectionPoint(pA, pB, radius);
+            const int2 = getIntersectionPoint(pA, pC, radius);
+            const arcRadius = dist(int1, int2) * 0.7;
+            geoCtx.strokeStyle = '#ef4444';
+            geoCtx.beginPath();
+            geoCtx.arc(int1.x, int1.y, arcRadius, 0, 2 * Math.PI);
+            geoCtx.stroke();
+            geoCtx.beginPath();
+            geoCtx.arc(int2.x, int2.y, arcRadius, 0, 2 * Math.PI);
+            geoCtx.stroke();
+        } else if (step.action === 'draw_bisector') {
+             const radius = Math.min(dist(pA, pB), dist(pA, pC)) * 0.5;
+            const int1 = getIntersectionPoint(pA, pB, radius);
+            const int2 = getIntersectionPoint(pA, pC, radius);
+            const arcRadius = dist(int1, int2) * 0.7;
+            const bisectPoint = getArcIntersection(int1, int2, arcRadius);
+            if(bisectPoint) {
+                geoCtx.strokeStyle = '#16a34a';
+                geoCtx.lineWidth = 3;
+                geoCtx.setLineDash([5, 5]);
+                geoCtx.beginPath();
+                geoCtx.moveTo(pA.x, pA.y);
+                geoCtx.lineTo(bisectPoint.x, bisectPoint.y);
+                geoCtx.stroke();
+                geoCtx.setLineDash([]);
+            }
+        }
+
+        currentGeoStep++;
+        handleGeoStep();
+    }
+    
+    function drawGeoCanvas() { 
+        geoCtx.clearRect(0, 0, geoCanvas.width, geoCanvas.height); 
+        geoCtx.fillStyle = '#1e3a8a'; 
+        geoCtx.font = 'bold 16px "Noto Sans Tamil"';
+        
+        for(let i=0; i < geoPoints.length && i < currentGeoStep; i++) {
+            const p = geoPoints[i];
+            geoCtx.beginPath(); 
+            geoCtx.arc(p.x, p.y, 7, 0, 2 * Math.PI); 
+            geoCtx.fill();
+            geoCtx.fillText(String.fromCharCode(65+i), p.x + 15, p.y - 15);
+        }
+
+        if (currentGeoStep > 1) { 
+            geoCtx.strokeStyle = '#1e3a8a'; 
+            geoCtx.lineWidth = 3; 
+            geoCtx.beginPath(); 
+            geoCtx.moveTo(geoPoints[0].x, geoPoints[0].y); 
+            geoCtx.lineTo(geoPoints[1].x, geoPoints[1].y); 
+            geoCtx.stroke(); 
+        }
+        if (currentGeoStep > 2) {
+            geoCtx.beginPath(); 
+            geoCtx.moveTo(geoPoints[0].x, geoPoints[0].y); 
+            geoCtx.lineTo(geoPoints[2].x, geoPoints[2].y); 
+            geoCtx.stroke(); 
+        }
+    }
+    
+    function dist(p1, p2) { return Math.sqrt((p1.x - p2.x)**2 + (p1.y - p2.y)**2); }
+    function getIntersectionPoint(p1, p2, radius) {
+        const d = dist(p1, p2);
+        const x = p1.x + (radius/d) * (p2.x - p1.x);
+        const y = p1.y + (radius/d) * (p2.y - p1.y);
+        return {x, y};
+    }
+    function getArcIntersection(p1, p2, r) {
+        const d = dist(p1, p2);
+        if (d > 2*r) return null;
+        const a = d/2;
+        const h = Math.sqrt(r*r - a*a);
+        const x2 = p1.x + a * (p2.x - p1.x) / d;
+        const y2 = p1.y + a * (p2.y - p1.y) / d;
+        return {
+            x: x2 + h * (p2.y - p1.y) / d,
+            y: y2 - h * (p2.x - p1.x) / d
+        };
+    }
+
+    
+    // Mental Math Quiz
+    const mentalMathProblems = [];
+    let currentMentalMathIndex = 0;
+
+    function generateAllMentalMathProblems() {
+        for (let i = 0; i < 50; i++) {
+            const problemType = Math.floor(Math.random() * 2);
+            let question, correctAnswer;
+            if (problemType === 0) {
+                const a = Math.ceil(Math.random() * 5) + 1;
+                const b = Math.ceil(Math.random() * 5) + 1;
+                const multiplier = Math.ceil(Math.random() * 4) + 1;
+                question = `${a}:${b} விகிதத்திற்கு சமமான விகிதம் எது?`;
+                correctAnswer = `${a*multiplier}:${b*multiplier}`;
+            } else {
+                const x = Math.ceil(Math.random() * 10);
+                const c = Math.ceil(Math.random() * 20);
+                const ans = x + c;
+                question = `x + ${c} = ${ans} எனில், x-ன் மதிப்பு என்ன?`;
+                correctAnswer = x.toString();
+            }
+            const options = [correctAnswer];
+            while (options.length < 4) {
+                let wrongOption = (problemType === 0) ? `${Math.ceil(Math.random()*10)}:${Math.ceil(Math.random()*10)}` : (Math.ceil(Math.random()*20)).toString();
+                if (!options.includes(wrongOption) && wrongOption !== correctAnswer) {
+                    options.push(wrongOption);
+                }
+            }
+            mentalMathProblems.push({ question, options: options.sort(() => Math.random() - 0.5), answer: correctAnswer });
+        }
+    }
+
+    function navigateMentalMathProblem(direction) {
+        const newIndex = currentMentalMathIndex + direction;
+        if (newIndex >= 0 && newIndex < mentalMathProblems.length) {
+            currentMentalMathIndex = newIndex;
+            displayMentalMathProblem(currentMentalMathIndex);
+        }
+    }
+
+    function resetMentalMathProblem() {
+        displayMentalMathProblem(currentMentalMathIndex);
+    }
+
+    function displayMentalMathProblem(index) {
+        const problem = mentalMathProblems[index];
+        const quizContainer = document.getElementById('mental-math-quiz');
+        
+        document.getElementById('mental-math-question-counter').textContent = `கேள்வி ${index + 1} / ${mentalMathProblems.length}`;
+        document.getElementById('mental-math-prev-btn').disabled = index === 0;
+        document.getElementById('mental-math-next-btn').disabled = index === mentalMathProblems.length - 1;
+
+        quizContainer.innerHTML = `<p class="text-xl mb-4">${problem.question}</p>
+            <div class="grid grid-cols-2 gap-4">
+                ${problem.options.map(opt => `<button class="bg-white p-4 rounded-lg shadow hover:bg-purple-200 transition" onclick="checkMentalMathAnswer(this, '${opt}', '${problem.answer}')">${opt}</button>`).join('')}
+            </div>
+            <p id="mental-math-feedback" class="mt-4 text-xl font-bold h-8"></p>`;
+    }
+
+    function checkMentalMathAnswer(btn, selected, correct) {
+        const feedback = document.getElementById('mental-math-feedback');
+        const buttons = btn.parentElement.children;
+        for(let button of buttons) {
+            button.disabled = true;
+        }
+
+        if (selected === correct) {
+            feedback.textContent = 'சரியான விடை! 🎉';
+            feedback.className = 'mt-4 text-xl font-bold h-8 text-green-600';
+            btn.classList.add('bg-green-300');
+        } else {
+            feedback.textContent = 'தவறு, மீண்டும் முயற்சிக்கவும்.';
+            feedback.className = 'mt-4 text-xl font-bold h-8 text-red-600';
+            btn.classList.add('bg-red-300');
+        }
+    }
+
+    // --- Tab 4: சொற்களஞ்சியப் பெருக்கம் ---
+    const vocabTerms = [ { term: 'தகு பின்னம்', def: 'தொகுதி பகுதியை விட சிறியதாக இருக்கும் பின்னம்.', viz: 'proper' }, { term: 'தகா பின்னம்', def: 'தொகுதி பகுதியை விட பெரியதாக இருக்கும் பின்னம்.', viz: 'improper' }, { term: 'கலப்பு பின்னம்', def: 'ஒரு முழு எண் மற்றும் ஒரு தகு பின்னம் சேர்ந்தது.', viz: 'mixed' }, { term: 'பகுதி', def: 'ஒரு பின்னத்தில் கோட்டிற்குக் கீழே உள்ள எண்.', viz: 'denominator' }, { term: 'தொகுதி', def: 'ஒரு பின்னத்தில் கோட்டிற்கு மேலே உள்ள எண்.', viz: 'numerator' }, { term: 'சமான பின்னம்', def: 'ஒரே மதிப்பைக் கொண்ட பின்னங்கள்.', viz: 'equivalent' }, { term: 'பெரிய பின்னம்', def: 'ஒப்பிடும்போது அதிக மதிப்பைக் கொண்ட பின்னம்.', viz: 'compare_greater' }, { term: 'சிறிய பின்னம்', def: 'ஒப்பிடும்போது குறைந்த மதிப்பைக் கொண்ட பின்னம்.', viz: 'compare_smaller' }, { term: 'விகிதம்', def: 'இரண்டு அளவுகளை ஒப்பிடுவது.', viz: 'ratio' }, { term: 'விகித சமம்', def: 'இரண்டு விகிதங்கள் சமமாக இருப்பது.', viz: 'proportion' }, { term: 'சமான விகிதம்', def: 'ஒரே மதிப்பைக் கொண்ட வெவ்வேறு விகிதங்கள்.', viz: 'equivalent_ratio' }, ];
+    const vocabListContainer = document.getElementById('vocab-list'); 
+    const vocabDisplayContainer = document.getElementById('vocab-display');
+    vocabTerms.forEach(item => { 
+        const btn = document.createElement('button'); 
+        btn.className = 'text-left p-2 rounded hover:bg-blue-100 transition w-full vocab-btn'; 
+        btn.textContent = item.term; 
+        btn.onclick = () => displayVocab(item, btn); 
+        vocabListContainer.appendChild(btn); 
+    });
+    function displayVocab(item, clickedBtn) { 
+        document.querySelectorAll('.vocab-btn').forEach(btn => btn.classList.remove('selected'));
+        clickedBtn.classList.add('selected');
+        vocabDisplayContainer.innerHTML = `<h4 class="text-4xl font-bold text-blue-800 mb-2">${item.term}</h4><p class="text-center text-gray-800 text-xl font-semibold mb-4">${item.def}</p><div class="w-full flex justify-center items-center mt-4">${generateVocabViz(item.viz)}</div>`; 
+    }
+    function generateVocabViz(type) { 
+        const svg_pie = (num, den, hNum=true, hDen=false) => { 
+            let path = ''; 
+            for(let i=0; i<den; i++) { 
+                const a1 = (i/den)*2*Math.PI-Math.PI/2;
+                const a2 = ((i+1)/den)*2*Math.PI-Math.PI/2; 
+                path += `<path d="M 75,75 L ${75+70*Math.cos(a1)},${75+70*Math.sin(a1)} A 70,70 0 0,1 ${75+70*Math.cos(a2)},${75+70*Math.sin(a2)} Z" fill="${i<num?'#60a5fa':'#e5e7eb'}" stroke="#fff" stroke-width="2"/>`; 
+            } 
+            return `<div class="flex flex-col items-center"><span class="text-4xl font-bold ${hNum?'text-red-500':''}">${num}</span><div class="border-b-2 border-black w-16 my-1"></div><span class="text-4xl font-bold ${hDen?'text-red-500':''}">${den}</span></div><svg viewBox="0 0 150 150" width="150" height="150">${path}</svg>`; 
+        }; 
+        switch(type) { 
+            case 'proper': return `<div class="flex items-center gap-4">${svg_pie(3, 8)}</div>`; 
+            case 'improper': return `<div class="flex items-center gap-4 text-4xl">${svg_pie(8, 8)} + ${svg_pie(3, 8)}</div><p class="mt-2 font-bold text-2xl">= 11/8</p>`; 
+            case 'mixed': return `<div class="flex items-center gap-4"><span class="text-6xl font-bold">1</span>${svg_pie(3, 8)}</div>`; 
+            case 'numerator': return `<div class="flex items-center gap-4">${svg_pie(3, 8, true, false)}</div>`; 
+            case 'denominator': return `<div class="flex items-center gap-4">${svg_pie(3, 8, false, true)}</div>`; 
+            case 'equivalent': return `<div class="flex items-center gap-8">${svg_pie(1, 2)} <span class="text-5xl font-bold">=</span> ${svg_pie(4, 8)}</div>`; 
+            case 'compare_greater': return `<div class="flex items-center gap-4">${svg_pie(3, 4)} <span class="text-5xl font-bold">&gt;</span> ${svg_pie(1, 2)}</div>`; 
+            case 'compare_smaller': return `<div class="flex items-center gap-4">${svg_pie(1, 3)} <span class="text-5xl font-bold">&lt;</span> ${svg_pie(1, 2)}</div>`; 
+            case 'ratio': return `<div class="flex items-center gap-4 text-5xl"><div>${'🔵'.repeat(3)}</div><span class="font-bold">:</span><div>${'🔴'.repeat(4)}</div></div><p class="mt-2 font-bold text-2xl">3 : 4</p>`; 
+            case 'proportion': return `<div class="flex items-center gap-4 text-4xl">(<div>${'🔵'.repeat(2)}:</div><div>${'🔴'.repeat(4)}</div>)<span class="font-bold text-5xl">=</span>(<div>${'🔵'.repeat(1)}:</div><div>${'🔴'.repeat(2)}</div>)</div><p class="mt-2 font-bold text-2xl">2:4 = 1:2</p>`; 
+            case 'equivalent_ratio': return `<div class="flex items-center gap-4 text-4xl">(<div>${'⭐'.repeat(3)}:</div><div>${'🌙'.repeat(5)}</div>)<span class="font-bold text-5xl">=</span>(<div>${'⭐'.repeat(6)}:</div><div>${'🌙'.repeat(10)}</div>)</div>`; 
+            default: return '<p>Visual coming soon.</p>'; 
+        } 
+    }
+
+    // --- Initial Load ---
+    window.onload = () => {
+        const tableButtonsContainer = document.getElementById('table-buttons-container');
+        for (let i = 1; i <= 10; i++) {
+            const button = document.createElement('button');
+            button.className = 'bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full w-12 h-12';
+            button.textContent = i;
+            button.onclick = () => startTableQuiz(i);
+            tableButtonsContainer.appendChild(button);
+        }
+        
+        document.querySelector('.tab-btn').click();
+        setupFormulaSteps();
+        
+        // --- Initial setup for Tab 2 simulations ---
+        updateRatioExplanationVisuals();
+        displayRatioQuestion(0);
+        
+        // Populate linear equations
+        for (let i = 0; i < 50; i++) {
+            const x = Math.floor(Math.random() * 4) + 2; // Coeff 2 to 5
+            const solution = Math.floor(Math.random() * 8) + 2; // Solution 2 to 9
+            const c = Math.floor(Math.random() * 9) + 1; // Constant 1 to 9
+            linearEquations.push({
+                x, c, solution,
+                ans: x * solution + c,
+                text: `${x}x + ${c} = ${x * solution + c}`
+            });
+        }
+        displayEquation(0);
+        
+        generateAllAlgebraProblems();
+        displayAlgebraProblem(0);
+
+        // --- Initial setup for Tab 3 simulations ---
+        generateAllLifeSumsProblems();
+        displayLifeSumsProblem(0);
+        generateAllGraphProblems();
+        displayGraphProblem(0);
+        setupGeoSimulation();
+        generateAllMentalMathProblems();
+        displayMentalMathProblem(0);
+    };
+
+</script>
+
+</body>
+</html>
