@@ -653,7 +653,7 @@
         document.getElementById('ratio-exp-2-text').textContent = `விகிதம் 2 = ${r2a} : ${r2b}`;
 
         const viz1 = document.getElementById('ratio-exp-1-viz');
-        viz1.innerHTML = `<div class="flex justify-center items-center flex-wrap text-3xl">${'🍎'.repeat(r1a)}</div><div class="flex justify-center items-center flex-wrap text-3xl">${'🥭'.repeat(r1b)}</div>`;
+        viz1.innerHTML = `<div class="flex justify-center items-center flex-wrap text-3xl">${'�'.repeat(r1a)}</div><div class="flex justify-center items-center flex-wrap text-3xl">${'🥭'.repeat(r1b)}</div>`;
         const viz2 = document.getElementById('ratio-exp-2-viz');
         viz2.innerHTML = `<div class="flex justify-center items-center flex-wrap text-3xl">${'🍎'.repeat(r2a)}</div><div class="flex justify-center items-center flex-wrap text-3xl">${'🥭'.repeat(r2b)}</div>`;
 
@@ -1097,22 +1097,22 @@
         ctx.clearRect(0, 0, w, h);
 
         const maxValue = Math.max(cost, selling) * 1.2;
-        const costHeight = (cost / maxValue) * (h - 40);
-        const sellingHeight = (selling / maxValue) * (h - 40);
+        const costHeight = (cost / maxValue) * (h - 50);
+        const sellingHeight = (selling / maxValue) * (h - 50);
 
         // Cost Price Bar
         ctx.fillStyle = '#60a5fa';
-        ctx.fillRect(50, h - 30 - costHeight, 75, costHeight);
+        ctx.fillRect(40, h - 40 - costHeight, 75, costHeight);
         ctx.fillStyle = '#1e3a8a';
         ctx.font = 'bold 14px "Noto Sans Tamil"';
         ctx.textAlign = 'center';
-        ctx.fillText('அடக்க விலை', 87.5, h - 10);
+        ctx.fillText('அடக்க விலை', 77.5, h - 25);
         
         // Selling Price Bar
         ctx.fillStyle = '#34d399';
-        ctx.fillRect(150, h - 30 - sellingHeight, 75, sellingHeight);
+        ctx.fillRect(160, h - 40 - sellingHeight, 75, sellingHeight);
         ctx.fillStyle = '#065f46';
-        ctx.fillText('விற்பனை விலை', 187.5, h - 10);
+        ctx.fillText('விற்பனை விலை', 197.5, h - 10);
     }
 
     function checkLifeSumsAnswer() {
@@ -1344,9 +1344,9 @@
     let geoPoints = [];
     let currentGeoStep = 0;
     const geoSteps = [
-        { text: "படி 1: முதல் புள்ளியை (A) வைக்க, பொத்தானைக் கிளிக் செய்யவும்.", action: "draw_point" },
-        { text: "படி 2: இரண்டாவது புள்ளியை (B) வைக்க, பொத்தானைக் கிளிக் செய்யவும்.", action: "draw_point" },
-        { text: "படி 3: மூன்றாவது புள்ளியை (C) வைக்க, பொத்தானைக் கிளிக் செய்யவும்.", action: "draw_point" },
+        { text: "படி 1: கோணத்தின் முனையை (A) வரைய, பொத்தானை அழுத்தவும்.", action: "draw_point_A" },
+        { text: "படி 2: முதல் கோட்டிற்கான புள்ளியை (B) வரைய, பொத்தானை அழுத்தவும்.", action: "draw_point_B" },
+        { text: "படி 3: இரண்டாவது கோட்டிற்கான புள்ளியை (C) வரைய, பொத்தானை அழுத்தவும்.", action: "draw_point_C" },
         { text: "படி 4: முனையிலிருந்து ஒரு வில்லை வரையவும்.", action: "draw_arc_1" },
         { text: "படி 5: வெட்டும் புள்ளிகளிலிருந்து விற்களை வரையவும்.", action: "draw_arc_2" },
         { text: "படி 6: கோண இரு சமவெட்டியை வரையவும்.", action: "draw_bisector" },
@@ -1357,7 +1357,7 @@
         geoPoints = [
             { x: geoCanvas.width * 0.5, y: geoCanvas.height * 0.5 },
             { x: geoCanvas.width * 0.9, y: geoCanvas.height * 0.3 },
-            { x: geoCanvas.width * 0.8, y: geoCanvas.height * 0.9 }
+            { x: geoCanvas.width * 0.2, y: geoCanvas.height * 0.8 }
         ];
         geoCtx.clearRect(0, 0, geoCanvas.width, geoCanvas.height);
         handleGeoStep();
@@ -1386,23 +1386,55 @@
         const instruction = document.getElementById('geo-instruction');
         if(currentGeoStep >= geoSteps.length) {
             instruction.textContent = "வெற்றிகரமாக முடிந்தது!";
-            renderGeoSteps(); // To disable the last button
-            return;
+        } else {
+            const step = geoSteps[currentGeoStep];
+            instruction.textContent = step.text;
         }
-        const step = geoSteps[currentGeoStep];
-        instruction.textContent = step.text;
         renderGeoSteps();
     }
 
     function executeGeoStep(index) {
         if (index !== currentGeoStep) return;
         
-        drawGeoCanvas(); // Redraw canvas based on current step
+        currentGeoStep++;
+        drawGeoCanvas();
+        handleGeoStep();
+    }
+    
+    function drawGeoCanvas() { 
+        geoCtx.clearRect(0, 0, geoCanvas.width, geoCanvas.height); 
+        geoCtx.fillStyle = '#1e3a8a'; 
+        geoCtx.font = 'bold 16px "Noto Sans Tamil"';
         
-        const step = geoSteps[index];
+        // Draw points
+        for(let i=0; i < geoPoints.length && i < currentGeoStep; i++) {
+            const p = geoPoints[i];
+            geoCtx.beginPath(); 
+            geoCtx.arc(p.x, p.y, 7, 0, 2 * Math.PI); 
+            geoCtx.fill();
+            geoCtx.fillText(String.fromCharCode(65+i), p.x + 15, p.y - 15);
+        }
+
+        // Draw lines
+        if (currentGeoStep > 1) { 
+            geoCtx.strokeStyle = '#1e3a8a'; 
+            geoCtx.lineWidth = 3; 
+            geoCtx.beginPath(); 
+            geoCtx.moveTo(geoPoints[0].x, geoPoints[0].y); 
+            geoCtx.lineTo(geoPoints[1].x, geoPoints[1].y); 
+            geoCtx.stroke(); 
+        }
+        if (currentGeoStep > 2) {
+            geoCtx.beginPath(); 
+            geoCtx.moveTo(geoPoints[0].x, geoPoints[0].y); 
+            geoCtx.lineTo(geoPoints[2].x, geoPoints[2].y); 
+            geoCtx.stroke(); 
+        }
+        
         const [pA, pB, pC] = geoPoints;
 
-        if (step.action === 'draw_arc_1') {
+        // Draw arcs
+        if (currentGeoStep > 3) {
             const radius = Math.min(dist(pA, pB), dist(pA, pC)) * 0.5;
             geoCtx.strokeStyle = '#f59e0b';
             geoCtx.lineWidth = 2;
@@ -1411,7 +1443,8 @@
             const endAngle = Math.atan2(pC.y - pA.y, pC.x - pA.x);
             geoCtx.arc(pA.x, pA.y, radius, startAngle, endAngle);
             geoCtx.stroke();
-        } else if (step.action === 'draw_arc_2') {
+        }
+        if (currentGeoStep > 4) {
             const radius = Math.min(dist(pA, pB), dist(pA, pC)) * 0.5;
             const int1 = getIntersectionPoint(pA, pB, radius);
             const int2 = getIntersectionPoint(pA, pC, radius);
@@ -1423,8 +1456,10 @@
             geoCtx.beginPath();
             geoCtx.arc(int2.x, int2.y, arcRadius, 0, 2 * Math.PI);
             geoCtx.stroke();
-        } else if (step.action === 'draw_bisector') {
-             const radius = Math.min(dist(pA, pB), dist(pA, pC)) * 0.5;
+        }
+        // Draw bisector
+        if (currentGeoStep > 5) {
+            const radius = Math.min(dist(pA, pB), dist(pA, pC)) * 0.5;
             const int1 = getIntersectionPoint(pA, pB, radius);
             const int2 = getIntersectionPoint(pA, pC, radius);
             const arcRadius = dist(int1, int2) * 0.7;
@@ -1439,38 +1474,6 @@
                 geoCtx.stroke();
                 geoCtx.setLineDash([]);
             }
-        }
-
-        currentGeoStep++;
-        handleGeoStep();
-    }
-    
-    function drawGeoCanvas() { 
-        geoCtx.clearRect(0, 0, geoCanvas.width, geoCanvas.height); 
-        geoCtx.fillStyle = '#1e3a8a'; 
-        geoCtx.font = 'bold 16px "Noto Sans Tamil"';
-        
-        for(let i=0; i < geoPoints.length && i < currentGeoStep; i++) {
-            const p = geoPoints[i];
-            geoCtx.beginPath(); 
-            geoCtx.arc(p.x, p.y, 7, 0, 2 * Math.PI); 
-            geoCtx.fill();
-            geoCtx.fillText(String.fromCharCode(65+i), p.x + 15, p.y - 15);
-        }
-
-        if (currentGeoStep > 1) { 
-            geoCtx.strokeStyle = '#1e3a8a'; 
-            geoCtx.lineWidth = 3; 
-            geoCtx.beginPath(); 
-            geoCtx.moveTo(geoPoints[0].x, geoPoints[0].y); 
-            geoCtx.lineTo(geoPoints[1].x, geoPoints[1].y); 
-            geoCtx.stroke(); 
-        }
-        if (currentGeoStep > 2) {
-            geoCtx.beginPath(); 
-            geoCtx.moveTo(geoPoints[0].x, geoPoints[0].y); 
-            geoCtx.lineTo(geoPoints[2].x, geoPoints[2].y); 
-            geoCtx.stroke(); 
         }
     }
     
@@ -1662,3 +1665,4 @@
 
 </body>
 </html>
+�
