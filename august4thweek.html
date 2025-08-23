@@ -1,0 +1,1995 @@
+<!DOCTYPE html>
+<html lang="ta">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>கணிதப் பயிற்சி</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Tamil:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans Tamil', sans-serif;
+            touch-action: manipulation; /* Prevents double tap zoom on mobile */
+        }
+        .tab-btn {
+            transition: all 0.3s ease;
+        }
+        .tab-btn.active {
+            background-color: #4f46e5;
+            color: white;
+            border-bottom-width: 4px;
+            border-color: #fbbf24;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .simulation-card {
+            background-color: white;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            border: 1px solid #e5e7eb;
+            transition: transform 0.3s ease;
+        }
+        .simulation-card:hover {
+            transform: translateY(-5px);
+        }
+        canvas {
+            border: 2px solid #d1d5db;
+            border-radius: 0.5rem;
+            background-color: #f9fafb;
+        }
+        .pickup-ball {
+            width: 40px;
+            height: 40px;
+            background-color: #ef4444; /* red-500 */
+            border-radius: 50%;
+            cursor: pointer;
+            position: relative;
+            border: 2px solid white;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .pickup-ball.active {
+            background-color: #a3a3a3;
+            cursor: not-allowed;
+        }
+        /* Custom styles for gamification */
+        .correct-answer {
+            animation: correct 0.5s ease-in-out;
+        }
+        @keyframes correct {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); background-color: #dcfce7; }
+            100% { transform: scale(1); }
+        }
+        .incorrect-answer {
+            animation: incorrect 0.5s ease-in-out;
+        }
+        @keyframes incorrect {
+            0%, 100% { transform: translateX(0); }
+            20% { transform: translateX(-10px); }
+            40% { transform: translateX(10px); }
+            60% { transform: translateX(-10px); }
+            80% { transform: translateX(10px); }
+        }
+        .vocab-btn.active {
+            background-color: #4f46e5;
+            color: white;
+            border-color: #fbbf24;
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800">
+
+    <div class="container mx-auto p-2 sm:p-4">
+        <!-- Header Section -->
+        <header class="text-center p-4 bg-white rounded-xl shadow-md mb-4">
+            <h1 class="text-xl sm:text-2xl md:text-3xl font-bold text-indigo-700">கன்ய சம்பூர்ணா திட்டம் / கன்யா பெண்கள் கல்வி திட்டம்</h1>
+            <p class="text-sm sm:text-base text-gray-600 mt-1">இத்திட்டம் TITAN மற்றும் KALIKE நிறுவனங்களின் பங்களிப்புடன் செயல்படுத்தப்படுகிறது</p>
+            <h2 class="text-lg sm:text-xl md:text-2xl font-semibold text-amber-600 mt-2">நடுவுல கொஞ்சம் கற்றலைத் தேடி</h2>
+            <h3 class="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-800 mt-2">கணிதம்</h3>
+            <p class="text-md sm:text-lg text-gray-500 mt-1">ஆகஸ்ட் - 4வது வாரம்</p>
+        </header>
+
+        <!-- Tabs Navigation -->
+        <div class="flex flex-wrap justify-center border-b-2 border-gray-300 mb-4 bg-white rounded-lg p-1 shadow-sm">
+            <button class="tab-btn flex-grow text-center p-2 sm:p-4 text-sm sm:text-lg font-semibold text-gray-600 border-b-4 border-transparent rounded-t-lg" onclick="openTab(event, 'tab1')">வாய்மொழி பயிற்சி</button>
+            <button class="tab-btn flex-grow text-center p-2 sm:p-4 text-sm sm:text-lg font-semibold text-gray-600 border-b-4 border-transparent rounded-t-lg" onclick="openTab(event, 'tab2')">ஆசிரியர் செயல்பாடு</button>
+            <button class="tab-btn flex-grow text-center p-2 sm:p-4 text-sm sm:text-lg font-semibold text-gray-600 border-b-4 border-transparent rounded-t-lg" onclick="openTab(event, 'tab3')">கல்விசார் செயல்பாடுகள்</button>
+            <button class="tab-btn flex-grow text-center p-2 sm:p-4 text-sm sm:text-lg font-semibold text-gray-600 border-b-4 border-transparent rounded-t-lg" onclick="openTab(event, 'tab4')">சொற்களஞ்சியம்</button>
+        </div>
+
+        <!-- Tab Content -->
+        <main>
+            <!-- Tab 1: வாய்மொழி பயிற்சி -->
+            <div id="tab1" class="tab-content active">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Multiplication Pattern Builder -->
+                    <div class="simulation-card md:col-span-2">
+                        <h3 class="text-xl font-bold mb-4 text-center text-indigo-600">பெருக்கல் வாய்ப்பாடு பயிற்சி</h3>
+                        <div class="flex items-center justify-center space-x-4 mb-4">
+                            <label for="table-slider" class="font-semibold">எண்:</label>
+                            <input id="table-slider" type="range" min="1" max="10" value="3" class="w-1/2">
+                            <span id="table-number" class="font-bold text-2xl text-amber-500 w-10 text-center">3</span>
+                        </div>
+                        
+                        <div class="flex flex-col lg:flex-row gap-6 items-center">
+                            <!-- Pattern Visualization -->
+                            <div class="w-full lg:w-1/2 text-center">
+                                <canvas id="pattern-canvas" width="300" height="320" class="cursor-pointer"></canvas>
+                                <p class="font-bold text-xl mt-2">கூட்டல் முறை: <span id="addition-expression" class="text-green-600">0</span></p>
+                            </div>
+
+                            <!-- Interactive Part -->
+                            <div class="w-full lg:w-1/2">
+                                <div id="table-output" class="text-lg text-left font-semibold bg-indigo-50 p-4 rounded-lg mb-4 h-64 overflow-y-auto">
+                                    <p class="text-gray-400 text-center">இங்கே அட்டவணையை உருவாக்குங்கள்!</p>
+                                </div>
+                                <div id="quiz-question" class="text-center text-2xl font-bold my-4 h-8"></div>
+                                <div class="flex items-center justify-center space-x-2">
+                                    <input type="number" id="quiz-input" class="w-1/2 p-2 border-2 border-gray-300 rounded-lg text-center text-xl focus:ring-indigo-500 focus:border-indigo-500">
+                                    <button id="quiz-submit" class="px-5 py-2 bg-green-500 text-white font-semibold rounded-lg shadow-md hover:bg-green-600">சரிபார்</button>
+                                </div>
+                                <p id="quiz-feedback" class="mt-2 h-6 font-semibold text-center"></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Proportions -->
+                    <div class="simulation-card">
+                         <h3 class="text-xl font-bold mb-4 text-center text-indigo-600">நேர் விகிதம், எதிர் விகிதம்</h3>
+                        <!-- Direct Proportion -->
+                        <div class="mb-6">
+                            <h4 class="font-semibold text-lg mb-2">நேர் விகிதம் (பேனாக்களின் விலை)</h4>
+                            <label for="pens-slider">பேனாக்களின் எண்ணிக்கை: <span id="pens-count">5</span></label>
+                            <input id="pens-slider" type="range" min="1" max="15" value="5" class="w-full mt-1">
+                            <div class="mt-2 text-center text-lg font-bold bg-green-100 p-3 rounded-lg">
+                                விலை: ₹<span id="pens-price">25</span>
+                            </div>
+                        </div>
+                        <!-- Inverse Proportion -->
+                        <div>
+                            <h4 class="font-semibold text-lg mb-2">எதிர் விகிதம் (வேலையாட்கள்)</h4>
+                            <label for="workers-slider">வேலையாட்களின் எண்ணிக்கை: <span id="workers-count">4</span></label>
+                            <input id="workers-slider" type="range" min="1" max="10" value="4" class="w-full mt-1">
+                            <div class="mt-2 text-center text-lg font-bold bg-red-100 p-3 rounded-lg">
+                                நாட்கள்: <span id="work-days">10</span>
+                            </div>
+                        </div>
+                    </div>
+                     <!-- Angle Types -->
+                    <div class="simulation-card">
+                        <h3 class="text-xl font-bold mb-4 text-center text-indigo-600">கோணங்களின் வகைகள்</h3>
+                        <div class="flex flex-col items-center justify-center gap-4">
+                            <canvas id="angle-canvas" width="400" height="400"></canvas>
+                            <div class="text-center">
+                                <label for="angle-slider" class="font-semibold">கோணத்தை மாற்றவும்:</label>
+                                <input id="angle-slider" type="range" min="0" max="360" value="45" class="w-64 mt-2">
+                                <div id="angle-info" class="mt-2 text-2xl font-bold p-4 rounded-lg transition-colors duration-300">
+                                    <span id="angle-type">குறுங்கோணம்</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 2: ஆசிரியர் செயல்பாடு -->
+            <div id="tab2" class="tab-content">
+                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Line, Ray, Segment -->
+                    <div class="simulation-card">
+                        <h3 class="text-xl font-bold mb-4 text-center text-indigo-600">கோடு, கதிர், கோட்டுப்பகுதி</h3>
+                        <div class="flex justify-center space-x-2 sm:space-x-4 mb-4">
+                            <button id="btn-line" class="px-3 py-2 bg-indigo-500 text-white rounded-lg shadow-md hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-400">கோடு</button>
+                            <button id="btn-segment" class="px-3 py-2 bg-gray-300 text-gray-800 rounded-lg shadow-md hover:bg-gray-400">கோட்டுப்பகுதி</button>
+                            <button id="btn-ray" class="px-3 py-2 bg-gray-300 text-gray-800 rounded-lg shadow-md hover:bg-gray-400">கதிர்</button>
+                        </div>
+                        <canvas id="line-canvas" width="500" height="200"></canvas>
+                        <p id="line-desc" class="mt-4 text-center font-semibold text-lg bg-gray-100 p-3 rounded-lg"></p>
+                    </div>
+                    <!-- Plotting Points -->
+                    <div class="simulation-card">
+                        <h3 class="text-xl font-bold mb-4 text-center text-indigo-600">வரையறைப்பத்தலில் புள்ளிகள் குறித்தல்</h3>
+                        <p class="text-center text-lg mb-2">புள்ளியைக் குறிக்கவும்: <span id="point-to-plot" class="font-bold text-2xl text-amber-600"></span></p>
+                        <div class="flex items-center justify-center gap-4">
+                            <div id="ball-container" class="flex flex-col items-center gap-2">
+                                <div id="pickup-ball" class="pickup-ball" title="பந்தை கிளிக் செய்து எடுக்கவும்"></div>
+                            </div>
+                            <canvas id="graph-canvas" width="500" height="500" class="mx-auto block"></canvas>
+                        </div>
+                        <p id="dynamic-point-label" class="font-bold text-2xl h-8 text-center mt-2"></p>
+                        <div id="graph-feedback" class="mt-2 text-center font-bold text-xl h-8"></div>
+                    </div>
+                    <!-- Proportion Problems -->
+                    <div class="simulation-card lg:col-span-2">
+                        <h3 class="text-xl font-bold mb-4 text-center text-indigo-600">நேர்விகிதம், எதிர்விகிதம் கணக்குகள்</h3>
+                        <div id="proportion-problem-container" class="p-4 border rounded-lg bg-gray-50">
+                            <p id="proportion-question-number" class="text-md font-bold text-gray-600 text-center mb-2"></p>
+                            <p id="proportion-question-text" class="text-lg font-semibold mb-4 text-center h-20"></p>
+                            <div id="proportion-simulation-area" class="my-4 flex items-center justify-center min-h-[150px]"></div>
+                            <div class="flex items-center justify-center space-x-2 mt-4">
+                                <label for="proportion-answer-input" class="font-semibold">விடை:</label>
+                                <input type="number" id="proportion-answer-input" class="w-1/2 p-2 border-2 border-gray-300 rounded-lg text-center text-xl">
+                            </div>
+                            <p id="proportion-feedback" class="mt-2 h-6 font-semibold text-center"></p>
+                        </div>
+                        <div class="flex justify-between items-center mt-4">
+                            <button id="proportion-prev-btn" class="px-4 py-2 bg-gray-500 text-white font-semibold rounded-lg shadow-md hover:bg-gray-600">முந்தைய</button>
+                            <div class="space-x-2">
+                                <button id="proportion-check-btn" class="px-4 py-2 bg-green-500 text-white font-semibold rounded-lg shadow-md hover:bg-green-600">சரிபார்</button>
+                                <button id="proportion-reset-btn" class="px-4 py-2 bg-yellow-500 text-white font-semibold rounded-lg shadow-md hover:bg-yellow-600">மீட்டமை</button>
+                            </div>
+                            <button id="proportion-next-btn" class="px-4 py-2 bg-gray-500 text-white font-semibold rounded-lg shadow-md hover:bg-gray-600">அடுத்து</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 3: கல்விசார் செயல்பாடுகள் -->
+            <div id="tab3" class="tab-content">
+                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Life Problems -->
+                    <div class="simulation-card lg:col-span-2">
+                        <h3 class="text-xl font-bold mb-4 text-center text-indigo-600">வாழ்க்கை கணக்குகள்</h3>
+                        <div id="life-problem-container" class="p-4 border rounded-lg bg-gray-50">
+                            <p id="life-problem-question-number" class="text-md font-bold text-gray-600 text-center mb-2"></p>
+                            <p id="life-problem-question-text" class="text-lg font-semibold mb-4 text-center h-20"></p>
+                            <div id="life-problem-simulation-area" class="my-4 flex items-center justify-center min-h-[150px]"></div>
+                            <div class="flex items-center justify-center space-x-2 mt-4">
+                                <label for="life-problem-answer-input" class="font-semibold">விடை:</label>
+                                <input type="number" id="life-problem-answer-input" class="w-1/2 p-2 border-2 border-gray-300 rounded-lg text-center text-xl">
+                            </div>
+                            <p id="life-problem-feedback" class="mt-2 h-6 font-semibold text-center"></p>
+                        </div>
+                        <div class="flex justify-between items-center mt-4">
+                            <button id="life-problem-prev-btn" class="px-4 py-2 bg-gray-500 text-white font-semibold rounded-lg shadow-md hover:bg-gray-600">முந்தைய</button>
+                            <div class="space-x-2">
+                                <button id="life-problem-check-btn" class="px-4 py-2 bg-green-500 text-white font-semibold rounded-lg shadow-md hover:bg-green-600">சரிபார்</button>
+                                <button id="life-problem-reset-btn" class="px-4 py-2 bg-yellow-500 text-white font-semibold rounded-lg shadow-md hover:bg-yellow-600">மீட்டமை</button>
+                            </div>
+                            <button id="life-problem-next-btn" class="px-4 py-2 bg-gray-500 text-white font-semibold rounded-lg shadow-md hover:bg-gray-600">அடுத்து</button>
+                        </div>
+                    </div>
+                    <!-- Geometry Practice -->
+                    <div class="simulation-card">
+                        <h3 class="text-xl font-bold mb-4 text-center text-indigo-600">வடிவியல் பயிற்சி - சிறப்பு கோணங்கள் வரைதல்</h3>
+                        <p class="text-center text-lg mb-2">வரையவும்: <span id="angle-to-draw" class="font-bold text-2xl text-amber-600"></span></p>
+                        <canvas id="draw-angle-canvas" width="400" height="300" class="mx-auto block"></canvas>
+                        <p id="draw-angle-feedback" class="mt-2 text-center font-bold text-xl h-8 mb-4"></p>
+                        <div class="flex justify-between">
+                            <button id="clear-drawing-btn" class="px-4 py-2 bg-red-500 text-white font-semibold rounded-lg shadow-md hover:bg-red-600">அழி</button>
+                            <button id="next-angle-btn" class="px-4 py-2 bg-indigo-500 text-white font-semibold rounded-lg shadow-md hover:bg-indigo-600">அடுத்த கோணம்</button>
+                        </div>
+                    </div>
+                    <!-- Graph Drawing Practice -->
+                    <div class="simulation-card">
+                        <h3 class="text-xl font-bold mb-4 text-center text-indigo-600">வரைபட பயிற்சி - வடிவங்கள் வரைதல்</h3>
+                        <p class="text-center text-lg mb-2">புள்ளிகளைக் குறித்து <span id="shape-name" class="font-bold text-amber-600"></span> வரையவும்:</p>
+                        <p id="shape-points-list" class="text-center font-mono text-lg mb-2 h-16 overflow-y-auto"></p>
+                         <div class="flex items-center justify-center gap-4">
+                            <div id="shape-ball-container" class="flex flex-col items-center gap-2">
+                                <div id="shape-pickup-ball" class="pickup-ball" title="பந்தை கிளிக் செய்து எடுக்கவும்"></div>
+                            </div>
+                            <canvas id="shape-canvas" width="400" height="400" class="mx-auto block"></canvas>
+                        </div>
+                        <p id="shape-dynamic-point-label" class="font-bold text-2xl h-8 text-center mt-2"></p>
+                        <p id="shape-feedback" class="mt-2 text-center font-bold text-red-500 h-6"></p>
+                        <button id="next-shape-btn" class="mt-4 w-full px-4 py-2 bg-indigo-500 text-white font-semibold rounded-lg shadow-md hover:bg-indigo-600">அடுத்த வடிவம்</button>
+                    </div>
+                    <!-- Mental Maths -->
+                    <div class="simulation-card md:col-span-2">
+                        <h3 class="text-xl font-bold mb-4 text-center text-indigo-600">மனக் கணக்கு</h3>
+                        <div id="mental-math-container">
+                             <p id="mental-math-question-number" class="text-md font-bold text-gray-600 text-center mb-2"></p>
+                             <p id="mental-math-question" class="text-2xl font-bold mb-4 h-20 text-center flex items-center justify-center"></p>
+                             
+                             <!-- Simulation Area -->
+                             <div class="flex justify-center my-4">
+                                 <canvas id="mental-math-canvas" width="400" height="250"></canvas>
+                             </div>
+     
+                             <div class="flex items-center justify-center space-x-2">
+                                 <input type="number" id="mental-math-input" class="w-1/2 p-2 border-2 border-gray-300 rounded-lg text-center text-xl focus:ring-indigo-500 focus:border-indigo-500">
+                             </div>
+                             <p id="mental-math-feedback" class="mt-2 h-6 font-semibold text-center"></p>
+     
+                             <div class="flex justify-between items-center mt-4">
+                                 <button id="mental-math-prev-btn" class="px-4 py-2 bg-gray-500 text-white font-semibold rounded-lg shadow-md hover:bg-gray-600">முந்தைய</button>
+                                 <div class="space-x-2">
+                                     <button id="mental-math-check-btn" class="px-4 py-2 bg-green-500 text-white font-semibold rounded-lg shadow-md hover:bg-green-600">சரிபார்</button>
+                                     <button id="mental-math-reset-btn" class="px-4 py-2 bg-yellow-500 text-white font-semibold rounded-lg shadow-md hover:bg-yellow-600">மீட்டமை</button>
+                                 </div>
+                                 <button id="mental-math-next-btn" class="px-4 py-2 bg-gray-500 text-white font-semibold rounded-lg shadow-md hover:bg-gray-600">அடுத்து</button>
+                             </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 4: சொற்களஞ்சியம் -->
+            <div id="tab4" class="tab-content">
+                <div class="flex flex-col md:flex-row gap-6">
+                    <div class="w-full md:w-1/3">
+                        <h3 class="text-xl font-bold mb-4 text-center text-indigo-600">கணிதச் சொற்கள்</h3>
+                        <div id="vocab-list" class="grid grid-cols-2 gap-2">
+                            <!-- Vocab buttons will be inserted here by JS -->
+                        </div>
+                    </div>
+                    <div class="w-full md:w-2/3 simulation-card">
+                        <h3 id="vocab-title" class="text-3xl font-bold mb-4 text-center text-indigo-600 h-16 flex items-center justify-center">ஒரு சொல்லைத் தேர்ந்தெடுக்கவும்</h3>
+                        <div id="vocab-visual" class="flex items-center justify-center min-h-[300px] bg-gray-50 rounded-lg p-4">
+                            <p class="text-gray-500">இங்கே காட்சி விளக்கம் தோன்றும்.</p>
+                        </div>
+                        <p id="vocab-desc" class="mt-4 text-xl text-center font-bold h-24"></p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // --- UTILITY FUNCTIONS ---
+        function openTab(evt, tabName) {
+            const tabcontent = document.getElementsByClassName("tab-content");
+            for (let i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].style.display = "none";
+            }
+            const tablinks = document.getElementsByClassName("tab-btn");
+            for (let i = 0; i < tablinks.length; i++) {
+                tablinks[i].className = tablinks[i].className.replace(" active", "");
+            }
+            document.getElementById(tabName).style.display = "block";
+            evt.currentTarget.className += " active";
+        }
+
+        // --- TAB 1: வாய்மொழி பயிற்சி ---
+        const tableSlider = document.getElementById('table-slider');
+        const tableNumber = document.getElementById('table-number');
+        const tableOutput = document.getElementById('table-output');
+        const quizQuestion = document.getElementById('quiz-question');
+        const quizInput = document.getElementById('quiz-input');
+        const quizSubmit = document.getElementById('quiz-submit');
+        const quizFeedback = document.getElementById('quiz-feedback');
+        const patternCanvas = document.getElementById('pattern-canvas');
+        const patternCtx = patternCanvas.getContext('2d');
+        const additionExpressionEl = document.getElementById('addition-expression');
+
+        let baseNumber, currentMultiplier;
+        let dots = [];
+        let clickCount = 0;
+
+        function startTableBuilder() {
+            baseNumber = parseInt(tableSlider.value);
+            tableNumber.textContent = baseNumber;
+            currentMultiplier = 1;
+            tableOutput.innerHTML = `<p class="text-gray-400 text-center">இங்கே அட்டவணையை உருவாக்குங்கள்!</p>`;
+            askQuestion();
+        }
+
+        function askQuestion() {
+            if (currentMultiplier > 10) {
+                quizQuestion.textContent = 'அருமை! முடிந்தது!';
+                quizFeedback.textContent = 'வேறு எண்ணை தேர்ந்தெடுக்கவும்.';
+                quizInput.disabled = true;
+                quizSubmit.disabled = true;
+                return;
+            }
+            
+            quizInput.disabled = false;
+            quizSubmit.disabled = false;
+            quizQuestion.textContent = `${baseNumber} x ${currentMultiplier} = ?`;
+            quizInput.value = '';
+            quizFeedback.textContent = '';
+            quizInput.classList.remove('correct-answer', 'incorrect-answer');
+            quizInput.focus();
+            
+            additionExpressionEl.textContent = '0';
+
+            generateDots();
+            drawPattern();
+        }
+
+        function generateDots() {
+            dots = [];
+            clickCount = 0;
+            const radius = 10;
+            const padding = 25;
+            const startX = 30;
+            const startY = 30;
+
+            for (let i = 0; i < currentMultiplier; i++) {
+                for (let j = 0; j < baseNumber; j++) {
+                    dots.push({
+                        x: startX + j * padding,
+                        y: startY + i * padding,
+                        r: radius,
+                        isNew: i === currentMultiplier - 1,
+                        counted: false
+                    });
+                }
+            }
+        }
+
+        function drawPattern() {
+            patternCtx.clearRect(0, 0, patternCanvas.width, patternCanvas.height);
+            dots.forEach(dot => {
+                patternCtx.beginPath();
+                patternCtx.arc(dot.x, dot.y, dot.r, 0, 2 * Math.PI);
+                if (dot.counted) {
+                    patternCtx.fillStyle = '#22c55e'; // Green for counted
+                } else if (dot.isNew) {
+                    patternCtx.fillStyle = '#fbbf24'; // Yellow for new
+                } else {
+                    patternCtx.fillStyle = '#4f46e5'; // Blue for old
+                }
+                patternCtx.fill();
+            });
+        }
+
+        patternCanvas.addEventListener('click', (e) => {
+            const rect = patternCanvas.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+
+            for (const dot of dots) {
+                const distance = Math.sqrt((mouseX - dot.x)**2 + (mouseY - dot.y)**2);
+                if (distance < dot.r && !dot.counted) {
+                    dot.counted = true;
+                    clickCount++;
+                    
+                    // --- CORRECTED DYNAMIC UPDATE LOGIC ---
+                    let expression = '';
+                    const completedGroups = Math.floor(clickCount / baseNumber);
+                    const remainder = clickCount % baseNumber;
+
+                    if (clickCount === 0) {
+                        expression = '0';
+                    } else {
+                        const terms = [];
+                        for (let i = 0; i < completedGroups; i++) {
+                            terms.push(baseNumber);
+                        }
+                        if (remainder > 0) {
+                            terms.push(remainder);
+                        }
+                        expression = terms.join(' + ');
+
+                        if (terms.length > 1) {
+                            expression += ' = ' + clickCount;
+                        }
+                    }
+                    additionExpressionEl.textContent = expression;
+                    // --- END CORRECTED LOGIC ---
+
+                    drawPattern();
+                    break; 
+                }
+            }
+        });
+
+        function checkPatternAnswer() {
+            const correctAnswer = currentMultiplier * baseNumber;
+            const userAnswer = parseInt(quizInput.value);
+
+            if (userAnswer === correctAnswer) {
+                quizFeedback.textContent = 'சரியான பதில்!';
+                quizFeedback.style.color = 'green';
+                quizInput.classList.add('correct-answer');
+                
+                if (currentMultiplier === 1) {
+                    tableOutput.innerHTML = ''; // Clear initial message
+                }
+                tableOutput.innerHTML += `<p>${baseNumber} x ${currentMultiplier} = ${correctAnswer}</p>`;
+                tableOutput.scrollTop = tableOutput.scrollHeight;
+
+                currentMultiplier++;
+                setTimeout(askQuestion, 1000);
+            } else {
+                quizFeedback.textContent = 'தவறு, மீண்டும் முயற்சிக்கவும்.';
+                quizFeedback.style.color = 'red';
+                quizInput.classList.add('incorrect-answer');
+            }
+        }
+        
+        const pensSlider = document.getElementById('pens-slider');
+        const pensCount = document.getElementById('pens-count');
+        const pensPrice = document.getElementById('pens-price');
+
+        pensSlider.addEventListener('input', () => {
+            pensCount.textContent = pensSlider.value;
+            pensPrice.textContent = pensSlider.value * 5;
+        });
+
+        const workersSlider = document.getElementById('workers-slider');
+        const workersCount = document.getElementById('workers-count');
+        const workDays = document.getElementById('work-days');
+        
+        workersSlider.addEventListener('input', () => {
+            const totalWork = 4 * 10;
+            workersCount.textContent = workersSlider.value;
+            workDays.textContent = (totalWork / workersSlider.value).toFixed(1);
+        });
+
+        const angleCanvas = document.getElementById('angle-canvas');
+        const angleCtx = angleCanvas.getContext('2d');
+        const angleSlider = document.getElementById('angle-slider');
+        const angleType = document.getElementById('angle-type');
+        const angleInfo = document.getElementById('angle-info');
+
+        function drawAngle() {
+            const angle = parseInt(angleSlider.value);
+            const rad = angle * Math.PI / 180;
+            const centerX = angleCanvas.width / 2;
+            const centerY = angleCanvas.height / 2;
+            const radius = 150; 
+
+            angleCtx.clearRect(0, 0, angleCanvas.width, angleCanvas.height);
+            
+            // Angle sector fill
+            angleCtx.beginPath();
+            angleCtx.moveTo(centerX, centerY);
+            angleCtx.arc(centerX, centerY, radius, 0, -rad, true);
+            angleCtx.closePath();
+            angleCtx.fillStyle = 'rgba(79, 70, 229, 0.2)';
+            angleCtx.fill();
+
+            // Base line
+            angleCtx.beginPath();
+            angleCtx.moveTo(centerX, centerY);
+            angleCtx.lineTo(centerX + radius, centerY);
+            angleCtx.strokeStyle = '#1e293b';
+            angleCtx.lineWidth = 6; 
+            angleCtx.stroke();
+
+            // Rotated line
+            angleCtx.beginPath();
+            angleCtx.moveTo(centerX, centerY);
+            angleCtx.lineTo(centerX + radius * Math.cos(-rad), centerY + radius * Math.sin(-rad));
+            angleCtx.strokeStyle = '#4338ca';
+            angleCtx.lineWidth = 6; 
+            angleCtx.stroke();
+
+            // Arc
+            angleCtx.beginPath();
+            angleCtx.arc(centerX, centerY, 50, 0, -rad, true); 
+            angleCtx.strokeStyle = '#f59e0b';
+            angleCtx.lineWidth = 4;
+            angleCtx.stroke();
+            
+            // Angle Text
+            angleCtx.fillStyle = '#1e293b';
+            angleCtx.font = 'bold 32px Noto Sans Tamil';
+            angleCtx.textAlign = 'center';
+            angleCtx.textBaseline = 'middle';
+            const textRadius = 80;
+            const textX = centerX + textRadius * Math.cos(-rad / 2);
+            const textY = centerY + textRadius * Math.sin(-rad / 2);
+            angleCtx.fillText(`${angle}°`, textX, textY);
+
+
+            let type = '';
+            let color = 'bg-gray-200';
+            if (angle === 0) { type = 'பூஜ்ஜிய கோணம்'; color = 'bg-blue-100'; }
+            else if (angle > 0 && angle < 90) { type = 'குறுங்கோணம்'; color = 'bg-green-100'; }
+            else if (angle === 90) { type = 'செங்கோணம்'; color = 'bg-yellow-100'; }
+            else if (angle > 90 && angle < 180) { type = 'விரிகோணம்'; color = 'bg-orange-100'; }
+            else if (angle === 180) { type = 'நேர்க்கோணம்'; color = 'bg-red-100'; }
+            else if (angle > 180 && angle < 360) { type = 'பின்வளை கோணம்'; color = 'bg-purple-100'; }
+            else if (angle === 360) { type = 'முழுக்கோணம்'; color = 'bg-pink-100'; }
+            angleType.textContent = type;
+            angleInfo.className = angleInfo.className.replace(/bg-\S+-100/, color);
+        }
+
+        // --- TAB 2: ஆசிரியர் செயல்பாடு ---
+        const lineCanvas = document.getElementById('line-canvas');
+        const lineCtx = lineCanvas.getContext('2d');
+        const lineDesc = document.getElementById('line-desc');
+        const lineBtns = {
+            line: document.getElementById('btn-line'),
+            segment: document.getElementById('btn-segment'),
+            ray: document.getElementById('btn-ray')
+        };
+        
+        function drawLineType(type) {
+            lineCtx.clearRect(0, 0, lineCanvas.width, lineCanvas.height);
+            const w = lineCanvas.width;
+            const h = lineCanvas.height;
+            const midY = h / 2;
+            const startX = 50;
+            const endX = w - 50;
+
+            lineCtx.strokeStyle = '#1e293b';
+            lineCtx.lineWidth = 3;
+
+            Object.values(lineBtns).forEach(btn => {
+                btn.classList.remove('bg-indigo-500', 'text-white');
+                btn.classList.add('bg-gray-300', 'text-gray-800');
+            });
+
+            if (type === 'line') {
+                lineBtns.line.classList.add('bg-indigo-500', 'text-white');
+                lineDesc.textContent = 'கோடு: இருபுறமும் முடிவில்லாமல் நீள்கிறது. இதற்கு தொடக்க மற்றும் முடிவுப் புள்ளிகள் இல்லை.';
+                lineCtx.beginPath();
+                lineCtx.moveTo(startX, midY);
+                lineCtx.lineTo(endX, midY);
+                lineCtx.stroke();
+                lineCtx.moveTo(startX, midY); lineCtx.lineTo(startX + 10, midY - 10); lineCtx.stroke();
+                lineCtx.moveTo(startX, midY); lineCtx.lineTo(startX + 10, midY + 10); lineCtx.stroke();
+                lineCtx.moveTo(endX, midY); lineCtx.lineTo(endX - 10, midY - 10); lineCtx.stroke();
+                lineCtx.moveTo(endX, midY); lineCtx.lineTo(endX - 10, midY + 10); lineCtx.stroke();
+            } else if (type === 'segment') {
+                lineBtns.segment.classList.add('bg-indigo-500', 'text-white');
+                lineDesc.textContent = 'கோட்டுப்பகுதி: ஒரு கோட்டின் ஒரு பகுதி. இதற்கு ஒரு குறிப்பிட்ட நீளம் உண்டு, இரண்டு முடிவுப் புள்ளிகள் உள்ளன.';
+                lineCtx.beginPath();
+                lineCtx.moveTo(startX, midY);
+                lineCtx.lineTo(endX, midY);
+                lineCtx.stroke();
+                lineCtx.beginPath();
+                lineCtx.arc(startX, midY, 5, 0, 2 * Math.PI);
+                lineCtx.arc(endX, midY, 5, 0, 2 * Math.PI);
+                lineCtx.fillStyle = '#ef4444';
+                lineCtx.fill();
+            } else if (type === 'ray') {
+                lineBtns.ray.classList.add('bg-indigo-500', 'text-white');
+                lineDesc.textContent = 'கதிர்: ஒரு தொடக்கப் புள்ளியிலிருந்து தொடங்கி, ஒரு திசையில் முடிவில்லாமல் நீள்கிறது.';
+                lineCtx.beginPath();
+                lineCtx.moveTo(startX, midY);
+                lineCtx.lineTo(endX, midY);
+                lineCtx.stroke();
+                lineCtx.beginPath();
+                lineCtx.arc(startX, midY, 5, 0, 2 * Math.PI);
+                lineCtx.fillStyle = '#ef4444';
+                lineCtx.fill();
+                lineCtx.moveTo(endX, midY); lineCtx.lineTo(endX - 10, midY - 10); lineCtx.stroke();
+                lineCtx.moveTo(endX, midY); lineCtx.lineTo(endX - 10, midY + 10); lineCtx.stroke();
+            }
+        }
+
+        const graphCanvas = document.getElementById('graph-canvas');
+        const graphCtx = graphCanvas.getContext('2d');
+        const pointToPlotEl = document.getElementById('point-to-plot');
+        const graphFeedback = document.getElementById('graph-feedback');
+        const pickupBall = document.getElementById('pickup-ball');
+        const dynamicPointLabel = document.getElementById('dynamic-point-label');
+        
+        let currentPoint = {};
+        const pointsToPlot = [];
+        const graphRange = 10; // From -10 to 10
+        const graphPadding = 40;
+        const graphGridSize = (graphCanvas.width - 2 * graphPadding) / (2 * graphRange);
+        
+        let isBallActive = false;
+        let rollingBallPos = { x: null, y: null };
+
+        function redrawGraph() {
+            drawGraphGrid();
+            drawPlottedPoints();
+            if (isBallActive) {
+                drawRollingBall();
+            }
+        }
+
+        function drawGraphGrid() {
+            const w = graphCanvas.width;
+            const h = graphCanvas.height;
+            const originX = w / 2;
+            const originY = h / 2;
+            
+            graphCtx.clearRect(0, 0, w, h);
+            graphCtx.strokeStyle = '#d1d5db';
+            graphCtx.lineWidth = 1;
+
+            graphCtx.font = 'bold 14px Noto Sans Tamil';
+            graphCtx.fillStyle = '#374151';
+            graphCtx.textAlign = 'center';
+            graphCtx.textBaseline = 'middle';
+
+            for (let i = -graphRange; i <= graphRange; i++) {
+                const x = originX + i * graphGridSize;
+                const y = originY - i * graphGridSize;
+                
+                graphCtx.beginPath();
+                graphCtx.moveTo(x, graphPadding);
+                graphCtx.lineTo(x, h - graphPadding);
+                graphCtx.stroke();
+                
+                graphCtx.beginPath();
+                graphCtx.moveTo(graphPadding, y);
+                graphCtx.lineTo(w - graphPadding, y);
+                graphCtx.stroke();
+
+                if (i !== 0) {
+                    if (i % 2 === 0) { // Show labels for even numbers for clarity
+                        graphCtx.fillText(i, x, originY + 25);
+                        graphCtx.fillText(i, originX - 25, y);
+                    }
+                }
+            }
+            graphCtx.fillText('0', originX - 10, originY + 15);
+            
+            // Axes
+            graphCtx.strokeStyle = '#374151';
+            graphCtx.lineWidth = 2;
+            graphCtx.beginPath();
+            graphCtx.moveTo(graphPadding, originY);
+            graphCtx.lineTo(w - graphPadding, originY);
+            graphCtx.stroke();
+            graphCtx.beginPath();
+            graphCtx.moveTo(originX, graphPadding);
+            graphCtx.lineTo(originX, h - graphPadding);
+            graphCtx.stroke();
+        }
+
+        function generateNewPoint() {
+            const x = Math.floor(Math.random() * (2 * graphRange + 1)) - graphRange;
+            const y = Math.floor(Math.random() * (2 * graphRange + 1)) - graphRange;
+            currentPoint = { x, y };
+            pointToPlotEl.textContent = `(${x}, ${y})`;
+            graphFeedback.textContent = '';
+            pickupBall.classList.remove('active');
+        }
+
+        function drawPlottedPoints() {
+            const originX = graphCanvas.width / 2;
+            const originY = graphCanvas.height / 2;
+            graphCtx.fillStyle = '#22c55e'; // Green for correct points
+            pointsToPlot.forEach(p => {
+                graphCtx.beginPath();
+                graphCtx.arc(originX + p.x * graphGridSize, originY - p.y * graphGridSize, 8, 0, 2 * Math.PI);
+                graphCtx.fill();
+            });
+        }
+
+        function drawRollingBall() {
+            if (rollingBallPos.x === null) return;
+            const originX = graphCanvas.width / 2;
+            const originY = graphCanvas.height / 2;
+            
+            const isCorrect = rollingBallPos.x === currentPoint.x && rollingBallPos.y === currentPoint.y;
+            graphCtx.fillStyle = isCorrect ? '#22c55e' : '#ef4444';
+
+            graphCtx.beginPath();
+            graphCtx.arc(originX + rollingBallPos.x * graphGridSize, originY - rollingBallPos.y * graphGridSize, 10, 0, 2 * Math.PI);
+            graphCtx.fill();
+        }
+        
+        pickupBall.addEventListener('click', () => {
+            if (isBallActive) return;
+            isBallActive = true;
+            pickupBall.classList.add('active');
+            graphCanvas.style.cursor = 'crosshair';
+        });
+
+        graphCanvas.addEventListener('mousemove', (e) => {
+            if (!isBallActive) return;
+            const rect = graphCanvas.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+            const originX = graphCanvas.width / 2;
+            const originY = graphCanvas.height / 2;
+
+            let gridX = Math.round((mouseX - originX) / graphGridSize);
+            let gridY = Math.round((originY - mouseY) / graphGridSize);
+
+            if (gridX < -graphRange) gridX = -graphRange;
+            if (gridY < -graphRange) gridY = -graphRange;
+            if (gridX > graphRange) gridX = graphRange;
+            if (gridY > graphRange) gridY = graphRange;
+
+            rollingBallPos = { x: gridX, y: gridY };
+            dynamicPointLabel.textContent = `(${gridX}, ${gridY})`;
+            redrawGraph();
+        });
+
+        graphCanvas.addEventListener('mouseleave', () => {
+            if (!isBallActive) return;
+            rollingBallPos = { x: null, y: null };
+            dynamicPointLabel.textContent = '';
+            redrawGraph();
+        });
+
+        graphCanvas.addEventListener('click', () => {
+            if (!isBallActive) return;
+            
+            if (rollingBallPos.x === currentPoint.x && rollingBallPos.y === currentPoint.y) {
+                graphFeedback.textContent = 'சரியான பதில்!';
+                graphFeedback.style.color = 'green';
+                if (!pointsToPlot.some(p => p.x === currentPoint.x && p.y === currentPoint.y)) {
+                    pointsToPlot.push({ ...currentPoint });
+                }
+                isBallActive = false;
+                rollingBallPos = { x: null, y: null };
+                dynamicPointLabel.textContent = '';
+                graphCanvas.style.cursor = 'default';
+                redrawGraph();
+                setTimeout(generateNewPoint, 1000);
+            } else {
+                 graphFeedback.textContent = 'தவறு, சரியான புள்ளியைக் குறிக்கவும்.';
+                 graphFeedback.style.color = 'red';
+            }
+        });
+
+
+        // --- Proportion Problems ---
+        const proportionQuestionText = document.getElementById('proportion-question-text');
+        const proportionQuestionNumber = document.getElementById('proportion-question-number');
+        const proportionSimArea = document.getElementById('proportion-simulation-area');
+        const proportionAnswerInput = document.getElementById('proportion-answer-input');
+        const proportionFeedback = document.getElementById('proportion-feedback');
+        const proportionCheckBtn = document.getElementById('proportion-check-btn');
+        const proportionResetBtn = document.getElementById('proportion-reset-btn');
+        const proportionPrevBtn = document.getElementById('proportion-prev-btn');
+        const proportionNextBtn = document.getElementById('proportion-next-btn');
+
+        const proportionQuestions = [
+            { type: 'direct', q: '3 பென்சில்களின் விலை ₹15. எனில், 7 பென்சில்களின் விலை என்ன?', p: {known_i: 3, known_c: 15, unknown_i: 7, unit: 'பென்சில்', result_unit: '₹'}, a: 35 },
+            { type: 'inverse', q: 'ஒரு வேலையை 4 பேர் 12 நாட்களில் முடிப்பார்கள். எனில், 6 பேர் அதே வேலையை எத்தனை நாட்களில் முடிப்பார்கள்?', p: {known_i: 4, known_c: 12, unknown_i: 6, unit: 'நபர்கள்', result_unit: 'நாட்கள்'}, a: 8 },
+            { type: 'direct', q: 'ஒரு மகிழுந்து 2 மணி நேரத்தில் 100 கி.மீ தூரம் செல்கிறது. எனில், 5 மணி நேரத்தில் எவ்வளவு தூரம் செல்லும்?', p: {known_i: 2, known_c: 100, unknown_i: 5, unit: 'மணி நேரம்', result_unit: 'கி.மீ'}, a: 250 },
+            { type: 'inverse', q: 'ஒரு விடுதியில் 20 மாணவர்களுக்கு 30 நாட்களுக்குத் தேவையான உணவு உள்ளது. 10 மாணவர்கள் புதிதாக சேர்ந்தால் (மொத்தம் 30 மாணவர்கள்), அந்த உணவு எத்தனை நாட்களுக்குப் போதுமானதாக இருக்கும்?', p: {known_i: 20, known_c: 30, unknown_i: 30, unit: 'மாணவர்கள்', result_unit: 'நாட்கள்'}, a: 20 },
+            { type: 'direct', q: '5 கிலோகிராம் தக்காளியின் விலை ₹200. எனில், 8 கிலோகிராம் தக்காளியின் விலை என்ன?', p: {known_i: 5, known_c: 200, unknown_i: 8, unit: 'கிலோகிராம்', result_unit: '₹'}, a: 320 },
+            { type: 'inverse', q: 'மணிக்கு 60 கி.மீ வேகத்தில் செல்லும் ஒரு வாகனம், ஒரு குறிப்பிட்ட தூரத்தை 4 மணி நேரத்தில் கடக்கிறது. அதே தூரத்தை மணிக்கு 80 கி.மீ வேகத்தில் சென்றால், எவ்வளவு நேரத்தில் கடக்கும்?', p: {known_i: 60, known_c: 4, unknown_i: 80, unit: 'வேகம் (கி.மீ/மணி)', result_unit: 'மணி நேரம்'}, a: 3 },
+            { type: 'direct', q: 'ஒரு இயந்திரம் 15 நிமிடங்களில் 200 பொம்மைகளை உற்பத்தி செய்கிறது. எனில், 45 நிமிடங்களில் எத்தனை பொம்மைகளை உற்பத்தி செய்யும்?', p: {known_i: 15, known_c: 200, unknown_i: 45, unit: 'நிமிடங்கள்', result_unit: 'பொம்மைகள்'}, a: 600 },
+            { type: 'inverse', q: 'ஒரு நீர்த்தேக்கத்தில் உள்ள நீர் 150 குடும்பங்களுக்கு 20 நாட்களுக்குப் போதுமானது. 50 குடும்பங்கள் கூடுதலாக வந்தால், அந்த நீர் எத்தனை நாட்களுக்குப் போதுமானதாக இருக்கும்?', p: {known_i: 150, known_c: 20, unknown_i: 200, unit: 'குடும்பங்கள்', result_unit: 'நாட்கள்'}, a: 15 },
+            { type: 'direct', q: 'ஒருவர் 8 மணி நேரம் வேலை செய்து ₹1600 சம்பாதிக்கிறார். அவர் 12 மணி நேரம் வேலை செய்தால், எவ்வளவு சம்பாதிப்பார்?', p: {known_i: 8, known_c: 1600, unknown_i: 12, unit: 'மணி நேரம்', result_unit: '₹'}, a: 2400 },
+            { type: 'inverse', q: '10 குழாய்கள் ஒரு தொட்டியை 18 நிமிடங்களில் நிரப்புகின்றன. 4 குழாய்கள் பழுதடைந்துவிட்டால், மீதமுள்ள 6 குழாய்கள் தொட்டியை நிரப்ப எவ்வளவு நேரம் ஆகும்?', p: {known_i: 10, known_c: 18, unknown_i: 6, unit: 'குழாய்கள்', result_unit: 'நிமிடங்கள்'}, a: 30 },
+            { type: 'direct', q: '2 லிட்டர் பாலின் விலை ₹100. எனில், 5 லிட்டர் பாலின் விலை என்ன?', p: {known_i: 2, known_c: 100, unknown_i: 5, unit: 'லிட்டர் பால்', result_unit: '₹'}, a: 250 },
+            { type: 'inverse', q: 'ஒரு புத்தகத்தை தினமும் 30 பக்கங்கள் படித்தால் 10 நாட்களில் முடிக்கலாம். தினமும் 50 பக்கங்கள் படித்தால் எத்தனை நாட்களில் முடிக்கலாம்?', p: {known_i: 30, known_c: 10, unknown_i: 50, unit: 'பக்கங்கள்/நாள்', result_unit: 'நாட்கள்'}, a: 6 },
+            { type: 'direct', q: '4 சட்டைகளின் விலை ₹2000. எனில், 9 சட்டைகளின் விலை என்ன?', p: {known_i: 4, known_c: 2000, unknown_i: 9, unit: 'சட்டைகள்', result_unit: '₹'}, a: 4500 },
+            { type: 'inverse', q: 'ஒரு வயலை 12 விவசாயிகள் 20 நாட்களில் உழுகிறார்கள். அதே வயலை 15 விவசாயிகள் எத்தனை நாட்களில் உழுவார்கள்?', p: {known_i: 12, known_c: 20, unknown_i: 15, unit: 'விவசாயிகள்', result_unit: 'நாட்கள்'}, a: 16 },
+            { type: 'direct', q: 'ஒரு மரம் ஒரு வருடத்தில் 2 மீட்டர் வளர்கிறது. எனில், 5 வருடத்தில் எவ்வளவு வளரும்?', p: {known_i: 1, known_c: 2, unknown_i: 5, unit: 'வருடம்', result_unit: 'மீட்டர்'}, a: 10 },
+            { type: 'inverse', q: 'ஒரு குறிப்பிட்ட தொகை 8 குழந்தைகளுக்குப் பிரித்துக் கொடுத்தால், தலா ₹150 கிடைக்கும். அதே தொகையை 12 குழந்தைகளுக்குப் பிரித்துக் கொடுத்தால், தலா எவ்வளவு கிடைக்கும்?', p: {known_i: 8, known_c: 150, unknown_i: 12, unit: 'குழந்தைகள்', result_unit: '₹'}, a: 100 },
+            { type: 'direct', q: '250 கிராம் சர்க்கரையின் விலை ₹10. எனில், 1 கிலோகிராம் (1000 கிராம்) சர்க்கரையின் விலை என்ன?', p: {known_i: 250, known_c: 10, unknown_i: 1000, unit: 'கிராம்', result_unit: '₹'}, a: 40 },
+            { type: 'inverse', q: 'ஒரு கோட்டையில் 500 வீரர்களுக்கு 90 நாட்களுக்குத் தேவையான உணவுப் பொருட்கள் உள்ளன. 400 வீரர்கள் வெளியேறிவிட்டால், மீதமுள்ள 100 வீரர்களுக்கு அந்த உணவு எத்தனை நாட்களுக்குப் போதுமானதாக இருக்கும்?', p: {known_i: 500, known_c: 90, unknown_i: 100, unit: 'வீரர்கள்', result_unit: 'நாட்கள்'}, a: 450 },
+            { type: 'direct', q: 'ஒரு தொடர்வண்டி 3 மணி நேரத்தில் 240 கி.மீ பயணிக்கிறது. அதே வேகத்தில் சென்றால், 7 மணி நேரத்தில் எவ்வளவு தூரம் பயணிக்கும்?', p: {known_i: 3, known_c: 240, unknown_i: 7, unit: 'மணி', result_unit: 'கி.மீ'}, a: 560 },
+            { type: 'inverse', q: 'ஒரு வேலையை 20 பெண்கள் 16 நாட்களில் முடிப்பார்கள். அதே வேலையை 10 பெண்கள் செய்தால், எத்தனை நாட்களில் முடிப்பார்கள்?', p: {known_i: 20, known_c: 16, unknown_i: 10, unit: 'பெண்கள்', result_unit: 'நாட்கள்'}, a: 32 },
+            { type: 'direct', q: '10 முட்டைகளின் விலை ₹60. எனில், 18 முட்டைகளின் விலை என்ன?', p: {known_i: 10, known_c: 60, unknown_i: 18, unit: 'முட்டைகள்', result_unit: '₹'}, a: 108 },
+            { type: 'inverse', q: 'ஒரு காரில் உள்ள பெட்ரோல் மணிக்கு 50 கி.மீ வேகத்தில் சென்றால் 6 மணி நேரம் பயணிக்கப் போதுமானது. மணிக்கு 75 கி.மீ வேகத்தில் சென்றால், எவ்வளவு நேரம் பயணிக்கலாம்?', p: {known_i: 50, known_c: 6, unknown_i: 75, unit: 'வேகம் (கி.மீ/மணி)', result_unit: 'மணி நேரம்'}, a: 4 },
+            { type: 'direct', q: 'ஒரு நிமிடத்தில் 120 சொற்களைத் தட்டச்சு செய்பவர், 15 நிமிடங்களில் எத்தனை சொற்களைத் தட்டச்சு செய்வார்?', p: {known_i: 1, known_c: 120, unknown_i: 15, unit: 'நிமிடம்', result_unit: 'சொற்கள்'}, a: 1800 },
+            { type: 'inverse', q: 'ஒரு நூலை 25 மாணவர்கள் 8 நாட்களில் படித்து முடிப்பார்கள். அதே நூலை 20 மாணவர்கள் எத்தனை நாட்களில் படித்து முடிப்பார்கள்?', p: {known_i: 25, known_c: 8, unknown_i: 20, unit: 'மாணவர்கள்', result_unit: 'நாட்கள்'}, a: 10 },
+            { type: 'direct', q: 'ஒரு விவசாயி 2 ஏக்கர் நிலத்தில் 50 மூட்டை நெல் அறுவடை செய்கிறார். எனில், 5 ஏக்கர் நிலத்தில் எவ்வளவு அறுவடை செய்வார்?', p: {known_i: 2, known_c: 50, unknown_i: 5, unit: 'ஏக்கர்', result_unit: 'மூட்டைகள்'}, a: 125 },
+            { type: 'inverse', q: 'ஒரு கட்டிடத்தை 30 பேர் 60 நாட்களில் கட்டி முடிப்பார்கள். 20 பேர் மட்டுமே வேலை செய்தால், கட்டி முடிக்க எத்தனை நாட்கள் ஆகும்?', p: {known_i: 30, known_c: 60, unknown_i: 20, unit: 'நபர்கள்', result_unit: 'நாட்கள்'}, a: 90 },
+            { type: 'direct', q: 'ஒரு ஜெராக்ஸ் இயந்திரம் 5 நிமிடங்களில் 100 பக்கங்களை நகலெடுக்கிறது. அரை மணி நேரத்தில் (30 நிமிடங்கள்) எத்தனை பக்கங்களை நகலெடுக்கும்?', p: {known_i: 5, known_c: 100, unknown_i: 30, unit: 'நிமிடங்கள்', result_unit: 'பக்கங்கள்'}, a: 600 },
+            { type: 'inverse', q: 'ஒரு குறிப்பிட்ட வேலைக்கு 15 ஆண்கள் தேவைப்பட்டால், 4 நாட்களில் முடித்துவிடலாம். அந்த வேலையை ஒரே நாளில் முடிக்க எத்தனை ஆண்கள் தேவை?', p: {known_i: 4, known_c: 15, unknown_i: 1, unit: 'நாட்கள்', result_unit: 'ஆண்கள்'}, a: 60 },
+            { type: 'direct', q: 'ஒரு பைக்கில் 1 லிட்டர் பெட்ரோலுக்கு 50 கி.மீ மைலேஜ் கிடைக்கிறது. 5 லிட்டர் பெட்ரோலில் எவ்வளவு தூரம் செல்லலாம்?', p: {known_i: 1, known_c: 50, unknown_i: 5, unit: 'லிட்டர்', result_unit: 'கி.மீ'}, a: 250 },
+            { type: 'inverse', q: 'ஒரு உணவு விடுதியில் 100 பேருக்கு 24 நாட்களுக்கு உணவு உள்ளது. 20 பேர் சென்றுவிட்டால், மீதமுள்ள 80 பேருக்கு அந்த உணவு எத்தனை நாட்களுக்கு வரும்?', p: {known_i: 100, known_c: 24, unknown_i: 80, unit: 'நபர்கள்', result_unit: 'நாட்கள்'}, a: 30 },
+            { type: 'direct', q: 'ஒரு சோப்புக்கட்டியின் விலை ₹25. ஒரு டஜன் (12) சோப்புக்கட்டிகளின் விலை என்ன?', p: {known_i: 1, known_c: 25, unknown_i: 12, unit: 'சோப்பு', result_unit: '₹'}, a: 300 },
+            { type: 'inverse', q: 'ஒருவர் தனது பயணத்தை 9 நாட்களில் முடிக்க, தினமும் 6 மணி நேரம் பயணிக்க வேண்டும். அவர் 6 நாட்களில் பயணத்தை முடிக்க விரும்பினால், தினமும் எத்தனை மணி நேரம் பயணிக்க வேண்டும்?', p: {known_i: 9, known_c: 6, unknown_i: 6, unit: 'நாட்கள்', result_unit: 'மணி நேரம்'}, a: 9 },
+            { type: 'direct', q: 'ஒருவர் 100 மீட்டர் தூரத்தை 15 வினாடிகளில் ஓடுகிறார். அதே வேகத்தில் 400 மீட்டர் தூரத்தை ஓட எவ்வளவு நேரம் ஆகும்?', p: {known_i: 100, known_c: 15, unknown_i: 400, unit: 'மீட்டர்', result_unit: 'வினாடிகள்'}, a: 60 },
+            { type: 'inverse', q: '6 டிராக்டர்கள் ஒரு நிலத்தை 12 மணி நேரத்தில் உழுகின்றன. 8 டிராக்டர்கள் பயன்படுத்தப்பட்டால், எவ்வளவு நேரத்தில் உழுது முடிக்கலாம்?', p: {known_i: 6, known_c: 12, unknown_i: 8, unit: 'டிராக்டர்கள்', result_unit: 'மணி நேரம்'}, a: 9 },
+            { type: 'direct', q: 'ஒரு வகுப்பில் 40 மாணவர்களுக்கு 120 நோட்டுப் புத்தகங்கள் தேவை. 50 மாணவர்களுக்கு எத்தனை நோட்டுப் புத்தகங்கள் தேவை?', p: {known_i: 40, known_c: 120, unknown_i: 50, unit: 'மாணவர்கள்', result_unit: 'புத்தகங்கள்'}, a: 150 },
+            { type: 'inverse', q: 'ஒரு குறிப்பிட்ட வேலையை முடிக்க 5 இயந்திரங்களுக்கு 12 மணி நேரம் ஆகிறது. 2 இயந்திரங்கள் பழுதடைந்துவிட்டால், மீதமுள்ள 3 இயந்திரங்கள் அந்த வேலையை முடிக்க எவ்வளவு நேரம் ஆகும்?', p: {known_i: 5, known_c: 12, unknown_i: 3, unit: 'இயந்திரங்கள்', result_unit: 'மணி நேரம்'}, a: 20 },
+            { type: 'direct', q: 'ஒருவர் தனது மாத வருமானத்தில் ₹5000 சேமிக்கிறார். அவரது வருமானம் ₹25000. அவரது வருமானம் ₹35000 ஆக உயர்ந்தால், அதே விகிதத்தில் எவ்வளவு சேமிப்பார்?', p: {known_i: 25000, known_c: 5000, unknown_i: 35000, unit: 'வருமானம் (₹)', result_unit: 'சேமிப்பு (₹)'}, a: 7000 },
+            { type: 'inverse', q: 'ஒரு சுவர் எழுப்ப 10 ஆட்களுக்கு 8 நாட்கள் ஆகிறது. 4 நாட்களுக்குள் முடிக்க வேண்டுமென்றால், எத்தனை ஆட்கள் தேவை?', p: {known_i: 8, known_c: 10, unknown_i: 4, unit: 'நாட்கள்', result_unit: 'ஆட்கள்'}, a: 20 },
+            { type: 'direct', q: 'ஒரு வரைபடத்தில் 1 செ.மீ என்பது 50 கி.மீ குறிக்கிறது. எனில், 4.5 செ.மீ என்பது எவ்வளவு தூரத்தைக் குறிக்கும்?', p: {known_i: 1, known_c: 50, unknown_i: 4.5, unit: 'செ.மீ', result_unit: 'கி.மீ'}, a: 225 },
+            { type: 'inverse', q: 'ஒரு ராணுவ முகாமில் 1200 வீரர்களுக்கு 70 நாட்களுக்கு உணவு உள்ளது. 300 வீரர்கள் வேறு முகாமுக்குச் சென்றால், மீதமுள்ள 900 வீரர்களுக்கு அந்த உணவு எத்தனை நாட்களுக்குப் போதுமானதாக இருக்கும்?', p: {known_i: 1200, known_c: 70, unknown_i: 900, unit: 'வீரர்கள்', result_unit: 'நாட்கள்'}, a: 93.3 },
+            { type: 'direct', q: 'ஒரு நிமிடத்தில் 6 லிட்டர் தண்ணீர் ஒரு குழாயிலிருந்து வெளியேறுகிறது. எனில், ஒரு மணி நேரத்தில் (60 நிமிடங்கள்) எவ்வளவு தண்ணீர் வெளியேறும்?', p: {known_i: 1, known_c: 6, unknown_i: 60, unit: 'நிமிடம்', result_unit: 'லிட்டர்'}, a: 360 },
+            { type: 'inverse', q: 'ஒரு குறிப்பிட்ட தூரத்தைக் கடக்க, மணிக்கு 45 கி.மீ வேகத்தில் சென்றால் 8 மணி நேரம் ஆகிறது. 2 மணி நேரம் முன்னதாகவே செல்ல வேண்டுமென்றால், (6 மணி நேரத்தில்) என்ன வேகத்தில் செல்ல வேண்டும்?', p: {known_i: 8, known_c: 45, unknown_i: 6, unit: 'மணி நேரம்', result_unit: 'வேகம் (கி.மீ/மணி)'}, a: 60 },
+            { type: 'direct', q: 'ஒருவர் 5 நாட்களில் 25 அத்தியாயங்கள் படிக்கிறார். அதே வேகத்தில் 12 நாட்களில் எத்தனை அத்தியாயங்கள் படிப்பார்?', p: {known_i: 5, known_c: 25, unknown_i: 12, unit: 'நாட்கள்', result_unit: 'அத்தியாயங்கள்'}, a: 60 },
+            { type: 'inverse', q: 'ஒருவர் ஒரு வேலையை 36 நாட்களில் முடிப்பார். அவரைப் போல் மூன்று மடங்கு திறமையானவர் அந்த வேலையை எத்தனை நாட்களில் முடிப்பார்? (திறன் 3 மடங்கு, நேரம் 1/3 மடங்கு)', p: {known_i: 1, known_c: 36, unknown_i: 3, unit: 'திறன் மடங்கு', result_unit: 'நாட்கள்'}, a: 12 },
+            { type: 'direct', q: '12 மீட்டர் துணியின் விலை ₹960. எனில், 17 மீட்டர் துணியின் விலை என்ன?', p: {known_i: 12, known_c: 960, unknown_i: 17, unit: 'மீட்டர்', result_unit: '₹'}, a: 1360 },
+            { type: 'inverse', q: 'ஒரு தொட்டியை 9 குழாய்கள் 4 மணி நேரத்தில் நிரப்புகின்றன. 12 குழாய்கள் இருந்தால், எவ்வளவு நேரத்தில் நிரப்பும்?', p: {known_i: 9, known_c: 4, unknown_i: 12, unit: 'குழாய்கள்', result_unit: 'மணி நேரம்'}, a: 3 },
+            { type: 'direct', q: 'ஒருவர் 15 நிமிடங்களில் 3 கி.மீ நடக்கிறார். அதே வேகத்தில் 1 மணி நேரம் (60 நிமிடங்கள்) நடந்தால் எவ்வளவு தூரம் செல்வார்?', p: {known_i: 15, known_c: 3, unknown_i: 60, unit: 'நிமிடங்கள்', result_unit: 'கி.மீ'}, a: 12 },
+            { type: 'inverse', q: 'ஒருவர் தனது சேமிப்பை தினமும் ₹50 செலவு செய்தால் 40 நாட்களுக்குப் போதுமானது. தினமும் ₹80 செலவு செய்தால், எத்தனை நாட்களுக்குப் போதுமானதாக இருக்கும்?', p: {known_i: 50, known_c: 40, unknown_i: 80, unit: 'செலவு/நாள் (₹)', result_unit: 'நாட்கள்'}, a: 25 },
+            { type: 'direct', q: 'ஒரு தொழிற்சாலையில் 50 தொழிலாளர்கள் ஒரு நாளைக்கு 300 அலகுகள் உற்பத்தி செய்கிறார்கள். 75 தொழிலாளர்கள் ஒரு நாளைக்கு எத்தனை அலகுகள் உற்பத்தி செய்வார்கள்?', p: {known_i: 50, known_c: 300, unknown_i: 75, unit: 'தொழிலாளர்கள்', result_unit: 'அலகுகள்'}, a: 450 },
+            { type: 'inverse', q: 'ஒருவர் ஒரு குறிப்பிட்ட வேலையை 24 நாட்களில் முடிக்கிறார். அவரைப் போல் இரு மடங்கு திறமையான இருவர் (மொத்தம் 2 பேர்) சேர்ந்தால், அந்த வேலையை எத்தனை நாட்களில் முடிப்பார்கள்?', p: {known_i: 1, known_c: 24, unknown_i: 2, unit: 'நபர்கள் (திறன் சமம்)', result_unit: 'நாட்கள்'}, a: 12 },
+        ];
+        let currentProportionQuestionIndex = 0;
+
+        function displayProportionQuestion() {
+            const q = proportionQuestions[currentProportionQuestionIndex];
+            proportionQuestionNumber.textContent = `வினா ${currentProportionQuestionIndex + 1} / ${proportionQuestions.length}`;
+            proportionQuestionText.textContent = q.q;
+            proportionAnswerInput.value = '';
+            proportionFeedback.textContent = '';
+            renderProportionSimulation(q);
+        }
+
+        function renderProportionSimulation(q) {
+            proportionSimArea.innerHTML = '';
+            const p = q.p;
+            if (q.type === 'direct') {
+                const unitCost = p.known_c / p.known_i;
+                proportionSimArea.innerHTML = `
+                    <div class="w-full text-center">
+                        <label for="sim-slider" class="text-lg font-bold">${p.unit}: <span id="sim-val">${p.known_i}</span></label>
+                        <input id="sim-slider" type="range" min="1" max="${p.unknown_i + 5}" value="${p.known_i}" class="w-3/4 mt-2">
+                        <p class="text-2xl font-bold mt-4">${p.result_unit}: <span id="sim-cost">${p.known_c}</span></p>
+                    </div>
+                `;
+                const slider = document.getElementById('sim-slider');
+                const valEl = document.getElementById('sim-val');
+                const costEl = document.getElementById('sim-cost');
+                slider.addEventListener('input', () => {
+                    valEl.textContent = slider.value;
+                    costEl.textContent = (slider.value * unitCost).toFixed(0);
+                });
+
+            } else if (q.type === 'inverse') {
+                const totalWork = p.known_i * p.known_c;
+                proportionSimArea.innerHTML = `
+                    <div class="w-full text-center">
+                        <label for="sim-slider" class="text-lg font-bold">${p.unit}: <span id="sim-val">${p.known_i}</span></label>
+                        <input id="sim-slider" type="range" min="1" max="${p.unknown_i + 5}" value="${p.known_i}" class="w-3/4 mt-2">
+                        <p class="text-2xl font-bold mt-4">${p.result_unit}: <span id="sim-cost">${p.known_c}</span></p>
+                    </div>
+                `;
+                const slider = document.getElementById('sim-slider');
+                const valEl = document.getElementById('sim-val');
+                const costEl = document.getElementById('sim-cost');
+                slider.addEventListener('input', () => {
+                    valEl.textContent = slider.value;
+                    costEl.textContent = (totalWork / slider.value).toFixed(1);
+                });
+            }
+        }
+        
+        proportionCheckBtn.addEventListener('click', () => {
+            const q = proportionQuestions[currentProportionQuestionIndex];
+            const userAnswer = parseFloat(proportionAnswerInput.value);
+            if (Math.abs(userAnswer - q.a) < 0.1) { // Allow for floating point answers
+                proportionFeedback.textContent = 'சரியான பதில்!';
+                proportionFeedback.style.color = 'green';
+            } else {
+                proportionFeedback.textContent = 'தவறு, மீண்டும் முயற்சிக்கவும்.';
+                proportionFeedback.style.color = 'red';
+            }
+        });
+
+        proportionNextBtn.addEventListener('click', () => {
+            if (currentProportionQuestionIndex < proportionQuestions.length - 1) {
+                currentProportionQuestionIndex++;
+                displayProportionQuestion();
+            }
+        });
+        
+        proportionPrevBtn.addEventListener('click', () => {
+            if (currentProportionQuestionIndex > 0) {
+                currentProportionQuestionIndex--;
+                displayProportionQuestion();
+            }
+        });
+        
+        proportionResetBtn.addEventListener('click', displayProportionQuestion);
+
+
+        // --- TAB 3: கல்விசார் செயல்பாடுகள் ---
+        const lifeProblemQuestionText = document.getElementById('life-problem-question-text');
+        const lifeProblemQuestionNumber = document.getElementById('life-problem-question-number');
+        const lifeProblemSimArea = document.getElementById('life-problem-simulation-area');
+        const lifeProblemAnswerInput = document.getElementById('life-problem-answer-input');
+        const lifeProblemFeedback = document.getElementById('life-problem-feedback');
+        const lifeProblemCheckBtn = document.getElementById('life-problem-check-btn');
+        const lifeProblemResetBtn = document.getElementById('life-problem-reset-btn');
+        const lifeProblemPrevBtn = document.getElementById('life-problem-prev-btn');
+        const lifeProblemNextBtn = document.getElementById('life-problem-next-btn');
+
+        const lifeProblems = proportionQuestions; // Re-use the same questions
+        let currentLifeProblemIndex = 0;
+
+        function displayLifeProblem() {
+            const q = lifeProblems[currentLifeProblemIndex];
+            lifeProblemQuestionNumber.textContent = `வினா ${currentLifeProblemIndex + 1} / ${lifeProblems.length}`;
+            lifeProblemQuestionText.textContent = q.q;
+            lifeProblemAnswerInput.value = '';
+            lifeProblemFeedback.textContent = '';
+            renderLifeProblemSimulation(q);
+        }
+
+        function renderLifeProblemSimulation(q) {
+             lifeProblemSimArea.innerHTML = '';
+            const p = q.p;
+            if (q.type === 'direct') {
+                const unitCost = p.known_c / p.known_i;
+                lifeProblemSimArea.innerHTML = `
+                    <div class="w-full text-center">
+                        <label for="life-sim-slider" class="text-lg font-bold">${p.unit}: <span id="life-sim-val">${p.known_i}</span></label>
+                        <input id="life-sim-slider" type="range" min="1" max="${p.unknown_i + 5}" value="${p.known_i}" class="w-3/4 mt-2">
+                        <p class="text-2xl font-bold mt-4">${p.result_unit}: <span id="life-sim-cost">${p.known_c}</span></p>
+                    </div>
+                `;
+                const slider = document.getElementById('life-sim-slider');
+                const valEl = document.getElementById('life-sim-val');
+                const costEl = document.getElementById('life-sim-cost');
+                slider.addEventListener('input', () => {
+                    valEl.textContent = slider.value;
+                    costEl.textContent = (slider.value * unitCost).toFixed(0);
+                });
+
+            } else if (q.type === 'inverse') {
+                const totalWork = p.known_i * p.known_c;
+                lifeProblemSimArea.innerHTML = `
+                    <div class="w-full text-center">
+                        <label for="life-sim-slider" class="text-lg font-bold">${p.unit}: <span id="life-sim-val">${p.known_i}</span></label>
+                        <input id="life-sim-slider" type="range" min="1" max="${p.unknown_i + 5}" value="${p.known_i}" class="w-3/4 mt-2">
+                        <p class="text-2xl font-bold mt-4">${p.result_unit}: <span id="life-sim-cost">${p.known_c}</span></p>
+                    </div>
+                `;
+                const slider = document.getElementById('life-sim-slider');
+                const valEl = document.getElementById('life-sim-val');
+                const costEl = document.getElementById('life-sim-cost');
+                slider.addEventListener('input', () => {
+                    valEl.textContent = slider.value;
+                    costEl.textContent = (totalWork / slider.value).toFixed(1);
+                });
+            }
+        }
+        
+        lifeProblemCheckBtn.addEventListener('click', () => {
+            const q = lifeProblems[currentLifeProblemIndex];
+            const userAnswer = parseFloat(lifeProblemAnswerInput.value);
+            if (Math.abs(userAnswer - q.a) < 0.1) {
+                lifeProblemFeedback.textContent = 'சரியான பதில்!';
+                lifeProblemFeedback.style.color = 'green';
+            } else {
+                lifeProblemFeedback.textContent = 'தவறு, மீண்டும் முயற்சிக்கவும்.';
+                lifeProblemFeedback.style.color = 'red';
+            }
+        });
+
+        lifeProblemNextBtn.addEventListener('click', () => {
+            if (currentLifeProblemIndex < lifeProblems.length - 1) {
+                currentLifeProblemIndex++;
+                displayLifeProblem();
+            }
+        });
+        
+        lifeProblemPrevBtn.addEventListener('click', () => {
+            if (currentLifeProblemIndex > 0) {
+                currentLifeProblemIndex--;
+                displayLifeProblem();
+            }
+        });
+        
+        lifeProblemResetBtn.addEventListener('click', displayLifeProblem);
+        
+        // --- Geometry Drawing Practice ---
+        const drawAngleCanvas = document.getElementById('draw-angle-canvas');
+        const drawAngleCtx = drawAngleCanvas.getContext('2d');
+        const angleToDrawEl = document.getElementById('angle-to-draw');
+        const drawAngleFeedback = document.getElementById('draw-angle-feedback');
+        const clearDrawingBtn = document.getElementById('clear-drawing-btn');
+        const nextAngleBtn = document.getElementById('next-angle-btn');
+
+        let drawingPoints = [];
+        const angleDrawingQuestions = [
+            30, 45, 60, 90, 120, 135, 150, 180, 210, 225, 240, 270, 300, 315, 330, 360, 
+            15, 25, 50, 75, 85, 95, 100, 110, 160, 175, 190, 200, 250, 280, 290, 340, 350,
+            5, 10, 20, 40, 55, 65, 70, 80, 105, 115, 145, 155, 165, 170, 195, 205, 235, 265
+        ];
+        let currentAngleQuestionIndex = 0;
+
+        function displayAngleQuestion() {
+            const angle = angleDrawingQuestions[currentAngleQuestionIndex];
+            angleToDrawEl.textContent = `${angle}°`;
+            clearDrawingCanvas();
+        }
+
+        nextAngleBtn.addEventListener('click', () => {
+            currentAngleQuestionIndex = (currentAngleQuestionIndex + 1) % angleDrawingQuestions.length;
+            displayAngleQuestion();
+        });
+        
+        function clearDrawingCanvas() {
+            drawAngleCtx.clearRect(0, 0, drawAngleCanvas.width, drawAngleCanvas.height);
+            drawingPoints = [];
+            drawAngleFeedback.textContent = '';
+        }
+
+        drawAngleCanvas.addEventListener('mousedown', (e) => {
+            if (drawingPoints.length >= 3) return;
+            const rect = drawAngleCanvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            drawingPoints.push({x, y});
+            redrawDrawing();
+            if (drawingPoints.length === 3) {
+                checkDrawnAngle();
+            }
+        });
+        
+        function redrawDrawing() {
+            drawAngleCtx.clearRect(0, 0, drawAngleCanvas.width, drawAngleCanvas.height);
+            if (drawingPoints.length > 0) {
+                drawAngleCtx.fillStyle = '#4f46e5';
+                drawingPoints.forEach(p => {
+                    drawAngleCtx.beginPath();
+                    drawAngleCtx.arc(p.x, p.y, 5, 0, 2 * Math.PI);
+                    drawAngleCtx.fill();
+                });
+            }
+            if (drawingPoints.length >= 2) {
+                drawAngleCtx.strokeStyle = '#333';
+                drawAngleCtx.lineWidth = 2;
+                drawAngleCtx.beginPath();
+                drawAngleCtx.moveTo(drawingPoints[1].x, drawingPoints[1].y);
+                drawAngleCtx.lineTo(drawingPoints[0].x, drawingPoints[0].y);
+                drawAngleCtx.stroke();
+            }
+             if (drawingPoints.length === 3) {
+                drawAngleCtx.beginPath();
+                drawAngleCtx.moveTo(drawingPoints[1].x, drawingPoints[1].y);
+                drawAngleCtx.lineTo(drawingPoints[2].x, drawingPoints[2].y);
+                drawAngleCtx.stroke();
+            }
+        }
+
+        function checkDrawnAngle() {
+            const targetAngle = angleDrawingQuestions[currentAngleQuestionIndex];
+            const p1 = drawingPoints[0], p2 = drawingPoints[1], p3 = drawingPoints[2];
+            const angle = Math.atan2(p3.y - p2.y, p3.x - p2.x) - Math.atan2(p1.y - p2.y, p1.x - p2.x);
+            let degrees = Math.abs(angle * 180 / Math.PI);
+            if (degrees > 180) degrees = 360 - degrees;
+
+            drawAngleFeedback.textContent = `நீங்கள் வரைந்தது: ${degrees.toFixed(0)}°`;
+            if (Math.abs(degrees - targetAngle) < 10) {
+                drawAngleFeedback.textContent += ' - அருமை! சரியான கோணம்.';
+                drawAngleFeedback.style.color = 'green';
+            } else {
+                drawAngleFeedback.textContent += ` - இது ${targetAngle}° இல்லை. மீண்டும் முயற்சிக்கவும்.`;
+                drawAngleFeedback.style.color = 'red';
+            }
+        }
+
+        // --- TAB 3: Graph Drawing & Mental Math ---
+        const shapeCanvas = document.getElementById('shape-canvas');
+        const shapeCtx = shapeCanvas.getContext('2d');
+        const shapeNameEl = document.getElementById('shape-name');
+        const shapePointsListEl = document.getElementById('shape-points-list');
+        const nextShapeBtn = document.getElementById('next-shape-btn');
+        const shapeFeedbackEl = document.getElementById('shape-feedback');
+        const shapePickupBall = document.getElementById('shape-pickup-ball');
+        const shapeDynamicPointLabel = document.getElementById('shape-dynamic-point-label');
+        
+        const shapes = [
+            { name: 'சதுரம்', points: [{x:2, y:2}, {x:8, y:2}, {x:8, y:8}, {x:2, y:8}] },
+            { name: 'செவ்வகம்', points: [{x:1, y:3}, {x:9, y:3}, {x:9, y:7}, {x:1, y:7}] },
+            { name: 'முக்கோணம்', points: [{x:5, y:9}, {x:2, y:2}, {x:8, y:2}] },
+            { name: 'சரிவகம்', points: [{x:-8, y:-7}, {x:8, y:-7}, {x:4, y:-2}, {x:-4, y:-2}] },
+            { name: 'இணைகரம்', points: [{x:-9, y:-5}, {x:-4, y:-5}, {x:0, y:0}, {x:-5, y:0}] },
+            { name: 'ஐங்கோணம்', points: [{x:0, y:9}, {x:8, y:3}, {x:5, y:-7}, {x:-5, y:-7}, {x:-8, y:3}] },
+            { name: 'அறுங்கோணம்', points: [{x:5, y:9}, {x:10, y:0}, {x:5, y:-9}, {x:-5, y:-9}, {x:-10, y:0}, {x:-5, y:9}] },
+            { name: 'நட்சத்திரம்', points: [{x:0, y:10}, {x:2, y:3}, {x:9, y:3}, {x:4, y:-2}, {x:6, y:-9}, {x:0, y:-5}, {x:-6, y:-9}, {x:-4, y:-2}, {x:-9, y:3}, {x:-2, y:3}] },
+            { name: 'சிலுவை', points: [{x:-2, y:6}, {x:2, y:6}, {x:2, y:2}, {x:6, y:2}, {x:6, y:-2}, {x:2, y:-2}, {x:2, y:-6}, {x:-2, y:-6}, {x:-2, y:-2}, {x:-6, y:-2}, {x:-6, y:2}, {x:-2, y:2}] },
+            { name: 'அம்பு', points: [{x:0, y:8}, {x:5, y:-2}, {x:2, y:-2}, {x:2, y:-8}, {x:-2, y:-8}, {x:-2, y:-2}, {x:-5, y:-2}] },
+            { name: 'வீடு', points: [{x:0, y:10}, {x:8, y:2}, {x:-8, y:2}, {x:0, y:10}, {x:6, y:2}, {x:6, y:-8}, {x:-6, y:-8}, {x:-6, y:2}] },
+            { name: 'செங்கோண முக்கோணம்', points: [{x:-7, y:-7}, {x:7, y:-7}, {x:-7, y:5}] },
+            { name: 'சாய்சதுரம்', points: [{x:0, y:8}, {x:6, y:0}, {x:0, y:-8}, {x:-6, y:0}] },
+            { name: 'படகு', points: [{x:0, y:8}, {x:8, y:2}, {x:-8, y:2}, {x:0, y:8}, {x:6, y:2}, {x:6, y:-4}, {x:-6, y:-4}, {x:-6, y:2}] },
+            { name: 'பட்டாம்பூச்சி', points: [{x:0, y:2}, {x:8, y:8}, {x:8, y:4}, {x:0, y:2}, {x:-8, y:4}, {x:-8, y:8}, {x:0, y:2}, {x:-8, y:-8}, {x:-8, y:-4}, {x:0, y:2}, {x:8, y:-4}, {x:8, y:-8}] },
+            { name: 'கார்', points: [{x:-8, y:-2}, {x:-6, y:-2}, {x:-5, y:2}, {x:5, y:2}, {x:6, y:-2}, {x:8, y:-2}, {x:8, y:-5}, {x:-8, y:-5}] },
+            { name: 'ராக்கெட்', points: [{x:0, y:10}, {x:3, y:4}, {x:3, y:-8}, {x:6, y:-10}, {x:0, y:-6}, {x:-6, y:-10}, {x:-3, y:-8}, {x:-3, y:4}] },
+            { name: 'கோப்பை', points: [{x:-6, y:8}, {x:6, y:8}, {x:4, y:-4}, {x:-4, y:-4}, {x:-6, y:8}, {x:-4, y:-4}, {x:-2, y:-8}, {x:2, y:-8}, {x:4, y:-4}] },
+            { name: 'மின்னல்', points: [{x:4, y:9}, {x:-6, y:2}, {x:2, y:2}, {x:-8, y:-5}, {x:0, y:-5}, {x:-2, y:0}, {x:6, y:0}] },
+            { name: 'கோபுரம்', points: [{x:0, y:10}, {x:2, y:8}, {x:-2, y:8}, {x:0, y:10}, {x:2, y:8}, {x:2, y:2}, {x:6, y:2}, {x:6, y:-8}, {x:-6, y:-8}, {x:-6, y:2}, {x:-2, y:2}, {x:-2, y:8}] },
+        ];
+        let currentShapeIndex = 0;
+        let userShapePoints = [];
+        let isShapeBallActive = false;
+        let shapeRollingBallPos = { x: null, y: null };
+
+        function startShapeDrawing() {
+            const shape = shapes[currentShapeIndex];
+            shapeNameEl.textContent = shape.name;
+            shapePointsListEl.textContent = shape.points.map(p => `(${p.x},${p.y})`).join(' ');
+            userShapePoints = [];
+            shapeFeedbackEl.textContent = 'அடுத்த புள்ளியைக் குறிக்கவும்.';
+            shapeFeedbackEl.style.color = '#3b82f6'; // blue
+            shapePickupBall.classList.remove('active');
+            isShapeBallActive = false;
+            drawShapeCanvas();
+        }
+
+        function drawShapeCanvas() {
+            const w = shapeCanvas.width;
+            const h = shapeCanvas.height;
+            const originX = w / 2;
+            const originY = h / 2;
+            const shapeGridSize = (w - 2 * 40) / (2 * 10);
+            
+            shapeCtx.clearRect(0,0,w,h);
+            
+            // Draw grid
+            shapeCtx.strokeStyle = '#e5e7eb';
+            shapeCtx.lineWidth = 1;
+            shapeCtx.font = 'bold 14px Noto Sans Tamil';
+            shapeCtx.fillStyle = '#6b7280';
+            shapeCtx.textAlign = 'center';
+            shapeCtx.textBaseline = 'middle';
+            
+            for(let i=-10; i<=10; i++) {
+                const x = originX + i * shapeGridSize;
+                const y = originY - i * shapeGridSize;
+                
+                shapeCtx.beginPath();
+                shapeCtx.moveTo(x, 0);
+                shapeCtx.lineTo(x, h);
+                shapeCtx.stroke();
+                
+                shapeCtx.beginPath();
+                shapeCtx.moveTo(0, y);
+                shapeCtx.lineTo(w, y);
+                shapeCtx.stroke();
+
+                if (i !== 0 && i % 2 === 0) {
+                    shapeCtx.fillText(i, x, originY + 20);
+                    shapeCtx.fillText(i, originX - 20, y);
+                }
+            }
+            shapeCtx.fillText('0', originX - 10, originY + 15);
+
+            // Draw axes
+            shapeCtx.strokeStyle = '#374151';
+            shapeCtx.lineWidth = 2;
+            shapeCtx.beginPath();
+            shapeCtx.moveTo(0, originY);
+            shapeCtx.lineTo(w, originY);
+            shapeCtx.stroke();
+            shapeCtx.beginPath();
+            shapeCtx.moveTo(originX, 0);
+            shapeCtx.lineTo(originX, h);
+            shapeCtx.stroke();
+
+            // --- Start of corrected logic ---
+            const isComplete = userShapePoints.length > 0 && userShapePoints.length === shapes[currentShapeIndex].points.length;
+            const pointColor = isComplete ? '#16a34a' : '#4f46e5';
+            const lineColor = isComplete ? '#16a34a' : '#4f46e5';
+
+            // 1. Draw the lines connecting the points
+            if (userShapePoints.length > 1) {
+                shapeCtx.strokeStyle = lineColor;
+                shapeCtx.lineWidth = 3;
+                shapeCtx.beginPath();
+                userShapePoints.forEach((p, index) => {
+                    const canvasX = originX + p.x * shapeGridSize;
+                    const canvasY = originY - p.y * shapeGridSize;
+                    if (index === 0) {
+                        shapeCtx.moveTo(canvasX, canvasY);
+                    } else {
+                        shapeCtx.lineTo(canvasX, canvasY);
+                    }
+                });
+                shapeCtx.stroke();
+            }
+
+            // 2. Draw the closing line if the shape is complete
+            if (isComplete) {
+                shapeCtx.strokeStyle = lineColor;
+                shapeCtx.lineWidth = 3;
+                shapeCtx.beginPath();
+                const lastPoint = userShapePoints[userShapePoints.length - 1];
+                const firstPoint = userShapePoints[0];
+                shapeCtx.moveTo(originX + lastPoint.x * shapeGridSize, originY - lastPoint.y * shapeGridSize);
+                shapeCtx.lineTo(originX + firstPoint.x * shapeGridSize, originY - firstPoint.y * shapeGridSize);
+                shapeCtx.stroke();
+            }
+
+            // 3. Draw the points on top
+            shapeCtx.fillStyle = pointColor;
+            userShapePoints.forEach(p => {
+                const canvasX = originX + p.x * shapeGridSize;
+                const canvasY = originY - p.y * shapeGridSize;
+                shapeCtx.beginPath();
+                shapeCtx.arc(canvasX, canvasY, 5, 0, 2 * Math.PI);
+                shapeCtx.fill();
+            });
+            // --- End of corrected logic ---
+
+            // Draw rolling ball
+            if(isShapeBallActive && shapeRollingBallPos.x !== null) {
+                const nextPoint = shapes[currentShapeIndex].points[userShapePoints.length];
+                const isCorrect = nextPoint && shapeRollingBallPos.x === nextPoint.x && shapeRollingBallPos.y === nextPoint.y;
+                shapeCtx.fillStyle = isCorrect ? '#22c55e' : '#ef4444';
+                shapeCtx.beginPath();
+                shapeCtx.arc(originX + shapeRollingBallPos.x * shapeGridSize, originY - shapeRollingBallPos.y * shapeGridSize, 10, 0, 2 * Math.PI);
+                shapeCtx.fill();
+            }
+        }
+        
+        shapePickupBall.addEventListener('click', () => {
+            if (isShapeBallActive || userShapePoints.length >= shapes[currentShapeIndex].points.length) return;
+            isShapeBallActive = true;
+            shapePickupBall.classList.add('active');
+            shapeCanvas.style.cursor = 'crosshair';
+        });
+
+        shapeCanvas.addEventListener('mousemove', (e) => {
+            if (!isShapeBallActive) return;
+            const rect = shapeCanvas.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+            
+            const originX = shapeCanvas.width / 2;
+            const originY = shapeCanvas.height / 2;
+            const shapeGridSize = (shapeCanvas.width - 2 * 40) / (2 * 10);
+            
+            let gridX = Math.round((mouseX - originX) / shapeGridSize);
+            let gridY = Math.round((originY - mouseY) / shapeGridSize);
+            
+            if (gridX < -10) gridX = -10; if (gridX > 10) gridX = 10;
+            if (gridY < -10) gridY = -10; if (gridY > 10) gridY = 10;
+
+            shapeRollingBallPos = { x: gridX, y: gridY };
+            shapeDynamicPointLabel.textContent = `(${gridX}, ${gridY})`;
+            drawShapeCanvas();
+        });
+
+        shapeCanvas.addEventListener('mouseleave', () => {
+            if (!isShapeBallActive) return;
+            shapeRollingBallPos = { x: null, y: null };
+            shapeDynamicPointLabel.textContent = '';
+            drawShapeCanvas();
+        });
+
+        shapeCanvas.addEventListener('click', (e) => {
+            if (!isShapeBallActive) return;
+            const shape = shapes[currentShapeIndex];
+            const nextPoint = shape.points[userShapePoints.length];
+
+            if (nextPoint && shapeRollingBallPos.x === nextPoint.x && shapeRollingBallPos.y === nextPoint.y) {
+                 userShapePoints.push({ ...shapeRollingBallPos });
+                 isShapeBallActive = false;
+                 shapeRollingBallPos = { x: null, y: null };
+                 shapeDynamicPointLabel.textContent = '';
+                 shapeCanvas.style.cursor = 'default';
+                 shapePickupBall.classList.remove('active');
+                 drawShapeCanvas();
+                 
+                 if (userShapePoints.length === shape.points.length) {
+                      shapeFeedbackEl.textContent = 'அருமை! சரியாக வரைந்துள்ளீர்கள்.';
+                      shapeFeedbackEl.style.color = 'green';
+                 } else {
+                      const nextPointToDraw = shape.points[userShapePoints.length];
+                      shapeFeedbackEl.textContent = `அடுத்த புள்ளி (${nextPointToDraw.x}, ${nextPointToDraw.y}) குறிக்கவும்.`;
+                      shapeFeedbackEl.style.color = '#3b82f6'; // blue
+                 }
+            } else if (nextPoint) {
+                shapeFeedbackEl.textContent = `தவறான புள்ளி! அடுத்த புள்ளி (${nextPoint.x}, ${nextPoint.y}) குறிக்கவும்.`;
+                shapeFeedbackEl.style.color = '#ef4444'; // red
+            }
+        });
+        
+        nextShapeBtn.addEventListener('click', () => {
+            currentShapeIndex = (currentShapeIndex + 1) % shapes.length;
+            startShapeDrawing();
+        });
+
+        // --- Mental Maths (Tab 3) ---
+        const mentalMathQuestionEl = document.getElementById('mental-math-question');
+        const mentalMathQuestionNumberEl = document.getElementById('mental-math-question-number');
+        const mentalMathInput = document.getElementById('mental-math-input');
+        const mentalMathFeedback = document.getElementById('mental-math-feedback');
+        const mentalMathCanvas = document.getElementById('mental-math-canvas');
+        const mentalMathCtx = mentalMathCanvas.getContext('2d');
+        const mentalMathCheckBtn = document.getElementById('mental-math-check-btn');
+        const mentalMathResetBtn = document.getElementById('mental-math-reset-btn');
+        const mentalMathPrevBtn = document.getElementById('mental-math-prev-btn');
+        const mentalMathNextBtn = document.getElementById('mental-math-next-btn');
+
+        const mentalMathQuestions = [
+            // Angles
+            { q: '30° கோணத்தின் நிரப்புக்கோணம் என்ன?', a: 60, type: 'complementary', params: { angle: 30 } },
+            { q: '110° கோணத்தின் மிகைநிரப்பு கோணம் என்ன?', a: 70, type: 'supplementary', params: { angle: 110 } },
+            { q: 'ஒரு நேர்க்கோட்டில் ஒரு கோணம் 80° எனில், அதன் அடுத்துள்ள கோணம் என்ன?', a: 100, type: 'supplementary', params: { angle: 80 } },
+            { q: 'ஒரு செங்கோணத்தில் பாதி எவ்வளவு?', a: 45, type: 'division', params: { a: 90, b: 2 } },
+            { q: 'ஒரு நேர்க்கோணத்தில் எத்தனை செங்கோணங்கள் உள்ளன?', a: 2, type: 'info', params: { text: '180° = 2 x 90°' } },
+            { q: '45° கோணத்தின் நிரப்புக்கோணம் என்ன?', a: 45, type: 'complementary', params: { angle: 45 } },
+            { q: '90° கோணத்தின் மிகைநிரப்பு கோணம் என்ன?', a: 90, type: 'supplementary', params: { angle: 90 } },
+            { q: 'ஒரு புள்ளியைச் சுற்றியுள்ள மொத்த கோணம் என்ன?', a: 360, type: 'info', params: { text: 'முழுக்கோணம் = 360°' } },
+            { q: 'ஒரு முக்கோணத்தின் மூன்று கோணங்களின் கூடுதல் என்ன?', a: 180, type: 'info', params: { text: '∠A + ∠B + ∠C = 180°' } },
+            { q: 'ஒரு சதுரத்தின் ஒரு கோணம் என்ன?', a: 90, type: 'info', params: { text: 'சதுரத்தின் அனைத்து கோணங்களும் 90°' } },
+
+            // Proportions & Unitary Method
+            { q: '5 பேனாக்களின் விலை ₹50 என்றால், 1 பேனாவின் விலை என்ன?', a: 10, type: 'division', params: { a: 50, b: 5 } },
+            { q: 'ஒரு கிலோ ஆப்பிளின் விலை ₹120 எனில், அரை கிலோ விலை என்ன?', a: 60, type: 'division', params: { a: 120, b: 2 } },
+            { q: 'ஒரு மணி நேரத்தில் 60 கி.மீ செல்லும் கார், 3 மணி நேரத்தில் எவ்வளவு தூரம் செல்லும்?', a: 180, type: 'multiplication', params: { a: 60, b: 3 } },
+            { q: '4 பேர் ஒரு வேலையை 10 நாட்களில் முடித்தால், 2 பேர் முடிக்க எத்தனை நாட்கள் ஆகும்?', a: 20, type: 'inverse_proportion', params: { p1: 4, d1: 10, p2: 2 } },
+            { q: '10 சாக்லேட்களின் விலை ₹100 எனில், 7 சாக்லேட்களின் விலை என்ன?', a: 70, type: 'proportion', params: { i1: 10, c1: 100, i2: 7 } },
+            { q: 'ஒரு பைக்கில் 1 லிட்டர் பெட்ரோலுக்கு 50 கி.மீ மைலேஜ் கிடைக்கிறது. 200 கி.மீ செல்ல எத்தனை லிட்டர் பெட்ரோல் தேவை?', a: 4, type: 'division', params: { a: 200, b: 50 } },
+            { q: 'ஒரு வேலையை 3 பேர் 6 நாட்களில் முடிப்பார்கள். அதே வேலையை 9 பேர் எத்தனை நாட்களில் முடிப்பார்கள்?', a: 2, type: 'inverse_proportion', params: { p1: 3, d1: 6, p2: 9 } },
+            { q: '2 லிட்டர் பாலின் விலை ₹100. எனில், 1 லிட்டர் பாலின் விலை என்ன?', a: 50, type: 'division', params: { a: 100, b: 2 } },
+            { q: 'ஒருவர் ஒரு நாளைக்கு ₹500 சம்பாதித்தால், ஒரு வாரத்திற்கு (7 நாட்கள்) எவ்வளவு சம்பாதிப்பார்?', a: 3500, type: 'multiplication', params: { a: 500, b: 7 } },
+            { q: 'ஒரு புத்தகத்தில் 300 பக்கங்கள் உள்ளன. ஒரு நாளைக்கு 30 பக்கங்கள் படித்தால், எத்தனை நாட்களில் படித்து முடிக்கலாம்?', a: 10, type: 'division', params: { a: 300, b: 30 } },
+
+            // Arithmetic
+            { q: '1000 - 350 = ?', a: 650, type: 'subtraction', params: { a: 1000, b: 350 } },
+            { q: '15 x 20 = ?', a: 300, type: 'multiplication', params: { a: 15, b: 20 } },
+            { q: '250 + 450 = ?', a: 700, type: 'addition', params: { a: 250, b: 450 } },
+            { q: '500 / 10 = ?', a: 50, type: 'division', params: { a: 500, b: 10 } },
+            { q: '5 + 3 x 2 = ?', a: 11, type: 'bodmas', params: { exp: '5 + (3 x 2)' } },
+            { q: '99 + 101 = ?', a: 200, type: 'addition', params: { a: 99, b: 101 } },
+            { q: '50 x 50 = ?', a: 2500, type: 'multiplication', params: { a: 50, b: 50 } },
+            { q: '75 - 26 = ?', a: 49, type: 'subtraction', params: { a: 75, b: 26 } },
+            { q: '144 / 12 = ?', a: 12, type: 'division', params: { a: 144, b: 12 } },
+            { q: '(10 - 4) x 3 = ?', a: 18, type: 'bodmas', params: { exp: '(10 - 4) x 3' } },
+            { q: 'ஒரு டஜனில் எத்தனை உள்ளன?', a: 12, type: 'info', params: { text: '1 டஜன் = 12' } },
+            { q: '400 + 500 + 100 = ?', a: 1000, type: 'addition', params: { a: 400, b: 500, c: 100 } },
+            { q: '25 x 4 = ?', a: 100, type: 'multiplication', params: { a: 25, b: 4 } },
+            { q: '100 / 25 = ?', a: 4, type: 'division', params: { a: 100, b: 25 } },
+            { q: '500 - 1 = ?', a: 499, type: 'subtraction', params: { a: 500, b: 1 } },
+            { q: '8 x 9 = ?', a: 72, type: 'multiplication', params: { a: 8, b: 9 } },
+            { q: '64 + 36 = ?', a: 100, type: 'addition', params: { a: 64, b: 36 } },
+            { q: '7 x 8 = ?', a: 56, type: 'multiplication', params: { a: 7, b: 8 } },
+            { q: '125 + 75 = ?', a: 200, type: 'addition', params: { a: 125, b: 75 } },
+            { q: '90 / 3 = ?', a: 30, type: 'division', params: { a: 90, b: 3 } },
+
+            // Fractions & Percentages
+            { q: '100-ல் பாதி எவ்வளவு?', a: 50, type: 'fraction', params: { num: 100, frac: [1, 2] } },
+            { q: '200-ல் 50% எவ்வளவு?', a: 100, type: 'percentage', params: { num: 200, perc: 50 } },
+            { q: '50-ல் 1/4 பங்கு எவ்வளவு?', a: 12.5, type: 'fraction', params: { num: 50, frac: [1, 4] } },
+            { q: '₹20-ல் 10% எவ்வளவு?', a: 2, type: 'percentage', params: { num: 20, perc: 10 } },
+            { q: 'அரை + அரை = ?', a: 1, type: 'info', params: { text: '½ + ½ = 1' } },
+
+            // Geometry & Measurement
+            { q: 'ஒரு மீட்டரில் எத்தனை சென்டிமீட்டர்?', a: 100, type: 'info', params: { text: '1 மீ = 100 செ.மீ' } },
+            { q: 'பக்கம் 5 செ.மீ கொண்ட சதுரத்தின் சுற்றளவு என்ன?', a: 20, type: 'perimeter_square', params: { side: 5 } },
+            { q: 'ஒரு கிலோகிராமில் எத்தனை கிராம்?', a: 1000, type: 'info', params: { text: '1 கிகி = 1000 கி' } },
+            { q: 'நீளம் 10 செ.மீ, அகலம் 5 செ.மீ கொண்ட செவ்வகத்தின் சுற்றளவு என்ன?', a: 30, type: 'perimeter_rectangle', params: { l: 10, b: 5 } },
+            { q: 'ஒரு மணி நேரத்தில் எத்தனை நிமிடங்கள்?', a: 60, type: 'info', params: { text: '1 மணி = 60 நிமிடங்கள்' } },
+        ];
+        let currentMentalMathIndex = 0;
+
+        function displayMentalMathQuestion() {
+            const q = mentalMathQuestions[currentMentalMathIndex];
+            mentalMathQuestionNumberEl.textContent = `வினா ${currentMentalMathIndex + 1} / ${mentalMathQuestions.length}`;
+            mentalMathQuestionEl.textContent = q.q;
+            mentalMathInput.value = '';
+            mentalMathFeedback.textContent = '';
+            mentalMathInput.classList.remove('correct-answer', 'incorrect-answer');
+            renderMentalMathSimulation(q);
+
+            mentalMathPrevBtn.disabled = currentMentalMathIndex === 0;
+            mentalMathNextBtn.disabled = currentMentalMathIndex === mentalMathQuestions.length - 1;
+        }
+
+        // Helper function to wrap text on canvas
+        function wrapText(context, text, x, y, maxWidth, lineHeight) {
+            let words = text.split(' ');
+            let line = '';
+            let lines = [];
+
+            for (let n = 0; n < words.length; n++) {
+                let testLine = line + words[n] + ' ';
+                let metrics = context.measureText(testLine);
+                let testWidth = metrics.width;
+                if (testWidth > maxWidth && n > 0) {
+                    lines.push(line);
+                    line = words[n] + ' ';
+                } else {
+                    line = testLine;
+                }
+            }
+            lines.push(line);
+
+            // Adjust y to center the text block
+            let startY = y - (lines.length - 1) * lineHeight / 2;
+
+            for (let i = 0; i < lines.length; i++) {
+                context.fillText(lines[i], x, startY + i * lineHeight);
+            }
+        }
+
+
+        function renderMentalMathSimulation(q) {
+            mentalMathCtx.clearRect(0, 0, mentalMathCanvas.width, mentalMathCanvas.height);
+            const w = mentalMathCanvas.width;
+            const h = mentalMathCanvas.height;
+            const centerX = w / 2;
+            const centerY = h / 2;
+            
+            mentalMathCtx.textAlign = 'center';
+            mentalMathCtx.textBaseline = 'middle';
+
+            switch (q.type) {
+                case 'complementary': {
+                    const radius = 80;
+                    mentalMathCtx.beginPath();
+                    mentalMathCtx.moveTo(centerX, centerY);
+                    mentalMathCtx.arc(centerX, centerY, radius, -Math.PI / 2, 0);
+                    mentalMathCtx.closePath();
+                    mentalMathCtx.fillStyle = 'rgba(239, 68, 68, 0.2)';
+                    mentalMathCtx.fill();
+
+                    const rad = q.params.angle * Math.PI / 180;
+                    mentalMathCtx.beginPath();
+                    mentalMathCtx.moveTo(centerX, centerY);
+                    mentalMathCtx.arc(centerX, centerY, radius, -rad, 0);
+                    mentalMathCtx.closePath();
+                    mentalMathCtx.fillStyle = 'rgba(79, 70, 229, 0.3)';
+                    mentalMathCtx.fill();
+
+                    mentalMathCtx.beginPath();
+                    mentalMathCtx.moveTo(centerX, centerY);
+                    mentalMathCtx.lineTo(centerX + radius, centerY);
+                    mentalMathCtx.moveTo(centerX, centerY);
+                    mentalMathCtx.lineTo(centerX, centerY - radius);
+                    mentalMathCtx.moveTo(centerX, centerY);
+                    mentalMathCtx.lineTo(centerX + radius * Math.cos(-rad), centerY + radius * Math.sin(-rad));
+                    mentalMathCtx.strokeStyle = '#6b7280';
+                    mentalMathCtx.stroke();
+                    
+                    mentalMathCtx.fillStyle = '#1e293b';
+                    mentalMathCtx.font = 'bold 20px Noto Sans Tamil';
+                    mentalMathCtx.fillText(`${q.params.angle}°`, centerX + 45, centerY - 25);
+                    mentalMathCtx.fillText(`?`, centerX + 20, centerY - 50);
+                    mentalMathCtx.fillText(`90°`, centerX - 30, centerY + 20);
+                    break;
+                }
+                case 'supplementary': {
+                    const radius = 100;
+                    mentalMathCtx.beginPath();
+                    mentalMathCtx.moveTo(centerX, centerY);
+                    mentalMathCtx.arc(centerX, centerY, radius, -Math.PI, 0);
+                    mentalMathCtx.closePath();
+                    mentalMathCtx.fillStyle = 'rgba(239, 68, 68, 0.2)';
+                    mentalMathCtx.fill();
+
+                    const rad = q.params.angle * Math.PI / 180;
+                    mentalMathCtx.beginPath();
+                    mentalMathCtx.moveTo(centerX, centerY);
+                    mentalMathCtx.arc(centerX, centerY, radius, -Math.PI, -rad);
+                    mentalMathCtx.closePath();
+                    mentalMathCtx.fillStyle = 'rgba(79, 70, 229, 0.3)';
+                    mentalMathCtx.fill();
+
+                    mentalMathCtx.beginPath();
+                    mentalMathCtx.moveTo(centerX - radius, centerY);
+                    mentalMathCtx.lineTo(centerX + radius, centerY);
+                    mentalMathCtx.moveTo(centerX, centerY);
+                    mentalMathCtx.lineTo(centerX + radius * Math.cos(-rad), centerY + radius * Math.sin(-rad));
+                    mentalMathCtx.strokeStyle = '#6b7280';
+                    mentalMathCtx.stroke();
+                    
+                    mentalMathCtx.fillStyle = '#1e293b';
+                    mentalMathCtx.font = 'bold 20px Noto Sans Tamil';
+                    mentalMathCtx.fillText(`${q.params.angle}°`, centerX - 60, centerY - 40);
+                    mentalMathCtx.fillText(`?`, centerX + 60, centerY - 40);
+                    break;
+                }
+                 case 'division':
+                case 'proportion': {
+                    const total = q.type === 'division' ? q.params.a : q.params.c1;
+                    const units = q.type === 'division' ? q.params.b : q.params.i1;
+                    if (units > 12) {
+                         mentalMathCtx.font = 'bold 24px Noto Sans Tamil';
+                         mentalMathCtx.fillStyle = '#1e293b';
+                         mentalMathCtx.fillText(`${total} ÷ ${units} = ?`, centerX, centerY);
+                         break;
+                    }
+                    mentalMathCtx.fillStyle = '#1e293b';
+                    mentalMathCtx.font = 'bold 18px Noto Sans Tamil';
+                    mentalMathCtx.fillText(`மொத்தம்: ${total}`, centerX, 30);
+                    mentalMathCtx.fillText(`${units} சம பாகங்கள்`, centerX, h - 30);
+                    const boxWidth = (w - 80) / units;
+                    const boxHeight = 60;
+                    for (let i = 0; i < units; i++) {
+                        mentalMathCtx.strokeStyle = '#4f46e5';
+                        mentalMathCtx.strokeRect(40 + i * boxWidth, centerY - boxHeight/2, boxWidth - 2, boxHeight);
+                        mentalMathCtx.fillText('?', 40 + i * boxWidth + boxWidth / 2, centerY);
+                    }
+                    break;
+                }
+                case 'multiplication':
+                    mentalMathCtx.font = 'bold 24px Noto Sans Tamil';
+                    mentalMathCtx.fillStyle = '#4f46e5';
+                    mentalMathCtx.fillText(`${q.params.a} x ${q.params.b} = ?`, centerX, centerY);
+                    break;
+                case 'addition':
+                    mentalMathCtx.font = 'bold 24px Noto Sans Tamil';
+                    mentalMathCtx.fillStyle = '#4f46e5';
+                    const sumText = q.params.c ? `${q.params.a} + ${q.params.b} + ${q.params.c} = ?` : `${q.params.a} + ${q.params.b} = ?`;
+                    mentalMathCtx.fillText(sumText, centerX, centerY);
+                    break;
+                case 'subtraction':
+                    mentalMathCtx.font = 'bold 24px Noto Sans Tamil';
+                    mentalMathCtx.fillStyle = '#4f46e5';
+                    mentalMathCtx.fillText(`${q.params.a} - ${q.params.b} = ?`, centerX, centerY);
+                    break;
+                case 'bodmas':
+                    mentalMathCtx.font = 'bold 22px Noto Sans Tamil';
+                    mentalMathCtx.fillStyle = '#1e293b';
+                    mentalMathCtx.fillText(q.params.exp, centerX, centerY - 40);
+                    mentalMathCtx.fillStyle = '#4f46e5';
+                    wrapText(mentalMathCtx, "முதலில் அடைப்புக்குறி அல்லது பெருக்கல்/வகுத்தல், பிறகு கூட்டல்/கழித்தல்.", centerX, centerY + 20, w - 40, 30);
+                    break;
+                case 'fraction':
+                     mentalMathCtx.font = 'bold 20px Noto Sans Tamil';
+                     mentalMathCtx.fillStyle = '#1e293b';
+                     mentalMathCtx.fillText(`மொத்தம்: ${q.params.num}`, centerX, 30);
+                     const denominator = q.params.frac[1];
+                     const boxWidth = (w - 80) / denominator;
+                     for(let i=0; i<denominator; i++) {
+                         if (i < q.params.frac[0]) {
+                            mentalMathCtx.fillStyle = 'rgba(79, 70, 229, 0.3)';
+                            mentalMathCtx.fillRect(40 + i * boxWidth, centerY - 30, boxWidth - 2, 60);
+                         }
+                         mentalMathCtx.strokeStyle = '#4f46e5';
+                         mentalMathCtx.strokeRect(40 + i * boxWidth, centerY - 30, boxWidth - 2, 60);
+                     }
+                     mentalMathCtx.fillStyle = '#1e293b';
+                     mentalMathCtx.fillText(`தேவையான பங்கு: ?`, centerX, h-30);
+                     break;
+                case 'percentage':
+                     mentalMathCtx.font = 'bold 20px Noto Sans Tamil';
+                     mentalMathCtx.fillStyle = '#1e293b';
+                     mentalMathCtx.fillText(`100% = ${q.params.num}`, centerX, 30);
+                     const percWidth = (w - 80);
+                     mentalMathCtx.strokeStyle = '#4f46e5';
+                     mentalMathCtx.strokeRect(40, centerY - 30, percWidth, 60);
+                     mentalMathCtx.fillStyle = 'rgba(79, 70, 229, 0.3)';
+                     mentalMathCtx.fillRect(40, centerY - 30, percWidth * (q.params.perc / 100), 60);
+                     mentalMathCtx.fillStyle = '#1e293b';
+                     mentalMathCtx.fillText(`${q.params.perc}% = ?`, centerX, h-30);
+                     break;
+                case 'inverse_proportion':
+                     mentalMathCtx.fillStyle = '#1e293b';
+                     mentalMathCtx.font = 'bold 20px Noto Sans Tamil';
+                     wrapText(mentalMathCtx, `${q.params.p1} நபர்கள் x ${q.params.d1} நாட்கள் = ${q.params.p1 * q.params.d1} (மொத்த வேலை)`, centerX, centerY - 40, w - 40, 30);
+                     wrapText(mentalMathCtx, `${q.params.p2} நபர்கள் x ? நாட்கள் = ${q.params.p1 * q.params.d1} (மொத்த வேலை)`, centerX, centerY + 40, w - 40, 30);
+                     break;
+                
+                case 'perimeter_square':
+                     mentalMathCtx.strokeStyle = '#4f46e5';
+                     mentalMathCtx.lineWidth = 3;
+                     mentalMathCtx.strokeRect(centerX - 60, centerY - 60, 120, 120);
+                     mentalMathCtx.fillStyle = '#1e293b';
+                     mentalMathCtx.font = 'bold 20px Noto Sans Tamil';
+                     mentalMathCtx.fillText(`${q.params.side}`, centerX, centerY - 75);
+                     mentalMathCtx.fillText(`${q.params.side}`, centerX, centerY + 75);
+                     mentalMathCtx.fillText(`${q.params.side}`, centerX - 75, centerY);
+                     mentalMathCtx.fillText(`${q.params.side}`, centerX + 75, centerY);
+                     break;
+
+                case 'perimeter_rectangle':
+                     mentalMathCtx.strokeStyle = '#4f46e5';
+                     mentalMathCtx.lineWidth = 3;
+                     mentalMathCtx.strokeRect(centerX - 100, centerY - 50, 200, 100);
+                     mentalMathCtx.fillStyle = '#1e293b';
+                     mentalMathCtx.font = 'bold 20px Noto Sans Tamil';
+                     mentalMathCtx.fillText(`${q.params.l}`, centerX, centerY - 65);
+                     mentalMathCtx.fillText(`${q.params.l}`, centerX, centerY + 65);
+                     mentalMathCtx.fillText(`${q.params.b}`, centerX - 115, centerY);
+                     mentalMathCtx.fillText(`${q.params.b}`, centerX + 115, centerY);
+                     break;
+
+                case 'info':
+                    mentalMathCtx.font = 'bold 24px Noto Sans Tamil';
+                    mentalMathCtx.fillStyle = '#4f46e5';
+                    wrapText(mentalMathCtx, q.params.text, centerX, centerY, w - 40, 35);
+                    break;
+
+                default:
+                    mentalMathCtx.font = 'bold 24px Noto Sans Tamil';
+                    mentalMathCtx.fillStyle = '#9ca3af';
+                    mentalMathCtx.fillText('காட்சி உதவி இல்லை', centerX, centerY);
+            }
+        }
+
+        mentalMathCheckBtn.addEventListener('click', () => {
+            const q = mentalMathQuestions[currentMentalMathIndex];
+            if (mentalMathInput.value === '') return;
+            const userAnswer = parseFloat(mentalMathInput.value);
+            if (Math.abs(userAnswer - q.a) < 0.01) {
+                mentalMathFeedback.textContent = 'சரியான பதில்!';
+                mentalMathFeedback.style.color = 'green';
+                mentalMathInput.classList.add('correct-answer');
+            } else {
+                mentalMathFeedback.textContent = `தவறு. சரியான விடை: ${q.a}`;
+                mentalMathFeedback.style.color = 'red';
+                mentalMathInput.classList.add('incorrect-answer');
+            }
+        });
+
+        mentalMathNextBtn.addEventListener('click', () => {
+            if (currentMentalMathIndex < mentalMathQuestions.length - 1) {
+                currentMentalMathIndex++;
+                displayMentalMathQuestion();
+            }
+        });
+
+        mentalMathPrevBtn.addEventListener('click', () => {
+            if (currentMentalMathIndex > 0) {
+                currentMentalMathIndex--;
+                displayMentalMathQuestion();
+            }
+        });
+
+        mentalMathResetBtn.addEventListener('click', displayMentalMathQuestion);
+
+        // --- TAB 4: சொற்களஞ்சியம் ---
+        const vocabList = document.getElementById('vocab-list');
+        const vocabTitle = document.getElementById('vocab-title');
+        const vocabVisual = document.getElementById('vocab-visual');
+        const vocabDesc = document.getElementById('vocab-desc');
+        
+        const vocabTerms = [
+            { term: 'வர்க்கம்', desc: 'ஒரு எண்ணை அதே எண்ணால் பெருக்குவது. (எ.கா: 4² = 16)', type: 'square' },
+            { term: 'வர்க்கமூலம்', desc: 'எந்த எண்ணை அதாலேயே பெருக்கினால் ஒரு எண் கிடைக்குமோ அதுவே வர்க்கமூலம். (எ.கா: √16 = 4)', type: 'square_root' },
+            { term: 'முழு வர்க்கம்', desc: 'ஒரு இயல் எண்ணின் வர்க்கமாக அமையும் எண். (எ.கா: 1, 4, 9, 16..)', type: 'perfect_square' },
+            { term: 'பகா காரணி', desc: 'ஒரு எண்ணை பகா எண்களின் பெருக்கலாக எழுதுதல். (எ.கா: 12 = 2x2x3)', type: 'prime_factor' },
+            { term: 'நீள் வகுத்தல்', desc: 'வர்க்கமூலம் காணப் பயன்படும் ஒரு வகுத்தல் முறை.', type: 'long_division' },
+            { term: 'கனம்', desc: 'ஒரு எண்ணை மூன்று முறை பெருக்குவது. (எ.கா: 3³ = 27)', type: 'cube' },
+            { term: 'கனமூலம்', desc: 'எந்த எண்ணை மூன்று முறை பெருக்கினால் ஒரு எண் கிடைக்குமோ அதுவே கனமூலம். (எ.கா: ³√27 = 3)', type: 'cube_root' },
+            { term: 'குறுங்கோணம்', desc: '0° விட அதிகம், 90° விடக் குறைவான கோணம்.', type: 'angle', params: { angle: 45 } },
+            { term: 'செங்கோணம்', desc: 'சரியாக 90° உள்ள கோணம்.', type: 'angle', params: { angle: 90 } },
+            { term: 'விரிகோணம்', desc: '90° விட அதிகம், 180° விடக் குறைவான கோணம்.', type: 'angle', params: { angle: 135 } },
+            { term: 'நேர்க்கோணம்', desc: 'சரியாக 180° உள்ள கோணம்.', type: 'angle', params: { angle: 180 } },
+            { term: 'பின்வளை கோணம்', desc: '180° விட அதிகம், 360° விடக் குறைவான கோணம்.', type: 'angle', params: { angle: 225 } },
+            { term: 'நிரப்புக்கோணம்', desc: 'இரு கோணங்களின் கூடுதல் 90° ஆக இருப்பது.', type: 'complementary_angle' },
+            { term: 'மிகைநிரப்பு கோணம்', desc: 'இரு கோணங்களின் கூடுதல் 180° ஆக இருப்பது.', type: 'supplementary_angle' },
+            { term: 'குத்தெதிர் கோணம்', desc: 'இரு கோடுகள் வெட்டும்போது உருவாகும் எதிர் எதிர் கோணங்கள்.', type: 'vertical_angle' },
+            { term: 'அடுத்துள்ள கோணம்', desc: 'ஒரு பொதுவான முனை மற்றும் ஒரு பொதுவான கரம் கொண்ட இரு கோணங்கள்.', type: 'adjacent_angle' }
+        ];
+
+        vocabTerms.forEach((item, index) => {
+            const btn = document.createElement('button');
+            btn.textContent = item.term;
+            btn.className = 'vocab-btn p-2 text-center bg-white border-2 border-indigo-200 rounded-lg hover:bg-indigo-100 transition-colors duration-200';
+            btn.onclick = (event) => showVocab(item, event.currentTarget);
+            vocabList.appendChild(btn);
+            if (index === 0) {
+               setTimeout(() => btn.click(), 100); // Click the first button on load
+            }
+        });
+
+        function showVocab(item, clickedButton) {
+            // Highlight logic
+            document.querySelectorAll('.vocab-btn').forEach(btn => btn.classList.remove('active'));
+            clickedButton.classList.add('active');
+
+            vocabTitle.textContent = item.term;
+            vocabDesc.textContent = item.desc;
+            vocabVisual.innerHTML = ''; // Clear previous visual
+            
+            const canvas = document.createElement('canvas');
+            canvas.width = 400;
+            canvas.height = 300;
+            const ctx = canvas.getContext('2d');
+            vocabVisual.appendChild(canvas);
+            
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            
+            ctx.font = 'bold 20px Noto Sans Tamil';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+
+            switch(item.type) {
+                case 'square': {
+                    const n = 4;
+                    const size = 40;
+                    const totalWidth = n * size;
+                    const startX = centerX - totalWidth / 2;
+                    const startY = centerY - totalWidth / 2;
+                    for(let i=0; i<n; i++) {
+                        for(let j=0; j<n; j++) {
+                           ctx.fillStyle = `hsl(${i*30 + j*50}, 80%, 70%)`;
+                           ctx.fillRect(startX + i*size, startY + j*size, size-2, size-2);
+                        }
+                    }
+                    ctx.fillStyle = '#1e293b';
+                    ctx.fillText('4 x 4 = 16', centerX, startY + totalWidth + 30);
+                    break;
+                }
+                case 'square_root': {
+                    const n = 4;
+                    const size = 40;
+                    const totalWidth = n * size;
+                    const startX = centerX - totalWidth / 2;
+                    const startY = centerY - totalWidth / 2;
+                    for(let i=0; i<n; i++) {
+                        for(let j=0; j<n; j++) {
+                           ctx.fillStyle = (i === 0) ? '#4f46e5' : 'lightgray';
+                           ctx.fillRect(startX + i*size, startY + j*size, size-2, size-2);
+                        }
+                    }
+                    ctx.fillStyle = '#1e293b';
+                    ctx.fillText('√16 = 4', centerX, startY + totalWidth + 30);
+                    break;
+                }
+                 case 'perfect_square': {
+                    ctx.fillStyle = '#22c55e';
+                    ctx.fillRect(centerX - 150, centerY - 50, 60, 60);
+                    ctx.fillRect(centerX - 50, centerY - 50, 80, 80);
+                    ctx.fillStyle = '#ef4444';
+                    ctx.fillRect(centerX + 70, centerY - 50, 80, 50);
+                    ctx.strokeStyle = 'red';
+                    ctx.lineWidth = 4;
+                    ctx.beginPath();
+                    ctx.moveTo(centerX + 60, centerY - 60);
+                    ctx.lineTo(centerX + 160, centerY + 10);
+                    ctx.moveTo(centerX + 160, centerY - 60);
+                    ctx.lineTo(centerX + 60, centerY + 10);
+                    ctx.stroke();
+                    break;
+                }
+                case 'prime_factor': {
+                    ctx.fillText('12', centerX, centerY - 80);
+                    ctx.beginPath();
+                    ctx.moveTo(centerX, centerY - 70); ctx.lineTo(centerX - 50, centerY - 30);
+                    ctx.moveTo(centerX, centerY - 70); ctx.lineTo(centerX + 50, centerY - 30);
+                    ctx.stroke();
+                    ctx.fillText('2', centerX - 50, centerY - 20);
+                    ctx.fillText('6', centerX + 50, centerY - 20);
+                    ctx.beginPath();
+                    ctx.moveTo(centerX + 50, centerY - 10); ctx.lineTo(centerX + 20, centerY + 30);
+                    ctx.moveTo(centerX + 50, centerY - 10); ctx.lineTo(centerX + 80, centerY + 30);
+                    ctx.stroke();
+                    ctx.fillStyle = '#4f46e5';
+                    ctx.fillText('2', centerX + 20, centerY + 40);
+                    ctx.fillText('3', centerX + 80, centerY + 40);
+                    break;
+                }
+                case 'long_division': {
+                    ctx.font = 'bold 24px monospace';
+                    ctx.fillText('  2 5', centerX, centerY - 60);
+                    ctx.beginPath();
+                    ctx.moveTo(centerX - 50, centerY - 40);
+                    ctx.lineTo(centerX + 60, centerY - 40);
+                    ctx.moveTo(centerX - 50, centerY - 40);
+                    ctx.lineTo(centerX - 50, centerY + 60);
+                    ctx.stroke();
+                    ctx.fillText('6 25', centerX, centerY - 20);
+                    ctx.fillText('-4', centerX - 25, centerY);
+                    ctx.moveTo(centerX - 40, centerY + 10); ctx.lineTo(centerX + 40, centerY + 10); ctx.stroke();
+                    ctx.fillText('2 25', centerX, centerY + 30);
+                    break;
+                }
+                case 'cube': {
+                    ctx.font = 'bold 60px Noto Sans Tamil';
+                    ctx.fillStyle = '#4f46e5';
+                    ctx.fillText('3³', centerX - 50, centerY);
+                    ctx.fillStyle = '#1e293b';
+                    ctx.fillText('= 27', centerX + 60, centerY);
+                    break;
+                }
+                 case 'cube_root': {
+                    ctx.font = 'bold 60px Noto Sans Tamil';
+                    ctx.fillStyle = '#4f46e5';
+                    ctx.fillText('³√27', centerX - 50, centerY);
+                    ctx.fillStyle = '#1e293b';
+                    ctx.fillText('= 3', centerX + 80, centerY);
+                    break;
+                }
+                case 'angle':
+                    drawAngleOnVocab(ctx, item.params.angle, `${item.params.angle}°`);
+                    break;
+                case 'complementary_angle': {
+                    drawAngleOnVocab(ctx, 90, '90°');
+                    const rad = 30 * Math.PI / 180;
+                    ctx.beginPath();
+                    ctx.moveTo(centerX, centerY);
+                    ctx.lineTo(centerX + 100 * Math.cos(-rad), centerY + 100 * Math.sin(-rad));
+                    ctx.strokeStyle = '#fbbf24';
+                    ctx.stroke();
+                    ctx.fillStyle = '#1e293b';
+                    ctx.fillText('30°', centerX + 60, centerY - 20);
+                    ctx.fillText('60°', centerX + 20, centerY - 50);
+                    break;
+                }
+                 case 'supplementary_angle': {
+                    drawAngleOnVocab(ctx, 180, '180°');
+                    const rad = 60 * Math.PI / 180;
+                    ctx.beginPath();
+                    ctx.moveTo(centerX, centerY);
+                    ctx.lineTo(centerX + 100 * Math.cos(-rad), centerY + 100 * Math.sin(-rad));
+                    ctx.strokeStyle = '#fbbf24';
+                    ctx.stroke();
+                    ctx.fillStyle = '#1e293b';
+                    ctx.fillText('60°', centerX + 70, centerY - 30);
+                    ctx.fillText('120°', centerX - 40, centerY - 40);
+                    break;
+                }
+                case 'vertical_angle': {
+                    ctx.lineWidth = 3;
+                    ctx.beginPath();
+                    ctx.moveTo(centerX - 80, centerY - 80); ctx.lineTo(centerX + 80, centerY + 80);
+                    ctx.moveTo(centerX - 80, centerY + 80); ctx.lineTo(centerX + 80, centerY - 80);
+                    ctx.strokeStyle = '#6b7280';
+                    ctx.stroke();
+                    ctx.fillStyle = '#1e293b';
+                    ctx.fillText('A', centerX - 30, centerY - 40);
+                    ctx.fillText('A', centerX + 30, centerY + 40);
+                    ctx.fillText('B', centerX + 30, centerY - 40);
+                    ctx.fillText('B', centerX - 30, centerY + 40);
+                    break;
+                }
+                 case 'adjacent_angle': {
+                    drawAngleOnVocab(ctx, 120, '');
+                    const rad = 50 * Math.PI / 180;
+                    ctx.beginPath();
+                    ctx.moveTo(centerX, centerY);
+                    ctx.lineTo(centerX + 100 * Math.cos(-rad), centerY + 100 * Math.sin(-rad));
+                    ctx.strokeStyle = '#fbbf24';
+                    ctx.stroke();
+                    ctx.fillStyle = '#1e293b';
+                    ctx.fillText('A', centerX + 60, centerY - 20);
+                    ctx.fillText('B', centerX + 20, centerY - 60);
+                    break;
+                }
+            }
+        }
+        
+        function drawAngleOnVocab(ctx, angle, text) {
+            const rad = angle * Math.PI / 180;
+            const centerX = ctx.canvas.width / 2, centerY = ctx.canvas.height / 2, radius = 100;
+            
+            ctx.beginPath();
+            ctx.moveTo(centerX, centerY);
+            ctx.arc(centerX, centerY, radius, -rad, 0);
+            ctx.closePath();
+            ctx.fillStyle = 'rgba(79, 70, 229, 0.2)';
+            ctx.fill();
+
+            ctx.lineWidth = 3;
+            ctx.beginPath(); 
+            ctx.moveTo(centerX, centerY); 
+            ctx.lineTo(centerX + radius, centerY);
+            ctx.strokeStyle = '#333'; 
+            ctx.stroke();
+            
+            ctx.beginPath(); 
+            ctx.moveTo(centerX, centerY);
+            ctx.lineTo(centerX + radius * Math.cos(-rad), centerY + radius * Math.sin(-rad));
+            ctx.strokeStyle = '#4f46e5'; 
+            ctx.stroke();
+            
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, 30, -rad, 0);
+            ctx.strokeStyle = '#f59e0b'; 
+            ctx.lineWidth = 2; 
+            ctx.stroke();
+            
+            if (text) {
+                ctx.fillStyle = '#1e293b';
+                ctx.font = 'bold 24px Noto Sans Tamil';
+                const textX = centerX + 45 * Math.cos(-rad / 2);
+                const textY = centerY + 45 * Math.sin(-rad / 2);
+                ctx.fillText(text, textX, textY);
+            }
+        }
+
+        // --- INITIALIZATION ---
+        function init() {
+            document.querySelector('.tab-btn').click();
+            
+            tableSlider.addEventListener('input', startTableBuilder);
+            quizSubmit.addEventListener('click', checkPatternAnswer);
+            quizInput.addEventListener('keyup', (e) => {
+                if(e.key === 'Enter') checkPatternAnswer();
+            });
+            startTableBuilder();
+            
+            angleSlider.addEventListener('input', drawAngle);
+            drawAngle();
+            
+            pensSlider.dispatchEvent(new Event('input'));
+            workersSlider.dispatchEvent(new Event('input'));
+            
+            lineBtns.line.addEventListener('click', () => drawLineType('line'));
+            lineBtns.segment.addEventListener('click', () => drawLineType('segment'));
+            lineBtns.ray.addEventListener('click', () => drawLineType('ray'));
+            drawLineType('line');
+
+            redrawGraph();
+            generateNewPoint();
+            displayProportionQuestion();
+            displayLifeProblem();
+            
+            clearDrawingBtn.addEventListener('click', clearDrawingCanvas);
+            displayAngleQuestion();
+            
+            startShapeDrawing();
+            displayMentalMathQuestion();
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>
