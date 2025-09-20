@@ -5,8 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>கன்ய சம்பூர்ணா திட்டம் - கணிதம்</title>
     
-    <script src="https://cdn.tailwindcss.com"></script>
-    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Tamil:wght@400;500;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -14,16 +12,14 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
+        /* Base Styles & Custom Classes */
         body {
             font-family: 'Poppins', sans-serif;
             background-color: #f0f4f8;
+            color: #1f2937; /* text-gray-800 */
         }
-        .tamil-heading {
-            font-family: 'Noto Sans Tamil', sans-serif;
-        }
-        .tamil-text {
-            font-family: 'Noto Sans Tamil', sans-serif;
-        }
+        .tamil-heading { font-family: 'Noto Sans Tamil', sans-serif; }
+        .tamil-text { font-family: 'Noto Sans Tamil', sans-serif; }
         .card {
             transition: transform 0.3s ease, box-shadow 0.3s ease;
             position: relative;
@@ -35,26 +31,106 @@
         }
         .card-bg {
             position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
+            top: 0; left: 0; right: 0; bottom: 0;
             background-size: cover;
             background-position: center;
             opacity: 0.1;
             transition: opacity 0.3s ease;
         }
-        .card:hover .card-bg {
-            opacity: 0.2;
+        .card:hover .card-bg { opacity: 0.2; }
+        .hero-section { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .file-icon { transition: transform 0.3s ease; }
+        .card:hover .file-icon { transform: scale(1.1); }
+
+        /* Tailwind CSS Utility Classes */
+        .container { width: 100%; margin-left: auto; margin-right: auto; padding-left: 1rem; padding-right: 1rem; }
+        @media (min-width: 640px) { .container { max-width: 640px; padding-left: 1.5rem; padding-right: 1.5rem; } }
+        @media (min-width: 768px) { .container { max-width: 768px; } }
+        @media (min-width: 1024px) { .container { max-width: 1024px; padding-left: 2rem; padding-right: 2rem; } }
+        @media (min-width: 1280px) { .container { max-width: 1280px; } }
+
+        .relative { position: relative; }
+        .block { display: block; }
+        .flex { display: flex; }
+        .grid { display: grid; }
+        .items-center { align-items: center; }
+        
+        .bg-white { background-color: #ffffff; }
+        .bg-gray-800 { background-color: #1f2937; }
+
+        .rounded-xl { border-radius: 0.75rem; }
+        .border-t-2 { border-top-width: 2px; }
+        .border-white { border-color: #ffffff; }
+
+        .shadow-lg { box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05); }
+        .shadow-2xl { box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); }
+
+        .text-center { text-align: center; }
+        .font-bold { font-weight: 700; }
+        .font-semibold { font-weight: 600; }
+        .font-light { font-weight: 300; }
+        
+        .text-lg { font-size: 1.125rem; line-height: 1.75rem; }
+        .text-xl { font-size: 1.25rem; line-height: 1.75rem; }
+        .text-2xl { font-size: 1.5rem; line-height: 2rem; }
+        .text-3xl { font-size: 1.875rem; line-height: 2.25rem; }
+        
+        .leading-tight { line-height: 1.25; }
+
+        .text-white { color: #ffffff; }
+        .text-gray-900 { color: #111827; }
+        .text-blue-500 { color: #3b82f6; }
+        .text-blue-800 { color: #1e40af; }
+        .text-green-500 { color: #22c55e; }
+        .text-green-800 { color: #166534; }
+        .text-indigo-500 { color: #6366f1; }
+        .text-indigo-800 { color: #3730a3; }
+        .text-purple-500 { color: #a855f7; }
+        .text-purple-800 { color: #581c87; }
+        
+        .py-12 { padding-top: 3rem; padding-bottom: 3rem; }
+        .p-6 { padding: 1.5rem; }
+        .px-4 { padding-left: 1rem; padding-right: 1rem; }
+        .mt-2 { margin-top: 0.5rem; }
+        .mt-4 { margin-top: 1rem; }
+        .mt-6 { margin-top: 1.5rem; }
+        .mb-8 { margin-bottom: 2rem; }
+        .mb-16 { margin-bottom: 4rem; }
+        .mt-16 { margin-top: 4rem; }
+        .ml-4 { margin-left: 1rem; }
+        .my-6 { margin-top: 1.5rem; margin-bottom: 1.5rem; }
+
+        .w-24 { width: 6rem; }
+        .gap-6 { gap: 1.5rem; }
+        .grid-cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)); }
+        .opacity-50 { opacity: 0.5; }
+        
+        /* Responsive Classes */
+        @media (min-width: 640px) {
+            .sm\:px-6 { padding-left: 1.5rem; padding-right: 1.5rem; }
+            .sm\:text-xl { font-size: 1.25rem; line-height: 1.75rem; }
+            .sm\:text-2xl { font-size: 1.5rem; line-height: 2rem; }
+            .sm\:text-3xl { font-size: 1.875rem; line-height: 2.25rem; }
+            .sm\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
         }
-        .hero-section {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+
+        @media (min-width: 768px) {
+            .md\:py-16 { padding-top: 4rem; padding-bottom: 4rem; }
+            .md\:text-2xl { font-size: 1.5rem; line-height: 2rem; }
+            .md\:text-4xl { font-size: 2.25rem; line-height: 2.5rem; }
+            .md\:mb-12 { margin-bottom: 3rem; }
+            .md\:gap-10 { gap: 2.5rem; }
+            .md\:p-8 { padding: 2rem; }
         }
-        .file-icon {
-            transition: transform 0.3s ease;
+
+        @media (min-width: 1024px) {
+            .lg\:px-8 { padding-left: 2rem; padding-right: 2rem; }
+            .lg\:text-5xl { font-size: 3rem; line-height: 1; }
+            .lg\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
         }
-        .card:hover .file-icon {
-            transform: scale(1.1);
+
+        @media (min-width: 1280px) {
+            .xl\:grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
         }
     </style>
 </head>
@@ -165,7 +241,7 @@
             </section>
             
             <!-- August Section -->
-            <section>
+            <section class="mb-16">
                 <h2 class="text-3xl md:text-4xl font-bold text-indigo-800 mb-8 md:mb-12 text-center tamil-heading">ஆகஸ்ட் மாத கோப்புகள்</h2>
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-10">
                     <div class="card bg-white rounded-xl shadow-lg">
@@ -219,6 +295,24 @@
                         </a>
                     </div>
 
+                </div>
+            </section>
+            
+            <!-- September Section -->
+            <section>
+                <h2 class="text-3xl md:text-4xl font-bold text-purple-800 mb-8 md:mb-12 text-center tamil-heading">செப்டம்பர் மாத கோப்புகள்</h2>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-10">
+                    <div class="card bg-white rounded-xl shadow-lg">
+                        <div class="card-bg" style="background-image: url('https://placehold.co/600x400/F3E5F5/FFFFFF?text=&font=poppins');"></div>
+                        <a href="sep1.html" class="relative block p-6 md:p-8">
+                            <div class="flex items-center">
+                                <i class="fas fa-file-alt text-3xl md:text-4xl text-purple-500 file-icon"></i>
+                                <div class="ml-4">
+                                    <h3 class="text-xl md:text-2xl font-semibold text-gray-900 tamil-text">செப்டம்பர் - 1வது வாரம்</h3>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
                 </div>
             </section>
 
